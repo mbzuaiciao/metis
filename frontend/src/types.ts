@@ -78,6 +78,7 @@ export type Workstation = {
   history: Episode[];
 };
 export type Reasoning = {
+  investigation_focus?: "daily" | "scenario" | "question";
   question: string;
   mode: string;
   model: string | null;
@@ -91,6 +92,12 @@ export type Reasoning = {
     evidence_references: string[];
   };
   context: {
+    portfolio: Pick<
+      Workstation,
+      "portfolio_name" | "nav_usd" | "positions" | "exposures"
+    >;
+    daily: Calculation;
+    market: Workstation["market"];
     scenario: Calculation;
     evidence: { id: string; description: string; url?: string }[];
     [key: string]: unknown;

@@ -1,6 +1,6 @@
 # Metis
 
-An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.3 context ablation preserves the six-page workstation, analytics and existing live integration.
+An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.4 investigation workflow connects the existing six pages without changing analytics or the live integration.
 
 **Live inference status (v0.2.1):** a live interpretation was verified with `muse-spark-1.3` at `https://api.meta.ai/v1/chat/completions` using locally configured credentials. This is Meta's Muse Spark model, not a Llama model. The returned interpretation passed all seven field definitions and the allowed evidence-ID check. No API key, sensitive context or full upstream response body was logged or saved. This verifies the harness; the browser workflow was not rerun for this correction. Demo mode still runs without credentials.
 
@@ -12,7 +12,7 @@ From the repository root:
 
 ```sh
 uv sync --locked
-cp .env.example .env
+cp -n .env.example .env  # Keep any existing local provider credentials.
 uv run uvicorn metis.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
@@ -33,9 +33,25 @@ uv run pytest -q
 # From frontend/
 npm run build
 npm run preview
+
+# Focused frontend workflow/presentation tests (Node 22.12+)
+npm test
 ```
 
 The production preview also proxies `/api` to the local backend. This is a local development application, not a production deployment recipe. FastAPI documentation is at `http://127.0.0.1:8000/docs`.
+
+## v0.4 investigation walkthrough
+
+Keep the backend and frontend running using the commands above. The four-stage strip navigates within the existing six pages:
+
+1. **What happened?** Open Overview to see the **−$560,770** illustrative daily loss for **2025-03-10**, rates **+$412,480**, credit spreads **−$407,250**, equities **−$506,000** and FX **−$60,000**. The principal-position panel selects the largest net loss and gain from backend values. Expand **Inspect position contributions and signed DV01** to compare separate rate/spread/equity/FX legs, net position P&L, signed DV01/CS01, marks and reference notionals. Portfolio totals come from the backend; the frontend does not recalculate them.
+2. **Why did it happen?** Select **2 · Explain the daily loss**. This opens Metis AI Reasoning and immediately invokes the configured provider with the daily snapshot shocks. It leaves the separately selected stress scenario unchanged. The response shows its **LIVE META** or **DETERMINISTIC DEMO** label, original calculated evidence and a separate model interpretation. Expand economic explanations, principal observations and historical references as needed. Provider/validation errors remain visible and do not become demo answers.
+3. **What could happen next?** Select **3 · Explore a hypothetical scenario**, choose Broad Risk-Off or adjust the existing shocks, then select **Interpret this scenario with Metis**. Scenario P&L and its factor contributions are labeled hypothetical, separate from daily P&L. The question captures the selected calculated shocks. Newest answers appear first; each answer retains the exact returned evidence after later scenario edits. Request state survives navigation and duplicate clicks are blocked while inference is active.
+4. **What deserves investigation?** Select stage 4 or open the vulnerability section in an answer. Each model-identified vulnerability separates the model's text, available captured evidence and a topic-specific **analyst checklist** of missing information, with a link that opens the position calculations. The checklist uses simple headline keywords; it is neither a verified mapping of every model claim nor an estimate of liquidity, margin, default or correlation losses. Read the model's own assumptions/uncertainties alongside it.
+
+Daily/scenario investigation actions start fresh, without replaying previous answers. Only explicit free-form follow-ups send bounded conversation history. Context inspection remains available. Data is synthetic, historical episodes are qualitative references, stress results are not forecasts, and a positive rates contribution does not mean positive total portfolio P&L. There are no new pages, financial instruments, data pipelines, providers or automated model judges. The v0.3 ablation remains stopped; this iteration only verifies the application workflow.
+
+v0.4 verification: **61 backend tests and 6 focused frontend tests pass**, and the production frontend build succeeds. Browser checks verified both daily-loss and Broad Risk-Off live interpretations using `muse-spark-1.3`, explicit live labels, calculation links, vulnerability checklists and stage navigation. After changing the current rate shock from −50bp to −45bp, the current stress became −$3,604,800 while the earlier answer retained its original −$3,347,000 calculation and the daily answer retained −$560,770. No browser warnings/errors were observed. Backend analytics, data, reasoning/provider code and the response contract are unchanged. Existing bundle-size and upstream test-client deprecation warnings remain. Model claims still require manual review; topic checklists do not validate or quantify missing risks.
 
 ## Workstation pages
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -34,6 +34,20 @@ import type {
   Shocks,
   Workstation,
 } from "./types";
+
+import {
+  FactorEvidence,
+  PositionEvidence,
+  InvestigationFindings,
+  ShockEvidence,
+} from "./InvestigationEvidence";
+import {
+  dailyQuestion,
+  scenarioQuestion,
+  investigationRequest,
+  principalDrivers,
+  type InvestigationFocus,
+} from "./investigation";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const Plot = createPlotlyComponent(Plotly);
@@ -262,7 +276,18 @@ function EpisodeCards({ episodes }: { episodes: Episode[] }) {
     </div>
   );
 }
-function Overview({ data, goAI }: { data: Workstation; goAI: () => void }) {
+function Overview({
+  data,
+  goAI,
+  goRisk,
+  busy,
+}: {
+  data: Workstation;
+  goAI: () => void;
+  goRisk: () => void;
+  busy: boolean;
+}) {
+  const drivers = principalDrivers(data.daily);
   return (
     <>
       <div className="metrics four">
@@ -288,6 +313,65 @@ function Overview({ data, goAI }: { data: Workstation; goAI: () => void }) {
           value={`${data.positions.length}`}
           detail={`${data.allocation.length} asset classes · multi-asset mandate`}
         />
+      </div>
+      <section className="investigation-start">
+        <div>
+          <span className="eyebrow">
+            1 · WHAT HAPPENED? · SYNTHETIC {data.market.as_of}
+          </span>
+          <h2>
+            A positive rate contribution did not prevent a portfolio loss.
+          </h2>
+          <p>
+            Inspect the daily calculation, then ask Metis to interpret the
+            economic relationships.
+          </p>
+        </div>
+        <button className="primary" onClick={goAI} disabled={busy}>
+          {busy ? "Interpretation in progress…" : "2 · Explain the daily loss"}
+          <ArrowRight size={16} />
+        </button>
+      </section>
+      <div className="grid-main">
+        <Panel
+          title="Daily factor contributions"
+          note="Calculated · USD · illustrative snapshot"
+        >
+          <FactorEvidence calculation={data.daily} />
+        </Panel>
+        <Panel
+          title="Principal position drivers"
+          note="Calculated net daily P&L"
+        >
+          <div className="driver-list">
+            {[
+              ["Largest loss", drivers.loss],
+              ["Largest gain", drivers.gain],
+            ].map(([label, position]) => {
+              const p = position as Position | undefined;
+              return (
+                p && (
+                  <div key={label as string}>
+                    <span>
+                      {label as string}
+                      <small>{p.name}</small>
+                    </span>
+                    <strong className={tone(p.pnl_usd)}>
+                      {money(p.pnl_usd)}
+                    </strong>
+                  </div>
+                )
+              );
+            })}
+          </div>
+          <button className="text-button evidence-action" onClick={goRisk}>
+            Inspect all risk exposures <ArrowRight size={14} />
+          </button>
+          <PositionEvidence
+            calculation={data.daily}
+            exposures={data.exposures}
+          />
+        </Panel>
       </div>
       <div className="grid-main">
         <Panel title="Asset-class allocation" note="Marked value · % of NAV">
@@ -400,10 +484,12 @@ function Overview({ data, goAI }: { data: Workstation; goAI: () => void }) {
             Connect risk exposures to economic drivers, historical experience,
             and what the numbers may miss.
           </p>
-          <button className="primary" onClick={goAI}>
-            Explore with Metis AI <ArrowRight size={16} />
+          <button className="primary" onClick={goAI} disabled={busy}>
+            Explain the daily loss <ArrowRight size={16} />
           </button>
-          <small>Demo mode available · evidence-grounded interpretation</small>
+          <small>
+            Uses configured provider · live/demo mode is labeled on each answer
+          </small>
         </section>
       </div>
       <Panel title="Market brief" note={`${data.market.as_of} · illustrative`}>
@@ -677,6 +763,12 @@ function Risk({ data }: { data: Workstation }) {
         </Panel>
       </div>
       <Panel
+        title="Daily calculation evidence"
+        note="Rate and spread legs are separate"
+      >
+        <PositionEvidence calculation={data.daily} exposures={data.exposures} />
+      </Panel>
+      <Panel
         title="Position-level risk inventory"
         note="USD reporting currency"
       >
@@ -755,6 +847,7 @@ function Scenarios({
   pending,
   error,
   goAI,
+  busy,
 }: {
   data: Workstation;
   shocks: Shocks;
@@ -763,12 +856,21 @@ function Scenarios({
   pending: boolean;
   error: string;
   goAI: () => void;
+  busy: boolean;
 }) {
   const selected = data.scenarios.find(
     (s) => JSON.stringify(s.shocks) === JSON.stringify(shocks),
   );
   return (
     <>
+      <div className="notice">
+        <FlaskConical size={17} />
+        <span>
+          <b>3 · What could happen next?</b> Daily illustrative P&L:{" "}
+          {money(data.daily.total_pnl_usd)} on {data.market.as_of}. The results
+          below are a separate hypothetical stress, not a forecast.
+        </span>
+      </div>
       <div className="scenario-presets">
         {data.scenarios.map((s) => (
           <button
@@ -864,7 +966,7 @@ function Scenarios({
             )}
             <button
               className="text-button"
-              disabled={pending || !!error}
+              disabled={pending || !!error || busy || !calc}
               onClick={goAI}
             >
               Interpret this scenario with Metis <ArrowRight size={15} />
@@ -873,12 +975,14 @@ function Scenarios({
           {calc && !pending && !error && (
             <Panel title="Scenario attribution" note="USD">
               <FactorChart calc={calc} />
+              <FactorEvidence calculation={calc} />
             </Panel>
           )}
         </div>
       </div>
       {calc && !pending && !error && (
         <Panel title="Scenario P&L by position" note="USD · selected shocks">
+          <PositionEvidence calculation={calc} exposures={data.exposures} />
           <div className="scenario-positions">
             {calc.positions.map((p) => (
               <div key={p.id}>
@@ -913,40 +1017,24 @@ function ReasoningPage({
   calc,
   pending,
   messages,
-  setMessages,
+  question,
+  setQuestion,
+  busy,
+  error,
+  ask,
+  goScenario,
 }: {
   data: Workstation;
   calc: Calculation | null;
   pending: boolean;
   messages: Reasoning[];
-  setMessages: (m: Reasoning[]) => void;
+  question: string;
+  setQuestion: (q: string) => void;
+  busy: boolean;
+  error: string;
+  ask: (q: string, focus?: InvestigationFocus) => Promise<void>;
+  goScenario: () => void;
 }) {
-  const [question, setQuestion] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  async function ask(q: string) {
-    if (!calc || pending || busy || !q.trim()) return;
-    setQuestion(q);
-    setBusy(true);
-    setError("");
-    try {
-      const history = messages.slice(-3).flatMap((m) => [
-        { role: "user", content: m.question },
-        { role: "assistant", content: m.interpretation.summary },
-      ]);
-      const result = await api<Reasoning>("reasoning", {
-        question: q.trim(),
-        shocks: calc.shocks,
-        history,
-      });
-      setMessages([...messages, result]);
-      setQuestion("");
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <div className="reasoning-layout">
       <div className="conversation">
@@ -955,7 +1043,7 @@ function ReasoningPage({
             <BrainCircuit size={24} />
           </div>
           <div>
-            <span className="eyebrow">THE FINANCIAL REASONING WORKSPACE</span>
+            <span className="eyebrow">2 · WHY DID IT HAPPEN?</span>
             <h2>Put your risk in context.</h2>
             <p>
               Ask about economic drivers, historical parallels, and the limits
@@ -963,6 +1051,31 @@ function ReasoningPage({
             </p>
           </div>
         </div>
+        <section className="reasoning-actions">
+          <button
+            className="primary"
+            onClick={() => void ask(dailyQuestion, "daily")}
+            disabled={busy}
+          >
+            Explain the daily loss <ArrowRight size={15} />
+          </button>
+          <button className="secondary" onClick={goScenario}>
+            3 · Explore a hypothetical scenario
+          </button>
+        </section>
+        {busy && (
+          <div className="notice" role="status">
+            <LoaderCircle className="spin" size={17} />
+            <span>
+              Interpreting portfolio, market, scenario and historical context…
+            </span>
+          </div>
+        )}
+        {error && (
+          <p role="alert" className="error">
+            {error}
+          </p>
+        )}
         {messages.length === 0 && (
           <div className="prompt-list">
             {prompts.map((q) => (
@@ -977,96 +1090,151 @@ function ReasoningPage({
             ))}
           </div>
         )}
-        {messages.map((m, i) => (
-          <article className="reasoning-answer" key={i}>
-            <div className="user-question">
-              <span className="eyebrow">YOUR QUESTION</span>
-              <p>{m.question}</p>
-            </div>
-            <div className="answer-header">
-              <Sparkles size={17} />
-              <b>Metis interpretation</b>
-              <span className={m.mode === "demo" ? "badge amber" : "badge"}>
-                {m.mode === "demo"
-                  ? "DETERMINISTIC DEMO"
-                  : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
-              </span>
-            </div>
-            <p className="answer-summary">{m.interpretation.summary}</p>
-            <p>{m.interpretation.economic_interpretation}</p>
-            {(
-              [
-                [
-                  "Principal risk observations",
-                  m.interpretation.principal_risk_observations,
-                ],
-                ["Historical analogies", m.interpretation.historical_analogies],
-                [
-                  "Vulnerabilities & alternative market conditions",
-                  m.interpretation.potential_vulnerabilities,
-                ],
-                [
-                  "Assumptions and uncertainties",
-                  m.interpretation.assumptions_and_uncertainties,
-                ],
-              ] as [string, string[]][]
-            ).map(([title, items]) => (
-              <div key={title} className="answer-section">
-                <h3>{title}</h3>
-                <ul>
-                  {items.map((v, j) => (
-                    <li key={j}>{v}</li>
-                  ))}
-                </ul>
+        {[...messages].reverse().map((m, displayedIndex) => {
+          const i = messages.length - 1 - displayedIndex;
+          return (
+            <article className="reasoning-answer" key={i}>
+              <div className="user-question">
+                <span className="eyebrow">
+                  {m.investigation_focus === "daily"
+                    ? "DAILY LOSS INVESTIGATION"
+                    : m.investigation_focus === "scenario"
+                      ? "HYPOTHETICAL SCENARIO INVESTIGATION"
+                      : "YOUR QUESTION"}
+                </span>
+                <p>{m.question}</p>
               </div>
-            ))}
-            <div className="evidence">
-              <h3>Supporting evidence</h3>
-              {m.context.evidence
-                .filter((e) =>
-                  m.interpretation.evidence_references.includes(e.id),
-                )
-                .map((e) =>
-                  e.url ? (
-                    <a href={e.url} key={e.id} target="_blank" rel="noreferrer">
-                      [{e.id}] {e.description} ↗
-                    </a>
-                  ) : (
-                    <span key={e.id}>
-                      [{e.id}] {e.description}
-                    </span>
-                  ),
-                )}
-            </div>
-            <details>
-              <summary>Inspect context and backend operations</summary>
-              <p>
-                Application assembled this context before invocation. No
-                autonomous tool calls.
-              </p>
-              <pre>
-                {JSON.stringify(
-                  { operations: m.context_operations, context: m.context },
-                  null,
-                  2,
-                )}
-              </pre>
-            </details>
-          </article>
-        ))}
-        {busy && (
-          <div className="notice" role="status">
-            <LoaderCircle className="spin" size={17} />
-            <span>
-              Interpreting portfolio, market, scenario and historical context…
-            </span>
-          </div>
-        )}
-        {error && (
-          <p role="alert" className="error">
-            {error}
-          </p>
-        )}
+              <div className="answer-header">
+                <Sparkles size={17} />
+                <b>Metis interpretation</b>
+                <span className={m.mode === "demo" ? "badge amber" : "badge"}>
+                  {m.mode === "demo"
+                    ? "DETERMINISTIC DEMO"
+                    : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
+                </span>
+              </div>
+              <div className="captured-evidence">
+                <span className="eyebrow">
+                  CALCULATED EVIDENCE · CAPTURED FOR THIS ANSWER
+                </span>
+                <p>
+                  Daily illustrative snapshot {m.context.market.as_of}:{" "}
+                  <b>{money(m.context.daily.total_pnl_usd)}</b>.{" "}
+                  {m.investigation_focus !== "daily" && (
+                    <>
+                      Hypothetical scenario:{" "}
+                      <b>{money(m.context.scenario.total_pnl_usd)}</b>.
+                    </>
+                  )}
+                </p>
+                <ShockEvidence
+                  calculation={
+                    m.investigation_focus === "daily"
+                      ? m.context.daily
+                      : m.context.scenario
+                  }
+                />
+                <FactorEvidence
+                  calculation={
+                    m.investigation_focus === "daily"
+                      ? m.context.daily
+                      : m.context.scenario
+                  }
+                />
+                <PositionEvidence
+                  id={`answer-evidence-${i}`}
+                  calculation={
+                    m.investigation_focus === "daily"
+                      ? m.context.daily
+                      : m.context.scenario
+                  }
+                  exposures={m.context.portfolio.exposures}
+                />
+              </div>
+              <div className="section-title">
+                <h2>Model interpretation</h2>
+                <span>Economic judgment · verify against the calculation</span>
+              </div>
+              <p className="answer-summary">{m.interpretation.summary}</p>
+              <details className="answer-section">
+                <summary>Economic explanation & interactions</summary>
+                <p>{m.interpretation.economic_interpretation}</p>
+              </details>
+              {(
+                [
+                  [
+                    "Principal risk observations",
+                    m.interpretation.principal_risk_observations,
+                  ],
+                  [
+                    "Historical analogies",
+                    m.interpretation.historical_analogies,
+                  ],
+                ] as [string, string[]][]
+              ).map(([title, items]) => (
+                <details key={title} className="answer-section">
+                  <summary>{title}</summary>
+                  <ul>
+                    {items.map((v, j) => (
+                      <li key={j}>{v}</li>
+                    ))}
+                  </ul>
+                </details>
+              ))}
+              <InvestigationFindings
+                id={
+                  i === messages.length - 1
+                    ? "investigation-findings"
+                    : undefined
+                }
+                items={m.interpretation.potential_vulnerabilities}
+                uncertainties={m.interpretation.assumptions_and_uncertainties}
+                evidenceId={`answer-evidence-${i}`}
+              />
+              <button className="text-button" onClick={goScenario}>
+                3 · Explore or adjust a hypothetical stress{" "}
+                <ArrowRight size={15} />
+              </button>
+              <div className="evidence">
+                <h3>Supporting evidence</h3>
+                {m.context.evidence
+                  .filter((e) =>
+                    m.interpretation.evidence_references.includes(e.id),
+                  )
+                  .map((e) =>
+                    e.url ? (
+                      <a
+                        href={e.url}
+                        key={e.id}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        [{e.id}] {e.description} ↗
+                      </a>
+                    ) : (
+                      <span key={e.id}>
+                        [{e.id}] {e.description}
+                      </span>
+                    ),
+                  )}
+              </div>
+              <details>
+                <summary>Inspect context and backend operations</summary>
+                <p>
+                  Application assembled this context before invocation. No
+                  autonomous tool calls.
+                </p>
+                <pre>
+                  {JSON.stringify(
+                    { operations: m.context_operations, context: m.context },
+                    null,
+                    2,
+                  )}
+                </pre>
+              </details>
+            </article>
+          );
+        })}
         <form
           className="composer"
           onSubmit={(e) => {
@@ -1118,7 +1286,11 @@ function ReasoningPage({
             <span>Market snapshot</span>
             <b>{data.market.as_of}</b>
           </div>
-          <h3>Selected scenario</h3>
+          <h3>Current hypothetical scenario</h3>
+          <p className="context-note">
+            Each answer keeps its original evidence, even after these controls
+            change.
+          </p>
           {calc && !pending ? (
             <>
               <div className="context-stat">
@@ -1200,6 +1372,51 @@ export default function App() {
   const [pending, setPending] = useState(true);
   const [scenarioError, setScenarioError] = useState("");
   const [messages, setMessages] = useState<Reasoning[]>([]);
+  const [question, setQuestion] = useState("");
+  const [reasoningBusy, setReasoningBusy] = useState(false);
+  const [reasoningError, setReasoningError] = useState("");
+  const requestInFlight = useRef(false);
+  function navigate(next: number, anchor?: string) {
+    setPage(next);
+    requestAnimationFrame(() => {
+      if (anchor)
+        document
+          .getElementById(anchor)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.scrollTo({ top: 0 });
+    });
+  }
+  async function ask(q: string, focus: InvestigationFocus = "question") {
+    if (!data || requestInFlight.current || !q.trim()) return;
+    navigate(5);
+    setQuestion(q);
+    setReasoningError("");
+    if (focus !== "daily" && (pending || scenarioError || !calc)) {
+      setReasoningError(
+        scenarioError ||
+          "Wait for the selected hypothetical scenario to finish calculating.",
+      );
+      return;
+    }
+    requestInFlight.current = true;
+    setReasoningBusy(true);
+    try {
+      const result = await api<Reasoning>(
+        "reasoning",
+        investigationRequest(focus, q, data.daily, calc, messages),
+      );
+      setMessages((previous) => [
+        ...previous,
+        { ...result, investigation_focus: focus },
+      ]);
+      setQuestion("");
+    } catch (e) {
+      setReasoningError((e as Error).message);
+    } finally {
+      requestInFlight.current = false;
+      setReasoningBusy(false);
+    }
+  }
   useEffect(() => {
     const c = new AbortController();
     api<Workstation>("workstation", undefined, c.signal)
@@ -1247,7 +1464,7 @@ export default function App() {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            setPage(0);
+            navigate(0);
           }}
         >
           <div className="brand-mark">M</div>
@@ -1256,13 +1473,13 @@ export default function App() {
           </div>
         </a>
         <div className="workspace-label">
-          WORKSPACE <span>v0.1</span>
+          WORKSPACE <span>v0.4</span>
         </div>
         <nav aria-label="Main navigation">
           {pages.map((p, i) => (
             <button
               key={p.name}
-              onClick={() => setPage(i)}
+              onClick={() => navigate(i)}
               aria-label={p.name}
               title={p.name}
               className={page === i ? "nav-item selected" : "nav-item"}
@@ -1334,7 +1551,56 @@ export default function App() {
             </div>
           ) : (
             <>
-              {page === 0 && <Overview data={data} goAI={() => setPage(5)} />}{" "}
+              <nav
+                className="investigation-trail"
+                aria-label="Risk investigation"
+              >
+                <button
+                  onClick={() => navigate(0)}
+                  aria-current={page === 0 ? "step" : undefined}
+                >
+                  <b>1</b>
+                  <span>
+                    What happened?<small>Daily calculation</small>
+                  </span>
+                </button>
+                <button
+                  onClick={() => navigate(5)}
+                  aria-current={page === 5 ? "step" : undefined}
+                >
+                  <b>2</b>
+                  <span>
+                    Why did it happen?<small>Metis interpretation</small>
+                  </span>
+                </button>
+                <button
+                  onClick={() => navigate(4)}
+                  aria-current={page === 4 ? "step" : undefined}
+                >
+                  <b>3</b>
+                  <span>
+                    What could happen next?<small>Hypothetical stresses</small>
+                  </span>
+                </button>
+                <button
+                  onClick={() => navigate(5, "investigation-findings")}
+                  disabled={messages.length === 0}
+                >
+                  <b>4</b>
+                  <span>
+                    What deserves investigation?
+                    <small>Evidence & missing inputs</small>
+                  </span>
+                </button>
+              </nav>
+              {page === 0 && (
+                <Overview
+                  data={data}
+                  goAI={() => void ask(dailyQuestion, "daily")}
+                  goRisk={() => navigate(3)}
+                  busy={reasoningBusy}
+                />
+              )}
               {page === 1 && <Portfolio data={data} />}{" "}
               {page === 2 && <Market data={data} />}{" "}
               {page === 3 && <Risk data={data} />}{" "}
@@ -1346,7 +1612,8 @@ export default function App() {
                   calc={calc}
                   pending={pending}
                   error={scenarioError}
-                  goAI={() => setPage(5)}
+                  goAI={() => void ask(scenarioQuestion, "scenario")}
+                  busy={reasoningBusy}
                 />
               )}{" "}
               {page === 5 && (
@@ -1355,7 +1622,12 @@ export default function App() {
                   calc={scenarioError ? null : calc}
                   pending={pending}
                   messages={messages}
-                  setMessages={setMessages}
+                  question={question}
+                  setQuestion={setQuestion}
+                  busy={reasoningBusy}
+                  error={reasoningError || scenarioError}
+                  ask={ask}
+                  goScenario={() => navigate(4)}
                 />
               )}
             </>

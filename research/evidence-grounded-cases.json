@@ -1,0 +1,1287 @@
+[
+  {
+    "id": "01",
+    "question": "With higher government yields and weaker risky assets, which of the two swaps cushions losses and which amplifies them? Explain the net rate position and the separate credit and currency legs.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -29000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 35,
+      "ig_bp": 40,
+      "hy_bp": 110,
+      "equity_pct": -4,
+      "fx_pct": 2
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Pay-fixed gains while receive-fixed loses; net DV01 is negative in this case.",
+      "Short EUR loses when EUR rises.",
+      "Rate contribution is distinct from spread and net P&L."
+    ]
+  },
+  {
+    "id": "02",
+    "question": "Our risk committee sees a positive rates contribution but a negative total result. Does that establish that the rate hedge was a failure or too small? What can the supplied shock test actually tell us?",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": -25,
+      "ig_bp": 30,
+      "hy_bp": 90,
+      "equity_pct": -7,
+      "fx_pct": -1
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Rates gain while total loses; positive directional contribution is known.",
+      "No objective is supplied, so failure, optimality or required size is not established."
+    ]
+  },
+  {
+    "id": "03",
+    "question": "A treasurer compares the cash mark with the swap marks after a large rate rise and concludes tomorrow\u2019s collateral payments are covered. Assess that conclusion and identify the minimum information needed to act.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 4000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 15000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 70,
+      "ig_bp": 15,
+      "hy_bp": 50,
+      "equity_pct": -2,
+      "fx_pct": 1
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Cash and swap marks are not contractual collateral payments or available liquidity.",
+      "Adequacy unknown without cash availability, netting, collateral, calls and timing."
+    ]
+  },
+  {
+    "id": "04",
+    "question": "The manager describes the two credit baskets as highly concentrated issuer bets and estimates their default vulnerability from CS01. Which parts of that assessment can this snapshot substantiate?",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 2200,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 10,
+      "ig_bp": 20,
+      "hy_bp": 60,
+      "equity_pct": -1,
+      "fx_pct": 0
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Basket amounts and CS01 are factual; issuer concentration is unknown.",
+      "Spread sensitivity does not quantify default or executable liquidity losses."
+    ]
+  },
+  {
+    "id": "05",
+    "question": "Can the net positive swap mark and the FX reference amount be added to estimate unsecured counterparty exposure? Explain what is measured and what additional agreements or balances would be needed.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 900000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": -15,
+      "ig_bp": -10,
+      "hy_bp": -20,
+      "equity_pct": 2,
+      "fx_pct": 3
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Marks and notionals are not net counterparty exposure.",
+      "Counterparty identities, enforceable netting, collateral and replacement exposure missing."
+    ]
+  },
+  {
+    "id": "06",
+    "question": "The synthetic observation is a modest yield increase, widening credit spreads and weaker shares. Does it identify a liquidity shock, or could other mechanisms fit? Give useful competing explanations and evidence that would distinguish them.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 15,
+      "ig_bp": 25,
+      "hy_bp": 70,
+      "equity_pct": -3,
+      "fx_pct": 1
+    },
+    "observation_status": "Illustrative synthetic observed moves",
+    "supplemental_evidence": {},
+    "expected_distinctions": [
+      "Observed moves do not identify causation.",
+      "At least two plausible mechanisms, such as inflation/policy repricing and cash-driven liquidation, with discriminating evidence."
+    ]
+  },
+  {
+    "id": "07",
+    "question": "For the explicitly stated next-business-day obligations only, do the documented available resources meet the cash requirement? State the numerical headroom and avoid extending this conclusion beyond that horizon.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2800000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 20,
+      "ig_bp": 10,
+      "hy_bp": 30,
+      "equity_pct": -2,
+      "fx_pct": -1
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {
+      "funding": {
+        "available_cash_usd": 1500000,
+        "committed_facility_usd": 400000,
+        "margin_due_usd": 1100000,
+        "other_outflows_usd": 300000,
+        "horizon": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon"
+      }
+    },
+    "expected_distinctions": [
+      "Available resources 1.9m versus specified obligations 1.4m, headroom .5m.",
+      "Supports adequacy for this specified horizon only; do not weaken it into no conclusion."
+    ]
+  },
+  {
+    "id": "08",
+    "question": "Using the supplied complete credit look-through and specified issuer-default assumptions, assess concentration under the stated policy and calculate the named issuer\u2019s scenario loss. Separate this from a default forecast and the spread-shock calculation.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": -10,
+      "ig_bp": 35,
+      "hy_bp": 100,
+      "equity_pct": -4,
+      "fx_pct": 2
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {
+      "issuer_concentration": {
+        "issuer_amounts_usd": {
+          "Issuer-A": 6400000,
+          "Issuer-B": 4800000,
+          "Issuer-C": 4800000
+        },
+        "covered_credit_mark_usd": 16000000,
+        "threshold_share": 0.25
+      },
+      "default": {
+        "issuer_name": "Issuer-A",
+        "issuer_face_usd": 6400000,
+        "default_fraction": 1.0,
+        "recovery_fraction": 0.35,
+        "scope": "specified_issuer_default_scenario"
+      }
+    },
+    "expected_distinctions": [
+      "Largest issuer share 40% exceeds stated 25% policy threshold.",
+      "Specified issuer face6.4m, default100%, recovery35% imply4.16m loss; not CS01/default probability."
+    ]
+  },
+  {
+    "id": "09",
+    "question": "The stated hedge mandate requires the designated rate sleeve to offset at least one quarter of the rest-of-portfolio loss in this shock. Does it meet that mandate, and does this tell us its optimal size?",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": -200000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": -40,
+      "ig_bp": 20,
+      "hy_bp": 60,
+      "equity_pct": -8,
+      "fx_pct": 0
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {
+      "hedge": {
+        "hedge_position_ids": [
+          "BOND-A",
+          "RX",
+          "PX"
+        ],
+        "minimum_offset_fraction": 0.25,
+        "scope": "fraction_of_nonhedge_scenario_loss"
+      }
+    },
+    "expected_distinctions": [
+      "Designated sleeve gains80000, nonhedge loses404000; offset19.80198% below25% objective.",
+      "Can judge this objective as missed, not optimality across other scenarios."
+    ]
+  },
+  {
+    "id": "10",
+    "question": "Under the supplied enforceable netting sets and eligible collateral balances, what is current unsecured replacement exposure? Distinguish that scoped amount from gross marks, potential future exposure and expected credit loss.",
+    "positions": [
+      {
+        "id": "BOND-A",
+        "name": "Synthetic government bond",
+        "asset_class": "Government bonds",
+        "instrument": "Cash bond",
+        "market_value_usd": 8000000,
+        "notional_usd": 8000000,
+        "dv01_usd_per_bp": 7000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "RX",
+        "name": "Synthetic receive fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Receive fixed swap",
+        "market_value_usd": 300000,
+        "notional_usd": 18000000,
+        "dv01_usd_per_bp": 9000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "PX",
+        "name": "Synthetic pay fixed",
+        "asset_class": "Rate derivatives",
+        "instrument": "Pay fixed swap",
+        "market_value_usd": 500000,
+        "notional_usd": 35000000,
+        "dv01_usd_per_bp": -14000,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "IG-X",
+        "name": "Synthetic IG basket",
+        "asset_class": "Investment-grade credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 12000000,
+        "notional_usd": 12000000,
+        "dv01_usd_per_bp": 6600,
+        "cs01_usd_per_bp": 4200,
+        "spread_bucket": "ig",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "HY-X",
+        "name": "Synthetic HY basket",
+        "asset_class": "High-yield credit",
+        "instrument": "Cash bond basket",
+        "market_value_usd": 4000000,
+        "notional_usd": 4000000,
+        "dv01_usd_per_bp": 1800,
+        "cs01_usd_per_bp": 1600,
+        "spread_bucket": "hy",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "STOCK-X",
+        "name": "Synthetic equity basket",
+        "asset_class": "Equities",
+        "instrument": "Equity basket",
+        "market_value_usd": 7000000,
+        "notional_usd": 7000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 7000000,
+        "fx_delta_usd": 0
+      },
+      {
+        "id": "FX-X",
+        "name": "Synthetic short EUR forward",
+        "asset_class": "FX",
+        "instrument": "FX forward",
+        "market_value_usd": 0,
+        "notional_usd": 3000000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": -3000000
+      },
+      {
+        "id": "CASH",
+        "name": "Synthetic cash mark",
+        "asset_class": "Cash",
+        "instrument": "Cash",
+        "market_value_usd": 2100000,
+        "notional_usd": 2100000,
+        "dv01_usd_per_bp": 0,
+        "cs01_usd_per_bp": 0,
+        "spread_bucket": "none",
+        "equity_delta_usd": 0,
+        "fx_delta_usd": 0
+      }
+    ],
+    "shocks": {
+      "rates_bp": 30,
+      "ig_bp": 5,
+      "hy_bp": 15,
+      "equity_pct": -1,
+      "fx_pct": -2
+    },
+    "observation_status": "Hypothetical scenario, not observed changes",
+    "supplemental_evidence": {
+      "counterparty": {
+        "scope": "current_replacement_exposure",
+        "coverage": "All OTC contracts in this fixture assigned to these exhaustive non-overlapping sets; balances same time and currency",
+        "netting_sets": [
+          {
+            "id": "Set-1",
+            "enforceable": true,
+            "net_replacement_cost_usd": 1200000,
+            "eligible_collateral_usd": 900000
+          },
+          {
+            "id": "Set-2",
+            "enforceable": true,
+            "net_replacement_cost_usd": -100000,
+            "eligible_collateral_usd": 0
+          }
+        ]
+      }
+    },
+    "expected_distinctions": [
+      "Current scoped exposure300000; negative net replacement set contributes0.",
+      "No future exposure, expected loss or new counterparty default probability is established."
+    ]
+  }
+]

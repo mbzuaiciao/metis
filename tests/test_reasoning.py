@@ -6,7 +6,9 @@ from fastapi.testclient import TestClient
 
 from metis.api.app import app
 from metis.reasoning.harness import DemoProvider, HTTPProvider, ProviderError, ReasoningRequest, assemble_context, reason
-from metis.analytics.engine import Shocks
+from metis.analytics.engine import Shocks, calculate, load_json, load_positions
+
+DEMONSTRATION_QUESTION = "Given the portfolio's exposures, current market conditions, and relevant historical patterns, what are its principal risks, and why?"
 
 
 @pytest.fixture(autouse=True)
@@ -97,3 +99,110 @@ def test_invalid_scenario_is_rejected(payload):
 def test_empty_question_is_rejected():
     with TestClient(app) as client:
         assert client.post("/api/reasoning", json={"question":"   "}).status_code == 422
+
+
+@pytest.fixture
+def configured_meta(monkeypatch):
+    monkeypatch.setenv("METIS_PROVIDER", "meta")
+    monkeypatch.setenv("METIS_MODEL", "llama-test-fixture")
+    monkeypatch.setenv("METIS_META_BASE_URL", "https://example.com/v1")
+    monkeypatch.setenv("METIS_META_API_KEY", "test-only-secret")
+
+
+def mock_meta_transport(monkeypatch, handler):
+    original = httpx.Client
+    monkeypatch.setattr(httpx, "Client", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
+
+
+def test_meta_workflow_with_broad_risk_off(monkeypatch, configured_meta):
+    """Mocked model transport through the real API; not verified live inference."""
+    preset = next(s for s in load_json("scenarios") if s["id"] == "risk-off")
+    expected_scenario = calculate(load_positions(), Shocks(**preset["shocks"]))
+    request = ReasoningRequest(question=DEMONSTRATION_QUESTION, shocks=Shocks(**preset["shocks"]))
+    fixture = DemoProvider().interpret(request, assemble_context(request.shocks)).model_dump()
+    captured = []
+
+    def handler(req):
+        body = json.loads(req.content)
+        captured.append(body)
+        assert req.url.path == "/v1/chat/completions"
+        assert req.headers["authorization"] == "Bearer test-only-secret"
+        payload = json.loads(body["messages"][-1]["content"])
+        assert payload["question"] == DEMONSTRATION_QUESTION
+        context = payload["context"]
+        assert context["scenario"] == expected_scenario
+        assert context["scenario"]["by_factor"] == {"rates_pnl": 2_578_000, "credit_pnl": -1_975_000, "equity_pnl": -3_450_000, "fx_pnl": -500_000}
+        assert len(context["portfolio"]["positions"]) == 12
+        assert context["portfolio"]["exposures"]["dv01_usd_per_bp"] == 51_560
+        assert context["market"] == load_json("market")
+        assert context["historical_context"] == load_json("history")
+        for alternative in context["alternative_scenarios"]:
+            expected = calculate(load_positions(), Shocks(**alternative["shocks"]))
+            assert alternative["total_pnl_usd"] == expected["total_pnl_usd"]
+            assert alternative["by_factor"] == expected["by_factor"]
+        assert "test-only-secret" not in req.content.decode()
+        return httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(fixture)}}]})
+
+    mock_meta_transport(monkeypatch, handler)
+    with TestClient(app) as client:
+        result = client.post("/api/reasoning", json={"question": DEMONSTRATION_QUESTION, "shocks": preset["shocks"]})
+    assert result.status_code == 200
+    response = result.json()
+    assert response["mode"] == "meta"
+    assert response["model"] == "llama-test-fixture"
+    assert response["interpretation"] == fixture
+    assert response["context"]["scenario"] == expected_scenario
+    assert len(captured) == 1
+    assert "test-only-secret" not in result.text
+
+
+@pytest.mark.parametrize("missing", ["METIS_MODEL", "METIS_META_BASE_URL", "METIS_META_API_KEY"])
+def test_meta_configuration_names_missing_variable(monkeypatch, configured_meta, missing):
+    monkeypatch.setenv(missing, "   ")
+    with TestClient(app) as client:
+        response = client.post("/api/reasoning", json={"question": DEMONSTRATION_QUESTION})
+    assert response.status_code == 502
+    assert missing in response.json()["detail"]
+    assert "No demonstration fallback" in response.json()["detail"]
+    assert "interpretation" not in response.json()
+    assert "test-only-secret" not in response.text
+
+
+@pytest.mark.parametrize("endpoint", ["http://localhost.evil.test/v1", "https://user:password@example.com/v1", "https://example.com/v1?api_key=secret", "https://", "https://example.com:bad/v1"])
+def test_meta_rejects_invalid_or_credential_bearing_urls(monkeypatch, configured_meta, endpoint):
+    monkeypatch.setenv("METIS_META_BASE_URL", endpoint)
+    with pytest.raises(ProviderError) as caught:
+        HTTPProvider("meta")
+    assert endpoint not in str(caught.value)
+
+
+@pytest.mark.parametrize("failure,expected", [
+    (401, "API key"), (403, "access"), (404, "METIS_MODEL"), (429, "quota"),
+    (500, "availability"), ("timeout", "timed out"), ("network", "network"),
+    ("json", "structured interpretation"), ("truncated", "structured interpretation"),
+    ("evidence", "structured interpretation"),
+])
+def test_meta_errors_are_actionable_and_never_fallback(monkeypatch, configured_meta, failure, expected):
+    def handler(req):
+        if failure == "timeout":
+            raise httpx.ReadTimeout("test-only-secret", request=req)
+        if failure == "network":
+            raise httpx.ConnectError("test-only-secret", request=req)
+        if isinstance(failure, int):
+            return httpx.Response(failure, text="test-only-secret")
+        content = "not-json"
+        if failure == "evidence":
+            request = ReasoningRequest(question=DEMONSTRATION_QUESTION)
+            output = DemoProvider().interpret(request, assemble_context(request.shocks)).model_dump()
+            output["evidence_references"] = ["invented-source"]
+            content = json.dumps(output)
+        return httpx.Response(200, json={"choices": [{"finish_reason": "length" if failure == "truncated" else "stop", "message": {"content": content}}]})
+
+    mock_meta_transport(monkeypatch, handler)
+    with TestClient(app) as client:
+        response = client.post("/api/reasoning", json={"question": DEMONSTRATION_QUESTION})
+    assert response.status_code == 502
+    assert expected in response.json()["detail"]
+    assert "No demonstration fallback" in response.json()["detail"]
+    assert "interpretation" not in response.json()
+    assert "test-only-secret" not in response.text

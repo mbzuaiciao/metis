@@ -1,6 +1,8 @@
-# Metis v0.1
+# Metis
 
-An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework.
+An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.2 reasoning update preserves the six-page v0.1 workstation and its analytics.
+
+**Live inference status:** no Meta endpoint, model ID or API key is configured in this checkout's environment, and no project `.env` file was present during verification. Live Llama inference and its UI response remain **unverified**. Demo mode runs without credentials; mocked integration tests verify the existing Meta transport and API workflow.
 
 ## Run locally
 
@@ -99,7 +101,9 @@ No convexity, optionality, curve/key-rate risk, spread-rate basis, default jumps
 
 ## Reasoning harness and providers
 
-`backend/metis/reasoning/harness.py` is independent of FastAPI and the frontend. `reason(ReasoningRequest(...))` retrieves portfolio exposures, the selected market snapshot, deterministic daily and scenario P&L, curated history and evidence IDs. It invokes a small `Provider.interpret` interface and returns a validated structured interpretation plus the exact context and an inspectable list of backend context operations.
+`backend/metis/reasoning/harness.py` is independent of FastAPI and the frontend. `reason(ReasoningRequest(...))` retrieves portfolio exposures, the selected market snapshot, deterministic daily and scenario P&L, curated history and evidence IDs. Context also includes compact deterministic comparisons for the four existing scenario presets, referenced by `[alternatives]`. It invokes a small `Provider.interpret` interface and returns a validated structured interpretation plus the exact context and an inspectable list of backend context operations.
+
+The v0.2 prompt uses the existing response fields for an executive assessment, ranked exposures, interacting economic drivers, applicable historical patterns, vulnerabilities under alternative regimes, and material uncertainty. It explicitly distinguishes the dated synthetic daily snapshot from hypothetical stresses. A rate-only selloff is not described as a fully modeled inflation shock. Numerical comparisons come from the backend, not model arithmetic. Responses remain subject to human review; structural validation does not establish financial accuracy.
 
 The four context operations are application-driven retrieval/calculation steps, **not autonomous model-requested tool calls**. There is no planning loop. The model interprets calculations rather than providing financial calculations to the UI. Context inspection is available below each answer. The prompt requests concise explanations, not private chain-of-thought. Live output is validated structurally and evidence IDs must belong to the supplied context; this does not guarantee economic correctness or verify each prose claim.
 
@@ -120,7 +124,9 @@ METIS_META_BASE_URL=https://<your-inference-host>/v1
 METIS_META_API_KEY=<your-key>
 ```
 
-The adapter calls `POST <base>/chat/completions` with bearer authentication, system/user messages and a JSON-output schema in the prompt. Use a Meta/Llama model served behind an **OpenAI-compatible Chat Completions endpoint**. This is a transport adapter, not a guarantee that every Meta-hosted or Llama-serving API uses that protocol. The endpoint/model must support producing the requested JSON. No specific model ID or host is assumed. A local HTTP endpoint is allowed for development; remote endpoints require HTTPS.
+The adapter calls `POST <base>/chat/completions` with bearer authentication, system/user messages and a JSON-output schema in the prompt. Use a Meta/Llama model served behind an **OpenAI-compatible Chat Completions endpoint**. This is a transport adapter, not a guarantee that every Meta-hosted or Llama-serving API uses that protocol. The endpoint/model must support producing the requested JSON. No specific model ID or host is assumed. Obtain your accessible Llama model ID, base URL and key from the endpoint owner; all three are currently missing. Do not append `/chat/completions` to the base URL. A local HTTP endpoint is allowed for development; remote endpoints require HTTPS. Embedded credentials, query parameters and fragments are rejected.
+
+Set `METIS_PROVIDER=meta` and all three variables above in the server environment or a root `.env` copied from `.env.example`, then restart the backend. A missing variable is identified by name without exposing its value. Successful responses display **LIVE META · model ID** in the existing interface; demo responses display **DETERMINISTIC DEMO**. The live badge indicates which transport returned the response, not that its financial claims are verified. Authentication/access errors, wrong endpoints/models, quota errors, timeouts and malformed structured output produce actionable errors without a demo fallback or upstream response-body disclosure.
 
 ### Anthropic Claude
 
@@ -142,17 +148,29 @@ From the repository root, with `uv sync` complete:
 uv run python - <<'PY'
 import json
 from dotenv import load_dotenv
-from metis.analytics.engine import Shocks
+from metis.analytics.engine import Shocks, load_json
 from metis.reasoning.harness import ReasoningRequest, reason
 
 load_dotenv()
+preset = next(s for s in load_json("scenarios") if s["id"] == "risk-off")
 result = reason(ReasoningRequest(
-    question="Why can falling Treasury yields coexist with portfolio losses?",
-    shocks=Shocks(rates_bp=-50, ig_bp=75, hy_bp=250, equity_pct=-15, fx_pct=-5),
+    question="Given the portfolio's exposures, current market conditions, and relevant historical patterns, what are its principal risks, and why?",
+    shocks=Shocks(**preset["shocks"]),
 ))
 print(json.dumps(result, indent=2))
 PY
 ```
+
+### One reasoning demonstration
+
+1. Review the portfolio and the **2025-03-10 illustrative snapshot** in Overview / Market Monitor. This is the current application snapshot, not today's market data.
+2. In Scenario Analysis, select **Broad risk-off**: −50bp rates, +75bp IG spreads, +250bp HY spreads, −15% equities, −5% EUR/USD.
+3. Select **Interpret this scenario with Metis**, then choose the first suggested question (the exact question in the Python example above).
+4. Inspect the response's mode badge, economic explanation, historical references, uncertainties and saved context. The selected scenario should show **−$3,347,000**, with rates **+$2,578,000**, credit **−$1,975,000**, equities **−$3,450,000**, and FX **−$500,000**. These are hypothetical stress results; the dated daily loss remains **−$560,770**.
+
+**Illustrative demo interpretation — not a live model response:** A Treasury rally can signal weaker growth rather than improving conditions for all assets. Duration gains can be outweighed by spread and equity losses: the broad risk-off stress loses $3.347m despite a $2.578m rate gain. The sourced 2008 description motivates a credit/equity risk analogy; March 2020 motivates scrutiny of liquidity and margin needs. The 2022 inflation regime offers a contrasting risk: rates can rise while risky assets also weaken. The existing rate-only selloff loses $2.578m with other factors held constant; it does not quantify a combined inflation shock. Default jumps, funding, curve basis and nonlinearity remain outside the calculation. Historical comparisons are qualitative, not claims about how this synthetic portfolio performed in those episodes.
+
+This walkthrough runs in demo mode now. Its live-model portion can only be verified after the missing endpoint configuration is supplied. No live response example has been captured.
 
 ## API surface
 
@@ -165,7 +183,7 @@ PY
 
 The automated suite covers portfolio loading, aggregation, signs/units, accounting reconciliation, factor/position/asset-class attribution, zero and preset stresses, superposition, validation boundaries, demo context consistency, full API workflows, and mocked request/response contracts for Meta-compatible and Anthropic endpoints. Mock tests do not assess model quality.
 
-Implementation validation: **20 pytest tests pass** and **`npm run build` succeeds**. Browser smoke checks cover all six pages, grid filtering/sorting, preset selection, customized shocks and scenario-to-reasoning context consistency. No browser warnings/errors were observed. No model credentials were configured, so **neither live provider was invoked**. pytest currently reports an upstream Starlette/httpx test-client deprecation warning. Vite reports a large bundle warning because Plotly and AG Grid are included; acceptable for this local v0.1.
+v0.2 validation: **39 pytest tests pass** and **`npm run build` succeeds**. The unchanged deterministic analytics tests pass. Added tests check broad risk-off context and alternative-scenario calculations through the real API with a mocked Meta transport, missing configuration, invalid/credential-bearing URLs, HTTP errors, network/timeout failures, malformed/truncated JSON and unknown evidence references. Provider failures do not return a demo interpretation, and test secrets do not appear in API responses. The earlier v0.1 browser smoke checks covered all six pages, grid filtering/sorting, customized shocks and demo context consistency; v0.2's label/prompt changes pass TypeScript and the production build, but a live response in the browser has **not** been verified. No model credentials were configured, so **neither live provider was invoked**. pytest currently reports an upstream Starlette/httpx test-client deprecation warning. Vite reports a large bundle warning because Plotly and AG Grid are included.
 
 There is no authentication, persistence, real-time data, optimizer, probability model, historical backtest, production security boundary or deployment support. Scenario and chat state reset on refresh. The harness provides structured explanations, not independently verified financial advice or a complete institutional risk model.
 

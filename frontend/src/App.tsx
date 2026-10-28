@@ -902,8 +902,8 @@ function Scenarios({
   );
 }
 const prompts = [
+  "Given the portfolio's exposures, current market conditions, and relevant historical patterns, what are its principal risks, and why?",
   "Why is my portfolio losing money despite falling Treasury yields?",
-  "What are the principal risks under current market conditions?",
   "Which historical market episodes are relevant to these exposures?",
   "How could a recession-driven rally differ from an inflation-driven rally?",
   "What vulnerabilities might conventional exposure measures overlook?",
@@ -989,7 +989,7 @@ function ReasoningPage({
               <span className={m.mode === "demo" ? "badge amber" : "badge"}>
                 {m.mode === "demo"
                   ? "DETERMINISTIC DEMO"
-                  : `${m.mode} · ${m.model}`}
+                  : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
               </span>
             </div>
             <p className="answer-summary">{m.interpretation.summary}</p>
@@ -1002,7 +1002,7 @@ function ReasoningPage({
                 ],
                 ["Historical analogies", m.interpretation.historical_analogies],
                 [
-                  "Potential vulnerabilities",
+                  "Vulnerabilities & alternative market conditions",
                   m.interpretation.potential_vulnerabilities,
                 ],
                 [

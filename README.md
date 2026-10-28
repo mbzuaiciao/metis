@@ -1,6 +1,6 @@
 # Metis
 
-An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.2 reasoning update preserves the six-page v0.1 workstation and its analytics.
+An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.3 context ablation preserves the six-page workstation, analytics and existing live integration.
 
 **Live inference status (v0.2.1):** a live interpretation was verified with `muse-spark-1.3` at `https://api.meta.ai/v1/chat/completions` using locally configured credentials. This is Meta's Muse Spark model, not a Llama model. The returned interpretation passed all seven field definitions and the allowed evidence-ID check. No API key, sensitive context or full upstream response body was logged or saved. This verifies the harness; the browser workflow was not rerun for this correction. Demo mode still runs without credentials.
 
@@ -185,9 +185,31 @@ This walkthrough runs in demo mode without credentials, or through the configure
 - `GET /api/health`: readiness and version.
 - `GET /api/workstation`: consistent positions, NAV, exposures, daily attribution, market, presets and historical library.
 - `POST /api/scenario`: a shock object (`rates_bp`, `ig_bp`, `hy_bp`, `equity_pct`, `fx_pct`); returns total, factor, asset-class and position P&L. Omitted shocks default to zero; extra fields and nonfinite/out-of-range values are rejected.
-- `POST /api/reasoning`: `{question, shocks, history?}`; returns mode/model, structured interpretation, supporting evidence, original context and context operations. No streaming or persistence.
+- `POST /api/reasoning`: `{question, shocks, history?, context_mode?}`; returns mode/model, context mode, available token usage, structured interpretation, supporting evidence, original context and context operations. No streaming or conversation persistence.
 
 ## Validation and limitations
+
+### v0.3 paired financial reasoning ablation
+
+The existing request accepts `context_mode="full"` (default, Condition A) or `context_mode="evidence_only"` (Condition B). The workstation keeps its existing full-context behavior. Evidence-only requests require empty conversation history, preventing earlier narrative answers from leaking back into the comparison.
+
+Condition B omits only `market.commentary`, each historical entry's `interpretation`, and the broad risk-off alternative's causal `description` ("Growth shock"). All portfolio marks/exposures, daily and scenario calculations, market observations, financial conventions, historical facts, source references, limitations and evidence IDs remain identical. Technical descriptions of the other scenario assumptions remain. Neither the question nor the system prompt, model, response schema or sampling settings changes between conditions.
+
+Run the fixed Broad Risk-Off comparison with the configured live Meta provider:
+
+```sh
+uv run python -m metis.reasoning.ablation
+# Optional fresh output location; existing directories are never overwritten:
+uv run python -m metis.reasoning.ablation --output-dir research/runs/my-paired-run
+```
+
+The command calls Full Context then Evidence Only, once each, without chat history or automatic retries. It freezes the provider configuration for both calls and uses the existing `temperature=0.2`, `max_completion_tokens=8000` and strict JSON schema. It saves private local `manifest.json`, `full.json` and `evidence_only.json` files under the ignored `research/runs/` directory. Records include the question, model, shocks, actual contexts, validated structured responses, available token counters and sanitized execution errors. The manifest captures the system prompt, response schema, evidence IDs, code/data hashes, numerical-input fingerprint and execution order. No API keys, raw HTTP bodies or private reasoning text are saved. The CLI prints only completion metadata and exits nonzero if either call fails; missing credentials never produce a substitute demo result. Token usage is reported by the provider, with `null` when unavailable.
+
+Tests verify exact context differences, unchanged quantities/facts/sources, identical non-context wire parameters, no cross-condition history, usage filtering, and recorded configuration failures. See [the reviewed comparison](research/financial-reasoning-ablation.md) for the paired observations and assessment. Raw outputs stay local and are not committed.
+
+v0.3 validation: **60 tests pass**, the frontend production build succeeds, and both live `muse-spark-1.3` conditions completed with valid structured responses. Both recovered the central risk conclusion; Evidence Only contained a net-versus-spread HY loss labeling error. This single pair does not establish an overall quality difference. Existing test-client deprecation and frontend bundle-size warnings remain non-blocking.
+
+This is a reproducible procedure, not deterministic regeneration or a benchmark: one stochastic sample per condition cannot establish a causal effect. The unchanged system prompt already suggests risk channels and recession/inflation contrasts, and the selected historical episodes and "risk-off" label are cues in both conditions. Shorter context, run order and server-side nondeterminism are additional confounders. No automated judge or model self-assessment is used.
 
 The automated suite covers portfolio loading, aggregation, signs/units, accounting reconciliation, factor/position/asset-class attribution, zero and preset stresses, superposition, validation boundaries, demo context consistency, full API workflows, and mocked request/response contracts for Meta-compatible and Anthropic endpoints. Mock tests do not assess model quality.
 

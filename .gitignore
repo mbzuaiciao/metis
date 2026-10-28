@@ -11,3 +11,6 @@ dist/
 .cache/
 
 *.tsbuildinfo
+
+# Local ablation records may contain model-generated text and application context.
+research/runs/

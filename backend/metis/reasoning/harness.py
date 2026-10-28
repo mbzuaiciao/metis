@@ -1,13 +1,17 @@
 """A bounded context-in / interpretation-out harness; no autonomous planning."""
 import json
 import os
+from copy import deepcopy
 from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
+
+ContextMode = Literal["full", "evidence_only"]
+META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2}
 
 
 class Interpretation(BaseModel):
@@ -31,6 +35,13 @@ class ReasoningRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000, pattern=r"\S")
     shocks: Shocks = Field(default_factory=Shocks)
     history: list[Turn] = Field(default_factory=list, max_length=6)
+    context_mode: ContextMode = "full"
+
+    @model_validator(mode="after")
+    def avoid_narrative_history(self):
+        if self.context_mode == "evidence_only" and self.history:
+            raise ValueError("Evidence-only requests require empty history to avoid narrative contamination.")
+        return self
 
 
 class ProviderError(Exception):
@@ -82,7 +93,19 @@ Use the existing output fields as follows:
 Distinguish synthetic market assumptions, deterministic calculations and economic interpretations. Do not invent prices, observations, historical shocks or evidence references. Do not calculate new financial results; use the backend results. Scenario shocks are illustrative, NOT forecasts. Do not give trading instructions. Return ONLY a JSON object conforming to the provided schema, with no markdown fences."""
 
 
-def assemble_context(shocks: Shocks) -> dict:
+def evidence_only_context(context: dict) -> dict:
+    """Project the same snapshot; omit only prewritten interpretation fields."""
+    evidence = deepcopy(context)
+    evidence["market"].pop("commentary", None)
+    for episode in evidence["historical_context"]:
+        episode.pop("interpretation", None)
+    for alternative in evidence["alternative_scenarios"]:
+        if alternative["id"] == "risk-off":
+            alternative.pop("description", None)  # The prewritten "Growth shock" conclusion.
+    return evidence
+
+
+def assemble_context(shocks: Shocks, context_mode: ContextMode = "full") -> dict:
     data = workstation()
     positions = load_positions()
     scenario = calculate(positions, shocks)
@@ -101,11 +124,14 @@ def assemble_context(shocks: Shocks) -> dict:
         {"id": "alternatives", "description": "Deterministic comparisons under the existing illustrative scenario presets; not forecasts or historical replays"},
         *[{"id": h["id"], "description": h["source_title"], "url": h["source_url"]} for h in data["history"]],
     ]
-    return {"portfolio": {k: data[k] for k in ["portfolio_name", "nav_usd", "positions", "exposures"]},
+    context = {"portfolio": {k: data[k] for k in ["portfolio_name", "nav_usd", "positions", "exposures"]},
             "market": data["market"], "daily": data["daily"], "scenario": scenario,
             "alternative_scenarios": alternatives,
             "historical_context": data["history"], "evidence": evidence,
             "conventions": "USD. Positive DV01/CS01 gains on a 1bp fall. P&L = -DV01*yield_bp - CS01*spread_bp + equity_delta*equity_pct/100 + fx_delta*EURUSD_pct/100. Government rate shocks also apply to credit bonds. End NAV = opening NAV + daily P&L."}
+    if context_mode not in {"full", "evidence_only"}:
+        raise ValueError("Unknown context mode")
+    return evidence_only_context(context) if context_mode == "evidence_only" else context
 
 
 class DemoProvider:
@@ -131,7 +157,7 @@ class DemoProvider:
                 f"Calculated daily equities: {money(d['by_factor']['equity_pnl'])}; FX: {money(d['by_factor']['fx_pnl'])}.",
                 f"Selected scenario P&L: {money(s['total_pnl_usd'])} ({s['pnl_pct_nav']:+.2f}% of current NAV), using shocks {json.dumps(s['shocks'])}.",
             ], economic_interpretation=interpretation,
-            historical_analogies=[f"{h['title']}: {h['interpretation']} [{h['id']}]" for h in context["historical_context"]],
+            historical_analogies=[f"{h['title']}: {h.get('interpretation', h['fact'])} [{h['id']}]" for h in context["historical_context"]],
             potential_vulnerabilities=["Swap margin calls, counterparty exposure and funding costs are unmodeled.", "Parallel rates, constant spread durations and a common equity move omit curve, basis, sector and nonlinear risks.", "FX hedges are assumed perfect for hedged baskets; liquidity and default jumps are excluded.",
                 f"In the rate-selloff alternative, P&L is {money(next(a['total_pnl_usd'] for a in context['alternative_scenarios'] if a['id'] == 'selloff'))}. All other factors are held constant. An inflation shock could also pressure credit and equities; that combined outcome is not quantified here. [alternatives] [history-2022]"],
             assumptions_and_uncertainties=["Deterministic demonstration template; no live model was invoked. Answers are limited to a few question themes.", "All portfolio marks and dated market observations are synthetic. Historical descriptions are sourced qualitative context.", "Linear sensitivities remain constant; no probabilities, calibrated replay, carry or full derivative repricing."],
@@ -142,6 +168,7 @@ class DemoProvider:
 class HTTPProvider:
     def __init__(self, provider: str):
         self.provider = provider
+        self.last_usage: dict | None = None
         self.model = os.getenv("METIS_MODEL", "").strip()
         key_name = "METIS_META_API_KEY" if provider == "meta" else "ANTHROPIC_API_KEY"
         self.key = os.getenv(key_name, "").strip()
@@ -163,6 +190,7 @@ class HTTPProvider:
             raise ProviderError("Provider base URL must use HTTPS (or HTTP on localhost), with no embedded credentials, query or fragment. Keep the API key in its environment variable.")
 
     def interpret(self, request: ReasoningRequest, context: dict) -> Interpretation:
+        self.last_usage = None
         payload = json.dumps({"question": request.question, "context": context, "output_schema": Interpretation.model_json_schema()})
         messages = [t.model_dump() for t in request.history] + [{"role": "user", "content": payload}]
         if self.provider == "meta":
@@ -173,7 +201,7 @@ class HTTPProvider:
             # Muse Spark's budget includes reasoning AND visible output. The old
             # 3,000-token limit was reproduced live with finish_reason="length".
             body = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM}] + messages,
-                    "max_completion_tokens": 8000, "temperature": 0.2,
+                    **META_INFERENCE_PARAMETERS,
                     "response_format": {"type": "json_schema", "json_schema": {
                         "name": "financial_interpretation", "strict": True, "schema": schema,
                     }}}
@@ -189,6 +217,15 @@ class HTTPProvider:
                     data = response.json()
                 except ValueError:
                     raise output_error(self.provider, "invalid_response_json", "HTTP response body is not JSON. Check the endpoint; expected a Chat Completions or Messages envelope.") from None
+            # Capture only token counters, never arbitrary provider metadata.
+            if isinstance(data, dict) and isinstance(data.get("usage"), dict):
+                usage = data["usage"]
+                self.last_usage = {key: usage[key] for key in ["prompt_tokens", "completion_tokens", "total_tokens"]
+                                   if type(usage.get(key)) is int and usage[key] >= 0}
+                details = usage.get("completion_tokens_details")
+                if isinstance(details, dict) and type(details.get("reasoning_tokens")) is int and details["reasoning_tokens"] >= 0:
+                    self.last_usage["reasoning_tokens"] = details["reasoning_tokens"]
+                self.last_usage = self.last_usage or None
             if self.provider == "meta":
                 try:
                     choice = data["choices"][0]
@@ -235,13 +272,14 @@ class HTTPProvider:
 
 
 def reason(request: ReasoningRequest) -> dict:
-    context = assemble_context(request.shocks)
+    context = assemble_context(request.shocks, request.context_mode)
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()
     if mode not in {"demo", "meta", "anthropic"}:
         raise ProviderError("METIS_PROVIDER must be demo, meta or anthropic.")
     provider: Provider = DemoProvider() if mode == "demo" else HTTPProvider(mode)
     result = provider.interpret(request, context)
     return {"question": request.question, "mode": mode, "model": None if mode == "demo" else provider.model,
+            "context_mode": request.context_mode, "usage": None if mode == "demo" else provider.last_usage,
             "interpretation": result.model_dump(), "context": context,
             "context_operations": [{"operation": name, "source": source} for name, source in [
                 ("retrieve_portfolio", "portfolio"), ("retrieve_market", "market"),

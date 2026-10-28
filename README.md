@@ -2,7 +2,7 @@
 
 An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.2 reasoning update preserves the six-page v0.1 workstation and its analytics.
 
-**Live inference status:** no Meta endpoint, model ID or API key is configured in this checkout's environment, and no project `.env` file was present during verification. Live Llama inference and its UI response remain **unverified**. Demo mode runs without credentials; mocked integration tests verify the existing Meta transport and API workflow.
+**Live inference status (v0.2.1):** a live interpretation was verified with `muse-spark-1.3` at `https://api.meta.ai/v1/chat/completions` using locally configured credentials. This is Meta's Muse Spark model, not a Llama model. The returned interpretation passed all seven field definitions and the allowed evidence-ID check. No API key, sensitive context or full upstream response body was logged or saved. This verifies the harness; the browser workflow was not rerun for this correction. Demo mode still runs without credentials.
 
 ## Run locally
 
@@ -115,7 +115,7 @@ METIS_PROVIDER=demo
 
 No model call is made. A small set of question themes selects fixed economic explanations populated with actual backend calculations, selected shocks, and historical references. This is useful for end-to-end demos, not evidence of LLM reasoning capability. Demo responses are labeled prominently and do not constitute general question answering. Follow-up history is sent to live providers; the demo does not reason over it.
 
-### Meta-compatible / Llama endpoint
+### Meta Model API / compatible Llama endpoint
 
 ```dotenv
 METIS_PROVIDER=meta
@@ -124,9 +124,17 @@ METIS_META_BASE_URL=https://<your-inference-host>/v1
 METIS_META_API_KEY=<your-key>
 ```
 
-The adapter calls `POST <base>/chat/completions` with bearer authentication, system/user messages and a JSON-output schema in the prompt. Use a Meta/Llama model served behind an **OpenAI-compatible Chat Completions endpoint**. This is a transport adapter, not a guarantee that every Meta-hosted or Llama-serving API uses that protocol. The endpoint/model must support producing the requested JSON. No specific model ID or host is assumed. Obtain your accessible Llama model ID, base URL and key from the endpoint owner; all three are currently missing. Do not append `/chat/completions` to the base URL. A local HTTP endpoint is allowed for development; remote endpoints require HTTPS. Embedded credentials, query parameters and fragments are rejected.
+The adapter calls `POST <base>/chat/completions` with bearer authentication and system/user messages. It sends the existing interpretation schema in API-level `response_format` with `type=json_schema` and `strict=true`, including an enum of the current evidence IDs. Local Pydantic field validation and the evidence allowlist remain authoritative. Meta documents this configuration for Muse Spark in its [structured-output guide](https://dev.meta.ai/docs/structured-output). The verified configuration is `METIS_MODEL=muse-spark-1.3` and `METIS_META_BASE_URL=https://api.meta.ai/v1`; the key is supplied locally via `METIS_META_API_KEY`.
+
+Other Meta/Llama models require a compatible **Chat Completions endpoint with JSON-schema output support**. No specific host or model is hardcoded. Unsupported schema configurations fail visibly; there is no downgrade to prompt-only JSON or demo output. Do not append `/chat/completions` to the base URL. Local HTTP is allowed for development; remote endpoints require HTTPS. Embedded credentials, query parameters and fragments are rejected.
 
 Set `METIS_PROVIDER=meta` and all three variables above in the server environment or a root `.env` copied from `.env.example`, then restart the backend. A missing variable is identified by name without exposing its value. Successful responses display **LIVE META · model ID** in the existing interface; demo responses display **DETERMINISTIC DEMO**. The live badge indicates which transport returned the response, not that its financial claims are verified. Authentication/access errors, wrong endpoints/models, quota errors, timeouts and malformed structured output produce actionable errors without a demo fallback or upstream response-body disclosure.
+
+#### v0.2.1 structured-output diagnosis
+
+The original failure was reproduced live: HTTP 200, `finish_reason=length`, and a partial 1,761-character JSON string without a Markdown fence. The 3,000-token limit exhausted the completion budget; it was not an authentication or envelope failure. Meta's [reasoning documentation](https://dev.meta.ai/docs/reasoning) explains that reasoning consumes the output budget as well as visible text. The adapter now uses `max_completion_tokens=8000` plus the supported API-level JSON schema. A subsequent live broad risk-off request completed and validated successfully.
+
+Errors distinguish `[truncated]`, `[markdown_wrapped_json]`, `[invalid_json]`, `[schema_validation]`, `[unknown_evidence]`, unexpected response envelopes/completion reasons, empty content and refusals. Schema diagnostics contain only known application field names and validation error types, never model values, unknown field names, raw Pydantic errors or upstream bodies. HTTP 400 with a recognized schema parameter or `invalid_json_schema` code is labeled `[structured_output_configuration]`; other 400s are `[request_rejected]` without guessing their cause. No partial JSON repair, fence stripping, missing-field synthesis or automatic format downgrade is performed.
 
 ### Anthropic Claude
 
@@ -170,7 +178,7 @@ PY
 
 **Illustrative demo interpretation — not a live model response:** A Treasury rally can signal weaker growth rather than improving conditions for all assets. Duration gains can be outweighed by spread and equity losses: the broad risk-off stress loses $3.347m despite a $2.578m rate gain. The sourced 2008 description motivates a credit/equity risk analogy; March 2020 motivates scrutiny of liquidity and margin needs. The 2022 inflation regime offers a contrasting risk: rates can rise while risky assets also weaken. The existing rate-only selloff loses $2.578m with other factors held constant; it does not quantify a combined inflation shock. Default jumps, funding, curve basis and nonlinearity remain outside the calculation. Historical comparisons are qualitative, not claims about how this synthetic portfolio performed in those episodes.
 
-This walkthrough runs in demo mode now. Its live-model portion can only be verified after the missing endpoint configuration is supplied. No live response example has been captured.
+This walkthrough runs in demo mode without credentials, or through the configured live provider. The v0.2.1 live harness check used this question and scenario and validated the structured result. The illustrative paragraph above remains a demonstration example, not a transcript of the live response.
 
 ## API surface
 
@@ -183,10 +191,10 @@ This walkthrough runs in demo mode now. Its live-model portion can only be verif
 
 The automated suite covers portfolio loading, aggregation, signs/units, accounting reconciliation, factor/position/asset-class attribution, zero and preset stresses, superposition, validation boundaries, demo context consistency, full API workflows, and mocked request/response contracts for Meta-compatible and Anthropic endpoints. Mock tests do not assess model quality.
 
-v0.2 validation: **39 pytest tests pass** and **`npm run build` succeeds**. The unchanged deterministic analytics tests pass. Added tests check broad risk-off context and alternative-scenario calculations through the real API with a mocked Meta transport, missing configuration, invalid/credential-bearing URLs, HTTP errors, network/timeout failures, malformed/truncated JSON and unknown evidence references. Provider failures do not return a demo interpretation, and test secrets do not appear in API responses. The earlier v0.1 browser smoke checks covered all six pages, grid filtering/sorting, customized shocks and demo context consistency; v0.2's label/prompt changes pass TypeScript and the production build, but a live response in the browser has **not** been verified. No model credentials were configured, so **neither live provider was invoked**. pytest currently reports an upstream Starlette/httpx test-client deprecation warning. Vite reports a large bundle warning because Plotly and AG Grid are included.
+v0.2.1 validation: **56 pytest tests pass** and **`npm run build` succeeds**. The unchanged deterministic analytics tests pass. Tests cover broad risk-off context, alternative-scenario calculations, provider configuration and HTTP/network failures, API-level JSON-schema request configuration, actual truncation shape, Markdown wrappers, missing/wrong/extra fields, field constraints, invalid evidence IDs and unexpected response envelopes. Private fixture content is excluded from errors and captured logs. One corrected live Muse Spark response validated all seven fields, eight principal observations, three historical analogies and eight allowed evidence references; its selected scenario P&L remained −$3,347,000. Live Anthropic inference remains untested. The earlier v0.1 browser smoke checks covered all six pages; this patch changes no interface or analytics code and does not add a browser verification claim. pytest still reports an upstream Starlette/httpx test-client deprecation warning, and Vite reports the existing large bundle warning.
 
 There is no authentication, persistence, real-time data, optimizer, probability model, historical backtest, production security boundary or deployment support. Scenario and chat state reset on refresh. The harness provides structured explanations, not independently verified financial advice or a complete institutional risk model.
 
 ## Smallest next step for a Meta hackathon demo
 
-Configure one accessible Llama model endpoint, run the same falling-yields question and broad risk-off scenario through it, inspect the captured context and evidence references, and rehearse a short Overview → Scenario Analysis → Metis AI walkthrough. This turns the existing deterministic workflow into a live reasoning demonstration without adding infrastructure.
+Restart the backend with the local Meta configuration and rehearse the existing Overview → Scenario Analysis → Metis AI walkthrough, checking the LIVE META badge and saved evidence context. No additional infrastructure is needed.

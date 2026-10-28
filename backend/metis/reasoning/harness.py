@@ -5,7 +5,7 @@ from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
 
@@ -35,6 +35,33 @@ class ReasoningRequest(BaseModel):
 
 class ProviderError(Exception):
     pass
+
+
+def output_error(provider: str, category: str, guidance: str) -> ProviderError:
+    """Only application-owned categories and sanitized metadata belong in errors."""
+    return ProviderError(f"Live {provider} structured interpretation [{category}]: {guidance} No demonstration fallback was used.")
+
+
+def validate_interpretation(raw: str, context: dict, provider: str) -> Interpretation:
+    # Reject wrappers rather than extracting JSON from arbitrary model prose.
+    if raw.lstrip().startswith("```"):
+        raise output_error(provider, "markdown_wrapped_json", "Received a Markdown code fence instead of a JSON object. Check API-level JSON-schema output support.")
+    try:
+        result = Interpretation.model_validate_json(raw, strict=True)
+    except ValidationError as exc:
+        errors = exc.errors(include_input=False, include_context=False, include_url=False)
+        if any(error["type"] == "json_invalid" for error in errors):
+            raise output_error(provider, "invalid_json", "Model content is not valid JSON. Check JSON-schema output support; incomplete responses are reported separately as truncation.") from None
+        # Unknown keys and nested locations may contain sensitive model text.
+        # Report only our known field names and Pydantic's built-in error types.
+        issues = sorted({
+            f"{error['loc'][0] if error['loc'] and error['loc'][0] in Interpretation.model_fields else '<root-or-extra>'}:{error['type']}"
+            for error in errors
+        })
+        raise output_error(provider, "schema_validation", f"JSON does not match the required fields/types/limits ({'; '.join(issues[:8])}). Check the requested interpretation schema.") from None
+    if not set(result.evidence_references).issubset({e["id"] for e in context["evidence"]}):
+        raise output_error(provider, "unknown_evidence", "Evidence references contain IDs outside the supplied context. Use only the provided evidence IDs.")
+    return result
 
 
 class Provider(Protocol):
@@ -141,7 +168,15 @@ class HTTPProvider:
         if self.provider == "meta":
             url = f"{self.base}/chat/completions"
             headers = {"Authorization": f"Bearer {self.key}"}
-            body = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM}] + messages, "max_tokens": 3000, "temperature": 0.2}
+            schema = Interpretation.model_json_schema()
+            schema["properties"]["evidence_references"]["items"]["enum"] = [e["id"] for e in context["evidence"]]
+            # Muse Spark's budget includes reasoning AND visible output. The old
+            # 3,000-token limit was reproduced live with finish_reason="length".
+            body = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM}] + messages,
+                    "max_completion_tokens": 8000, "temperature": 0.2,
+                    "response_format": {"type": "json_schema", "json_schema": {
+                        "name": "financial_interpretation", "strict": True, "schema": schema,
+                    }}}
         else:
             url = f"{self.base}/messages"
             headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01"}
@@ -150,30 +185,53 @@ class HTTPProvider:
             with httpx.Client(timeout=60) as client:
                 response = client.post(url, headers=headers, json=body)
                 response.raise_for_status()
-                data = response.json()
+                try:
+                    data = response.json()
+                except ValueError:
+                    raise output_error(self.provider, "invalid_response_json", "HTTP response body is not JSON. Check the endpoint; expected a Chat Completions or Messages envelope.") from None
             if self.provider == "meta":
-                if data["choices"][0].get("finish_reason") == "length":
-                    raise ValueError("Truncated")
-                raw = data["choices"][0]["message"]["content"]
+                try:
+                    choice = data["choices"][0]
+                    finish = choice.get("finish_reason")
+                    if finish == "length":
+                        raise output_error(self.provider, "truncated", "Meta reached the completion-token limit (finish_reason=length). Increase the output budget or request a shorter interpretation; reasoning also consumes that budget.")
+                    if finish == "content_filter" or choice["message"].get("refusal"):
+                        raise output_error(self.provider, "refused", "Meta did not return an interpretation. Review the request against the provider's content rules.")
+                    if finish != "stop":
+                        raise output_error(self.provider, "unexpected_finish_reason", "Expected a completed text response with finish_reason=stop. Check endpoint/model compatibility; tool or incomplete responses are not interpreted.")
+                    raw = choice["message"]["content"]
+                    if not isinstance(raw, str):
+                        raise TypeError("Expected string content")
+                except (KeyError, IndexError, TypeError, AttributeError):
+                    raise output_error(self.provider, "unexpected_response_structure", "Expected choices[0].message.content as a string in a Chat Completions response. Check the base URL and endpoint/model compatibility.") from None
             else:
                 if data.get("stop_reason") == "max_tokens":
-                    raise ValueError("Truncated")
+                    raise output_error(self.provider, "truncated", "Provider reached its output-token limit. Increase the budget or request a shorter interpretation.")
                 raw = "".join(block["text"] for block in data["content"] if block.get("type") == "text")
-            result = Interpretation.model_validate_json(raw)
-            if not set(result.evidence_references).issubset({e["id"] for e in context["evidence"]}):
-                raise ValueError("Unknown evidence")
-            return result
+            if not raw.strip():
+                raise output_error(self.provider, "empty_content", "The completed response contains no interpretation text. Check the model and output budget.")
+            return validate_interpretation(raw, context, self.provider)
         except httpx.TimeoutException as exc:
             raise ProviderError(f"Live {self.provider} inference timed out. Retry or check the endpoint. No demonstration fallback was used.") from exc
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
+            if status == 400:
+                try:
+                    error = exc.response.json().get("error", {})
+                    schema_param = error.get("param") in {"response_format", "response_format.type", "response_format.json_schema", "response_format.json_schema.schema", "response_format.json_schema.strict"}
+                    schema_code = error.get("code") == "invalid_json_schema"
+                except (ValueError, TypeError, AttributeError):
+                    schema_param = schema_code = False
+                if schema_param or schema_code:
+                    raise output_error(self.provider, "structured_output_configuration", "HTTP 400 rejected the JSON-schema configuration. Confirm this endpoint/model supports response_format=json_schema and the supplied strict schema; no format downgrade was attempted.") from None
+                raise output_error(self.provider, "request_rejected", "HTTP 400 rejected the request. Check endpoint/model parameters and JSON-schema support. The provider did not identify a recognized schema parameter.") from None
             guidance = {401: "Check the API key.", 403: "Check endpoint and model access.", 404: "Check METIS_MODEL and the provider base URL.", 429: "Check provider quota or retry later."}.get(status, "Check provider availability and configuration.")
             raise ProviderError(f"Live {self.provider} inference returned HTTP {status}. {guidance} No demonstration fallback was used.") from exc
         except httpx.RequestError as exc:
             raise ProviderError(f"Cannot reach the live {self.provider} endpoint. Check its URL and network connectivity. No demonstration fallback was used.") from exc
         except (ValueError, KeyError, IndexError, TypeError, AttributeError) as exc:
             # Do not return upstream error bodies, which may contain credentials or sensitive context.
-            raise ProviderError(f"Live {self.provider} model returned an invalid or incomplete structured interpretation. Check model JSON support and retry. No demonstration fallback was used.") from exc
+            raise output_error(self.provider, "unexpected_response_structure", "Response does not match the expected provider envelope. Check the configured API endpoint.") from None
 
 
 def reason(request: ReasoningRequest) -> dict:

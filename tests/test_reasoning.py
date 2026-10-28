@@ -49,6 +49,15 @@ def test_live_provider_contract(monkeypatch, provider):
             assert req.url.path == "/v1/chat/completions"
             assert req.headers["authorization"] == "Bearer test-only"
             assert body["messages"][0]["role"] == "system"
+            assert body["max_completion_tokens"] == 8000
+            assert "max_tokens" not in body
+            output_format = body["response_format"]
+            assert output_format["type"] == "json_schema"
+            assert output_format["json_schema"]["strict"] is True
+            schema = output_format["json_schema"]["schema"]
+            assert schema["additionalProperties"] is False
+            assert set(schema["required"]) == set(expected.model_fields_set)
+            assert schema["properties"]["evidence_references"]["items"]["enum"] == [e["id"] for e in context["evidence"]]
             return httpx.Response(200, json={"choices":[{"finish_reason":"stop","message":{"content":expected.model_dump_json()}}]})
         assert req.url.path == "/v1/messages"
         assert req.headers["x-api-key"] == "test-only"
@@ -206,3 +215,81 @@ def test_meta_errors_are_actionable_and_never_fallback(monkeypatch, configured_m
     assert "No demonstration fallback" in response.json()["detail"]
     assert "interpretation" not in response.json()
     assert "test-only-secret" not in response.text
+
+
+@pytest.mark.parametrize("failure,category,detail", [
+    ("truncated", "truncated", "completion-token limit"),
+    ("length_with_valid_json", "truncated", "completion-token limit"),
+    ("markdown", "markdown_wrapped_json", "code fence"),
+    ("json", "invalid_json", "not valid JSON"),
+    ("missing", "schema_validation", "summary:missing"),
+    ("type", "schema_validation", "principal_risk_observations:list_type"),
+    ("extra", "schema_validation", "<root-or-extra>:extra_forbidden"),
+    ("constraint", "schema_validation", "summary:string_too_short"),
+    ("evidence", "unknown_evidence", "outside the supplied context"),
+    ("envelope", "unexpected_response_structure", "choices[0].message.content"),
+    ("content_type", "unexpected_response_structure", "choices[0].message.content"),
+    ("response_json", "invalid_response_json", "HTTP response body"),
+    ("empty", "empty_content", "no interpretation text"),
+    ("tool_calls", "unexpected_finish_reason", "finish_reason=stop"),
+    ("refusal", "refused", "content rules"),
+    ("unsupported_schema", "structured_output_configuration", "HTTP 400"),
+    ("request", "request_rejected", "HTTP 400"),
+])
+def test_meta_structured_output_diagnostics(monkeypatch, configured_meta, failure, category, detail, caplog):
+    """Redacted synthetic failures; never accept partial or repaired output."""
+    marker = "PRIVATE-CONTEXT-test-only-secret"
+    request = ReasoningRequest(question=DEMONSTRATION_QUESTION)
+    valid = DemoProvider().interpret(request, assemble_context(request.shocks)).model_dump()
+    output = dict(valid)
+    finish = "stop"
+    if failure == "missing":
+        del output["summary"]
+    elif failure == "type":
+        output["principal_risk_observations"] = {marker: marker}
+    elif failure == "extra":
+        output[marker] = marker
+    elif failure == "constraint":
+        output["summary"] = ""
+    elif failure == "evidence":
+        output["evidence_references"] = [marker]
+    content = json.dumps(output)
+    if failure in {"truncated", "length_with_valid_json"}:
+        finish = "length"
+        if failure == "truncated":
+            # Actual live failure: HTTP 200, normal envelope, partial JSON,
+            # finish_reason=length; truncation must take precedence over JSON.
+            content = '{"summary": "' + marker
+    elif failure == "markdown":
+        content = f"```json\n{content}\n```"
+    elif failure == "json":
+        content = marker
+    elif failure == "content_type":
+        content = {marker: marker}
+    elif failure == "empty":
+        content = ""
+    elif failure == "tool_calls":
+        finish = "tool_calls"
+
+    def handler(req):
+        if failure == "response_json":
+            return httpx.Response(200, text=marker)
+        if failure in {"unsupported_schema", "request"}:
+            return httpx.Response(400, json={"error": {"message": marker, "param": "response_format" if failure == "unsupported_schema" else marker}})
+        if failure == "envelope":
+            return httpx.Response(200, json={"choices": [], marker: marker})
+        message = {"content": content}
+        if failure == "refusal":
+            message["refusal"] = marker
+        return httpx.Response(200, json={"choices": [{"finish_reason": finish, "message": message}]})
+
+    mock_meta_transport(monkeypatch, handler)
+    with TestClient(app) as client:
+        response = client.post("/api/reasoning", json={"question": DEMONSTRATION_QUESTION})
+    assert response.status_code == 502
+    assert f"[{category}]" in response.json()["detail"]
+    assert detail in response.json()["detail"]
+    assert "No demonstration fallback" in response.json()["detail"]
+    assert "interpretation" not in response.json()
+    assert marker not in response.text
+    assert marker not in caplog.text

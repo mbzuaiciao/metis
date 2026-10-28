@@ -1,0 +1,251 @@
+[
+  {
+    "id": "01",
+    "question": "Explain the portfolio's illustrative daily loss. What are the principal contributors and offsets, and what economic interpretation is warranted?",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "daily_total": -560770,
+      "rates": 412480,
+      "credit": -407250,
+      "equity": -506000,
+      "fx": -60000
+    },
+    "economic_distinctions": [
+      "Rates offset losses but do not establish portfolio profit",
+      "Economic interpretation is conditional on synthetic moves"
+    ],
+    "common_errors": [
+      "Negative rates attribution",
+      "Rate gain equated with total gain"
+    ],
+    "cannot_conclude": [
+      "True economic cause or calibrated probability"
+    ]
+  },
+  {
+    "id": "02",
+    "question": "Does the daily portfolio loss mean the government-rate hedge failed? Explain what the Treasury holdings and swaps contributed and what the aggregate result tells us.",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "treasury_cash_rates": 145280,
+      "receive_fixed_rates": 224000,
+      "pay_fixed_rates": -96000,
+      "all_rates": 412480,
+      "daily_total": -560770
+    },
+    "economic_distinctions": [
+      "Successful directional contribution differs from full loss offset or an optimal hedge",
+      "Government-rate P&L includes credit-bond rate legs"
+    ],
+    "common_errors": [
+      "Treasury hedge lost as yields fell",
+      "Calling hedge undersized or failed without an objective"
+    ],
+    "cannot_conclude": [
+      "Optimal hedge size or hedging mandate"
+    ]
+  },
+  {
+    "id": "03",
+    "question": "Under the supplied joint stress, explain high-yield credit's spread contribution, rate contribution and net result. What does that reveal about this portfolio?",
+    "evidence": "scenario",
+    "shocks": {
+      "rates_bp": -50,
+      "ig_bp": 75,
+      "hy_bp": 250,
+      "equity_pct": -15,
+      "fx_pct": -5
+    },
+    "expected_quantitative": {
+      "hy_spread": -1112500,
+      "hy_rates": 240000,
+      "hy_net": -872500,
+      "portfolio_total": -3347000
+    },
+    "economic_distinctions": [
+      "HY net is not spread-only P&L",
+      "Rate gains do not remove default or spread risk"
+    ],
+    "common_errors": [
+      "Calling -872500 the HY spread loss",
+      "CS01 interpreted as default-loss estimate"
+    ],
+    "cannot_conclude": [
+      "Default losses or executable liquidation cost"
+    ]
+  },
+  {
+    "id": "04",
+    "question": "Interpret the portfolio's signed DV01 and CS01. Explain the derivative exposures relative to their marked values and give a non-overlapping account of rate sensitivity.",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "dv01": 51560,
+      "cs01": 15950,
+      "ig_cs01": 11500,
+      "hy_cs01": 4450,
+      "treasury_dv01": 18160,
+      "swap_net_dv01": 16000,
+      "credit_bond_dv01": 17400,
+      "receive_fixed_notional": 40000000,
+      "pay_fixed_notional": 30000000
+    },
+    "economic_distinctions": [
+      "Signed first-order sensitivities differ from marks/notionals and actual losses",
+      "Asset-class and instrument groups must be disjoint when added"
+    ],
+    "common_errors": [
+      "CS01 second-order",
+      "Adding overlapping DV01 groups",
+      "Inferring risk from net derivative mark alone"
+    ],
+    "cannot_conclude": [
+      "Margin requirement, convexity or default loss"
+    ]
+  },
+  {
+    "id": "05",
+    "question": "Given the cash balance and derivative positions, is this portfolio's liquidity buffer adequate during severe stress? Explain the basis and limits of any conclusion.",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "cash_mark": 6000000,
+      "nav": 100000000,
+      "swap_gross_reference_notional": 70000000
+    },
+    "economic_distinctions": [
+      "Cash mark is not known unencumbered liquidity",
+      "Notional alone does not establish margin need",
+      "Adequacy is unknown"
+    ],
+    "common_errors": [
+      "Cash is insufficient or adequate without contractual and timing data",
+      "Treating gross notional as cash due"
+    ],
+    "cannot_conclude": [
+      "Funding shortfall or adequacy without CSA/netting, collateral, facilities and timing"
+    ]
+  },
+  {
+    "id": "06",
+    "question": "During a severe financial liquidity crisis, how might US Treasury yields behave, and why? Discuss plausible financial mechanisms, implications for this portfolio and evidence that would distinguish explanations.",
+    "evidence": "portfolio",
+    "shocks": null,
+    "expected_quantitative": {
+      "net_dv01": 51560
+    },
+    "economic_distinctions": [
+      "Safety demand can support Treasury prices and reduce yields",
+      "Cash demand and liquidation can depress Treasury prices and increase yields",
+      "Dominance/coexistence depends on conditions; no identified cause"
+    ],
+    "common_errors": [
+      "Treasury yields must decline in every crisis",
+      "Rising yields alone establish the mechanism"
+    ],
+    "cannot_conclude": [
+      "Dominant mechanism or causal probability without depth, funding, flow and policy evidence"
+    ]
+  },
+  {
+    "id": "07",
+    "question": "Interpret the supplied joint rate-and-credit stress. Explain the interactions for the credit baskets and the overall portfolio, including the major model limitations.",
+    "evidence": "scenario",
+    "shocks": {
+      "rates_bp": -50,
+      "ig_bp": 125,
+      "hy_bp": 500,
+      "equity_pct": 0,
+      "fx_pct": 0
+    },
+    "expected_quantitative": {
+      "rates": 2578000,
+      "credit": -3662500,
+      "total": -1084500,
+      "ig_net": -807500,
+      "hy_net": -1985000
+    },
+    "economic_distinctions": [
+      "Lower government yields can coincide with spread losses exceeding rate gains",
+      "Linear spread sensitivity is not default modeling"
+    ],
+    "common_errors": [
+      "Rate rally guarantees credit bond gain",
+      "Replacing spread shocks with government-yield changes"
+    ],
+    "cannot_conclude": [
+      "Event probability or full crisis severity"
+    ]
+  },
+  {
+    "id": "08",
+    "question": "What do the two supplied rate-only calculations reveal about this portfolio, and what do they leave unanswered about its behavior in broader economic stress?",
+    "evidence": "rate_comparisons",
+    "shocks": null,
+    "expected_quantitative": {
+      "minus50_rates_total": 2578000,
+      "plus50_rates_total": -2578000,
+      "difference": -5156000
+    },
+    "economic_distinctions": [
+      "Symmetry is a first-order model property",
+      "Rate-only outcomes are not complete inflation or recession scenarios"
+    ],
+    "common_errors": [
+      "Treating rate-only gain as a forecast",
+      "Ignoring credit/equity/FX co-moves"
+    ],
+    "cannot_conclude": [
+      "Joint market response, convexity or calibrated hedge effectiveness"
+    ]
+  },
+  {
+    "id": "09",
+    "question": "Estimate this portfolio's counterparty and jump-to-default losses from the supplied snapshot. What can actually be established, and what information is missing?",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "cs01": 15950,
+      "cash_mark": 6000000
+    },
+    "economic_distinctions": [
+      "Spread sensitivity does not quantify default jumps",
+      "Derivative marks/notionals do not establish net counterparty exposure",
+      "Losses are not established rather than zero"
+    ],
+    "common_errors": [
+      "Invented default/counterparty loss estimates",
+      "Assuming no modeled loss proves no risk"
+    ],
+    "cannot_conclude": [
+      "Loss amount without issuer/recovery, counterparty/netting, collateral and exposure data"
+    ]
+  },
+  {
+    "id": "10",
+    "question": "What causal conclusions, if any, can be drawn from the supplied synthetic daily market moves? Discuss plausible explanations, discriminating evidence and implications for the portfolio without treating co-movement as identification.",
+    "evidence": "daily",
+    "shocks": null,
+    "expected_quantitative": {
+      "daily_total": -560770,
+      "rates_shock": -8,
+      "ig_shock": 18,
+      "hy_shock": 45,
+      "equity_shock": -2.2,
+      "fx_shock": -0.6
+    },
+    "economic_distinctions": [
+      "Growth/discount-rate, liquidity and positioning explanations need not be uniquely separable",
+      "Descriptive co-movement is not causal identification"
+    ],
+    "common_errors": [
+      "Stating a real current crisis or a proven causal driver",
+      "Inventing macro observations"
+    ],
+    "cannot_conclude": [
+      "True cause, calibrated historical replay or causal probabilities"
+    ]
+  }
+]

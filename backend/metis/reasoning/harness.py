@@ -73,7 +73,7 @@ def validate_interpretation(raw: str, context: dict, provider: str, output_model
             for error in errors
         })
         raise output_error(provider, "schema_validation", f"JSON does not match the required fields/types/limits ({'; '.join(issues[:8])}). Check the requested interpretation schema.") from None
-    references = result.evidence_references if isinstance(result, Interpretation) else [ref for mechanism in result.mechanisms for ref in mechanism.evidence_references]
+    references = result.evidence_references if hasattr(result, "evidence_references") else [ref for mechanism in result.mechanisms for ref in mechanism.evidence_references]
     if not set(references).issubset({e["id"] for e in context["evidence"]}):
         raise output_error(provider, "unknown_evidence", "Evidence references contain IDs outside the supplied context. Use only the provided evidence IDs.")
     return result

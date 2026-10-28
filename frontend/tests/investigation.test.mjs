@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  executivePreview,
+  measuredContributions,
   investigationRequest,
   principalDrivers,
   vulnerabilityGuide,
@@ -116,4 +118,29 @@ test("economic regime wording does not route a rate selloff to an execution chec
       .topic,
     "Joint market moves",
   );
+});
+
+test("executive preview preserves short conclusions and exposes a bounded literal excerpt for verbose output", () => {
+  const short = "Rates gained, but equity and credit losses were larger. Collateral needs are unknown.";
+  assert.equal(executivePreview(short), short);
+  const long = "Model interpretation with evidence [daily]. ".repeat(30);
+  const preview = executivePreview(long);
+  assert.ok(preview.length <= 481);
+  assert.ok(long.startsWith(preview.slice(0, -1)));
+  assert.ok(preview.endsWith("…"));
+});
+
+test("measured factor ordering prioritizes losses without changing backend amounts or input", () => {
+  const calculation = { by_factor: { rates_pnl: 412480, credit_pnl: -407250, equity_pnl: -506000, fx_pnl: -60000 } };
+  const original = structuredClone(calculation);
+  assert.deepEqual(measuredContributions(calculation), [
+    ["equity_pnl", -506000], ["credit_pnl", -407250], ["fx_pnl", -60000], ["rates_pnl", 412480],
+  ]);
+  assert.deepEqual(calculation, original);
+});
+
+test("investigation guides explain conditional consequences without asserting a shortfall or default estimate", () => {
+  assert.match(vulnerabilityGuide("Funding").consequence, /does not establish a shortfall/);
+  assert.match(vulnerabilityGuide("Credit").consequence, /first-order/);
+  assert.match(vulnerabilityGuide("Liquidity").consequence, /does not estimate/);
 });

@@ -43,19 +43,33 @@ export function principalDrivers(calculation: Calculation) {
   };
 }
 
+// Order supplied factor contributions by measured P&L, without recomputing them.
+export function measuredContributions(calculation: Calculation) {
+  return Object.entries(calculation.by_factor).sort((a, b) => a[1] - b[1]);
+}
+
+// Presentation excerpt only: preserve the original model text in an expandable section.
+export function executivePreview(summary: string) {
+  if (summary.length <= 480) return summary;
+  const boundary = summary.lastIndexOf(" ", 480);
+  return summary.slice(0, boundary > 0 ? boundary : 480) + "…";
+}
+
 // A reading checklist, not a financial claim classifier or model-output verifier.
 export function vulnerabilityGuide(text: string) {
   if (/margin|funding|collateral|counterparty|swap|forward/i.test(text))
     return {
       topic: "Funding & counterparties",
+      consequence: "Collateral calls or a counterparty disruption could require cash or constrain the hedge. Exposure size alone does not establish a shortfall.",
       evidence:
         "Signed marks, reference notionals, DV01 and the cash position are available below.",
       missing:
-        "Obtain netting and CSA terms, initial/variation margin, collateral eligibility, counterparty exposure and funding facilities. Notional and cash alone do not establish a margin shortfall.",
+        "Obtain netting and CSA terms, current collateral balances, initial/variation-margin sensitivity, collateral eligibility, net counterparty exposure and available liquidity/funding facilities. Notional and cash alone do not establish a margin shortfall.",
     };
   if (/liquid|bid.ask|execution|\bsell\b|redemption/i.test(text))
     return {
       topic: "Liquidity",
+      consequence: "Execution away from modeled marks could deepen losses or delay liquidation. The linear calculation does not estimate these costs.",
       evidence:
         "Position sizes and modeled P&L are available; no executable prices or liquidity measures are supplied.",
       missing:
@@ -64,6 +78,7 @@ export function vulnerabilityGuide(text: string) {
   if (/correlat|divers|equity|equities|inflation|recession/i.test(text))
     return {
       topic: "Joint market moves",
+      consequence: "Concurrent credit and equity losses can exceed a positive rates contribution; a different regime could also reverse the rate hedge contribution.",
       evidence:
         "Daily factor moves and the selected joint shocks are assumptions supplied to the linear model, not estimated correlations.",
       missing:
@@ -72,16 +87,18 @@ export function vulnerabilityGuide(text: string) {
   if (/credit|default|downgrade|spread|\bHY\b/i.test(text))
     return {
       topic: "Credit",
+      consequence: "Issuer deterioration or default could produce losses beyond the first-order spread estimate. CS01 does not estimate jump-to-default losses.",
       evidence:
         "Credit positions have separate rate and spread contributions; their net P&L includes both legs.",
       missing:
-        "Obtain issuer holdings, ratings, maturities, migration/default assumptions and recovery estimates. CS01 does not quantify default jumps.",
+        "Obtain issuer holdings and concentrations, ratings, maturities, migration/default assumptions and recovery estimates. CS01 does not quantify default jumps.",
     };
   return {
     topic: "Model boundaries",
+    consequence: "If the concern is supported, actual losses or cash needs could differ from the modeled result. The supplied linear calculation alone cannot establish that consequence.",
     evidence:
       "Captured sensitivities, factor contributions and net position P&L can be inspected below.",
     missing:
-      "Obtain the instrument terms and nonlinear, curve/basis or valuation inputs needed to test this claim. A model interpretation is not a quantified loss estimate.",
+      "Identify the missing inputs needed to test this specific claim: instrument terms, concentration/return histories, or nonlinear, curve/basis and valuation analysis as applicable. A model interpretation is not a quantified loss estimate.",
   };
 }

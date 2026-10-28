@@ -1,5 +1,5 @@
 import type { Calculation, Workstation } from "./types";
-import { vulnerabilityGuide } from "./investigation";
+import { measuredContributions, vulnerabilityGuide } from "./investigation";
 
 const usd = (v: number) =>
   new Intl.NumberFormat("en-US", {
@@ -18,7 +18,7 @@ export function FactorEvidence({ calculation }: { calculation: Calculation }) {
   };
   return (
     <div className="factor-evidence">
-      {Object.entries(calculation.by_factor).map(([key, value]) => (
+      {measuredContributions(calculation).map(([key, value]) => (
         <div key={key}>
           <span>{names[key] ?? key}</span>
           <strong className={tone(value)}>{usd(value)}</strong>
@@ -55,6 +55,8 @@ export function PositionEvidence({
       <p>
         Backend calculations · USD. Net position P&L includes all four factors.
         Positive DV01 gains on a 1bp yield decline; it is not P&L.
+        CS01 is a first-order spread sensitivity. Instrument and asset-class
+        DV01 views can overlap; do not add overlapping groups.
       </p>
       <div className="evidence-scroll">
         <table>
@@ -145,8 +147,9 @@ export function InvestigationFindings({
         <h2>4 · What deserves investigation?</h2>
       </div>
       <p className="muted">
-        Model-identified vulnerabilities · unquantified risks. Topic checklists
-        below are analyst prompts, not verified model conclusions.
+        Unquantified vulnerabilities · shown in model order, not a measured risk ranking.
+        Missing evidence prevents a reliable ranking of funding, liquidity,
+        counterparty and default losses. Topic guides are analyst prompts, not verified findings.
       </p>
       {items.length === 0 && (
         <p>
@@ -156,19 +159,25 @@ export function InvestigationFindings({
       )}
       {items.map((item, i) => {
         const prefix = item.split(":")[0];
-        const guide = vulnerabilityGuide(prefix);
+        const guide = vulnerabilityGuide(prefix.length <= 90 ? prefix : "");
         const title = prefix.length <= 90 ? prefix : item.slice(0, 90) + "…";
         return (
           <details className="finding" key={i} open={i === 0}>
             <summary>
-              {i + 1}. {title}
-              <small>{guide.topic} · model-identified</small>
+              {title}
+              <small>Topic checklist: {guide.topic}</small>
             </summary>
             <div>
-              <span className="eyebrow">MODEL INTERPRETATION</span>
-              <p>{item}</p>
+              <span className="eyebrow">CONCERN · MODEL HEADING / EXCERPT</span>
+              <p>{title}</p>
+              <details className="model-concern-detail">
+                <summary>Read the full model concern, rationale and proposed investigation</summary>
+                <p>{item}</p>
+              </details>
+              <span className="eyebrow">WHY IT MATTERS · ANALYTICAL FRAMING</span>
+              <p>{guide.consequence}</p>
               <span className="eyebrow">
-                AVAILABLE IN THE CAPTURED EVIDENCE
+                AVAILABLE EVIDENCE · INSPECT FOR THIS CONCERN
               </span>
               <p>
                 {guide.evidence}{" "}
@@ -183,7 +192,7 @@ export function InvestigationFindings({
                 </a>
               </p>
               <span className="eyebrow">
-                MISSING INFORMATION · ANALYST CHECKLIST
+                NEXT INVESTIGATION · MISSING DATA / ANALYTICAL WORK
               </span>
               <p>{guide.missing}</p>
             </div>

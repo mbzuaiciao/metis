@@ -293,3 +293,17 @@ def test_meta_structured_output_diagnostics(monkeypatch, configured_meta, failur
     assert "interpretation" not in response.json()
     assert marker not in response.text
     assert marker not in caplog.text
+
+
+@pytest.mark.parametrize("question, expected", [
+    ("Explain the illustrative daily portfolio loss. Identify vulnerabilities.", ("+$412,480", "-$560,770")),
+    ("Interpret the selected hypothetical stress scenario. Identify vulnerabilities.", ("+$2,578,000", "-$3,347,000")),
+])
+def test_contextual_demo_summary_uses_requested_calculation(question, expected):
+    shocks = Shocks(**next(s for s in load_json("scenarios") if s["id"] == "risk-off")["shocks"])
+    request = ReasoningRequest(question=question, shocks=shocks)
+    interpretation = DemoProvider().interpret(request, assemble_context(shocks))
+    assert all(amount in interpretation.summary for amount in expected)
+    assert len(interpretation.summary.split()) <= 75
+    assert "synthetic" in interpretation.summary
+    assert "do not quantify" in interpretation.summary

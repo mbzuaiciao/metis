@@ -42,6 +42,7 @@ import {
   ShockEvidence,
 } from "./InvestigationEvidence";
 import {
+  executivePreview,
   dailyQuestion,
   scenarioQuestion,
   investigationRequest,
@@ -1094,16 +1095,18 @@ function ReasoningPage({
           const i = messages.length - 1 - displayedIndex;
           return (
             <article className="reasoning-answer" key={i}>
-              <div className="user-question">
-                <span className="eyebrow">
-                  {m.investigation_focus === "daily"
-                    ? "DAILY LOSS INVESTIGATION"
-                    : m.investigation_focus === "scenario"
-                      ? "HYPOTHETICAL SCENARIO INVESTIGATION"
-                      : "YOUR QUESTION"}
-                </span>
+              <details className="user-question">
+                <summary>
+                  <span className="eyebrow">
+                    {m.investigation_focus === "daily"
+                      ? "DAILY LOSS INVESTIGATION"
+                      : m.investigation_focus === "scenario"
+                        ? "HYPOTHETICAL SCENARIO INVESTIGATION"
+                        : "YOUR QUESTION"}
+                  </span> · View question
+                </summary>
                 <p>{m.question}</p>
-              </div>
+              </details>
               <div className="answer-header">
                 <Sparkles size={17} />
                 <b>Metis interpretation</b>
@@ -1113,9 +1116,19 @@ function ReasoningPage({
                     : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
                 </span>
               </div>
+              <section className="executive-conclusion">
+                <span className="eyebrow">WHAT MATTERS MOST · MODEL JUDGMENT</span>
+                <p className="answer-summary">{executivePreview(m.interpretation.summary)}</p>
+                {m.interpretation.summary.length > 480 && (
+                  <details className="answer-section">
+                    <summary>Executive excerpt above · read the full model summary</summary>
+                    <p>{m.interpretation.summary}</p>
+                  </details>
+                )}
+              </section>
               <div className="captured-evidence">
                 <span className="eyebrow">
-                  CALCULATED EVIDENCE · CAPTURED FOR THIS ANSWER
+                  MEASURED DRIVERS & OFFSETS · BACKEND CALCULATIONS
                 </span>
                 <p>
                   Daily illustrative snapshot {m.context.market.as_of}:{" "}
@@ -1127,13 +1140,16 @@ function ReasoningPage({
                     </>
                   )}
                 </p>
-                <ShockEvidence
-                  calculation={
-                    m.investigation_focus === "daily"
-                      ? m.context.daily
-                      : m.context.scenario
-                  }
-                />
+                <details className="answer-section">
+                  <summary>Captured shock assumptions</summary>
+                  <ShockEvidence
+                    calculation={
+                      m.investigation_focus === "daily"
+                        ? m.context.daily
+                        : m.context.scenario
+                    }
+                  />
+                </details>
                 <FactorEvidence
                   calculation={
                     m.investigation_focus === "daily"
@@ -1151,19 +1167,14 @@ function ReasoningPage({
                   exposures={m.context.portfolio.exposures}
                 />
               </div>
-              <div className="section-title">
-                <h2>Model interpretation</h2>
-                <span>Economic judgment · verify against the calculation</span>
-              </div>
-              <p className="answer-summary">{m.interpretation.summary}</p>
               <details className="answer-section">
-                <summary>Economic explanation & interactions</summary>
+                <summary>Economic interpretation · why the risks interact</summary>
                 <p>{m.interpretation.economic_interpretation}</p>
               </details>
               {(
                 [
                   [
-                    "Principal risk observations",
+                    "Principal observations · model claims to check against calculations",
                     m.interpretation.principal_risk_observations,
                   ],
                   [
@@ -1473,7 +1484,7 @@ export default function App() {
           </div>
         </a>
         <div className="workspace-label">
-          WORKSPACE <span>v0.4</span>
+          WORKSPACE <span>v0.5</span>
         </div>
         <nav aria-label="Main navigation">
           {pages.map((p, i) => (

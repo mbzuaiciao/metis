@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
+from metis.reasoning.causal import CausalRequest, explore
 from metis.reasoning.harness import ProviderError, ReasoningRequest, reason
 
 load_dotenv()
@@ -27,5 +28,13 @@ def scenario(shocks: Shocks):
 def reasoning(request: ReasoningRequest):
     try:
         return reason(request)
+    except ProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/causal-exploration")
+def causal_exploration(request: CausalRequest):
+    try:
+        return explore(request)
     except ProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

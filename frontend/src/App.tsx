@@ -16,6 +16,8 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
+import { CausalExploration } from "./CausalExploration";
+import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
@@ -905,7 +907,7 @@ function Scenarios({
                     type="range"
                     min={m.min}
                     max={m.max}
-                    step={m.step}
+                    step={Number.isInteger(shocks[k] / m.step) ? m.step : "any"}
                     value={shocks[k]}
                     onChange={(e) =>
                       setShocks({ ...shocks, [k]: Number(e.target.value) })
@@ -1376,6 +1378,8 @@ function MarketTicker({ data }: { data: Workstation }) {
 }
 export default function App() {
   const [page, setPage] = useState(0);
+  const [scenarioMode, setScenarioMode] = useState<"independent" | "causal">("independent");
+  const [causalState, setCausalState] = useState(initialCausalState);
   const [data, setData] = useState<Workstation | null>(null);
   const [error, setError] = useState("");
   const [shocks, setShocks] = useState<Shocks | null>(null);
@@ -1484,7 +1488,7 @@ export default function App() {
           </div>
         </a>
         <div className="workspace-label">
-          WORKSPACE <span>v0.5</span>
+          WORKSPACE <span>v0.6</span>
         </div>
         <nav aria-label="Main navigation">
           {pages.map((p, i) => (
@@ -1616,16 +1620,29 @@ export default function App() {
               {page === 2 && <Market data={data} />}{" "}
               {page === 3 && <Risk data={data} />}{" "}
               {page === 4 && (
-                <Scenarios
-                  data={data}
-                  shocks={shocks}
-                  setShocks={changeShocks}
-                  calc={calc}
-                  pending={pending}
-                  error={scenarioError}
-                  goAI={() => void ask(scenarioQuestion, "scenario")}
-                  busy={reasoningBusy}
-                />
+                <>
+                  <div className="scenario-modes" role="group" aria-label="Scenario mode">
+                    <button className={scenarioMode === "independent" ? "secondary active" : "secondary"} aria-pressed={scenarioMode === "independent"} onClick={() => setScenarioMode("independent")}>Independent Shocks</button>
+                    <button className={scenarioMode === "causal" ? "secondary active" : "secondary"} aria-pressed={scenarioMode === "causal"} onClick={() => setScenarioMode("causal")}>Causal Exploration</button>
+                  </div>
+                  {scenarioMode === "causal" ? (
+                    <CausalExploration state={causalState} setState={setCausalState} data={data}
+                      generate={request => api("causal-exploration", request)}
+                      calculate={accepted => api("scenario", accepted)}
+                      useShocks={accepted => { changeShocks(accepted); setScenarioMode("independent"); }} />
+                  ) : (
+                    <Scenarios
+                      data={data}
+                      shocks={shocks}
+                      setShocks={changeShocks}
+                      calc={calc}
+                      pending={pending}
+                      error={scenarioError}
+                      goAI={() => void ask(scenarioQuestion, "scenario")}
+                      busy={reasoningBusy}
+                    />
+                  )}
+                </>
               )}{" "}
               {page === 5 && (
                 <ReasoningPage

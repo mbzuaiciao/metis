@@ -104,3 +104,24 @@ export type Reasoning = {
   };
   context_operations: { operation: string; source: string }[];
 };
+
+export type CausalRequest = { hypothesis: string; alternative: string; common_rates_bp: number };
+export type CausalMechanism = {
+  title: string;
+  economic_mechanism: string;
+  cross_asset: Record<keyof Shocks, { direction: "up" | "down" | "unchanged" | "ambiguous"; rationale: string }>;
+  proposed_shocks: Shocks;
+  assumption_note: string;
+  alternative_explanations: string[];
+  discriminating_evidence: string[];
+  uncertainty: string[];
+  evidence_references: string[];
+};
+export type CausalResult = {
+  request: CausalRequest;
+  mode: string;
+  model: string | null;
+  usage: Record<string, number> | null;
+  exploration: { mechanisms: CausalMechanism[] };
+  context: Pick<Reasoning["context"], "portfolio" | "market" | "daily" | "evidence">;
+};

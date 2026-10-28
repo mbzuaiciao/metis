@@ -53,12 +53,12 @@ def output_error(provider: str, category: str, guidance: str) -> ProviderError:
     return ProviderError(f"Live {provider} structured interpretation [{category}]: {guidance} No demonstration fallback was used.")
 
 
-def validate_interpretation(raw: str, context: dict, provider: str) -> Interpretation:
+def validate_interpretation(raw: str, context: dict, provider: str, output_model: type[BaseModel] = Interpretation) -> BaseModel:
     # Reject wrappers rather than extracting JSON from arbitrary model prose.
     if raw.lstrip().startswith("```"):
         raise output_error(provider, "markdown_wrapped_json", "Received a Markdown code fence instead of a JSON object. Check API-level JSON-schema output support.")
     try:
-        result = Interpretation.model_validate_json(raw, strict=True)
+        result = output_model.model_validate_json(raw, strict=True)
     except ValidationError as exc:
         errors = exc.errors(include_input=False, include_context=False, include_url=False)
         if any(error["type"] == "json_invalid" for error in errors):
@@ -66,11 +66,12 @@ def validate_interpretation(raw: str, context: dict, provider: str) -> Interpret
         # Unknown keys and nested locations may contain sensitive model text.
         # Report only our known field names and Pydantic's built-in error types.
         issues = sorted({
-            f"{error['loc'][0] if error['loc'] and error['loc'][0] in Interpretation.model_fields else '<root-or-extra>'}:{error['type']}"
+            f"{error['loc'][0] if error['loc'] and error['loc'][0] in output_model.model_fields else '<root-or-extra>'}:{error['type']}"
             for error in errors
         })
         raise output_error(provider, "schema_validation", f"JSON does not match the required fields/types/limits ({'; '.join(issues[:8])}). Check the requested interpretation schema.") from None
-    if not set(result.evidence_references).issubset({e["id"] for e in context["evidence"]}):
+    references = result.evidence_references if isinstance(result, Interpretation) else [ref for mechanism in result.mechanisms for ref in mechanism.evidence_references]
+    if not set(references).issubset({e["id"] for e in context["evidence"]}):
         raise output_error(provider, "unknown_evidence", "Evidence references contain IDs outside the supplied context. Use only the provided evidence IDs.")
     return result
 
@@ -196,25 +197,39 @@ class HTTPProvider:
             raise ProviderError("Provider base URL must use HTTPS (or HTTP on localhost), with no embedded credentials, query or fragment. Keep the API key in its environment variable.")
 
     def interpret(self, request: ReasoningRequest, context: dict) -> Interpretation:
+        return self.structured(request, context, Interpretation, SYSTEM, "financial_interpretation")
+
+    def structured(self, request: ReasoningRequest, context: dict, output_model: type[BaseModel], system: str, schema_name: str) -> BaseModel:
         self.last_usage = None
-        payload = json.dumps({"question": request.question, "context": context, "output_schema": Interpretation.model_json_schema()})
+        payload = json.dumps({"question": request.question, "context": context, "output_schema": output_model.model_json_schema()})
         messages = [t.model_dump() for t in request.history] + [{"role": "user", "content": payload}]
         if self.provider == "meta":
             url = f"{self.base}/chat/completions"
             headers = {"Authorization": f"Bearer {self.key}"}
-            schema = Interpretation.model_json_schema()
-            schema["properties"]["evidence_references"]["items"]["enum"] = [e["id"] for e in context["evidence"]]
+            schema = output_model.model_json_schema()
+            # Both bounded output types carry evidence IDs; constrain every occurrence.
+            def constrain_evidence(node):
+                if isinstance(node, dict):
+                    for key, value in node.items():
+                        if key == "evidence_references":
+                            value["items"]["enum"] = [e["id"] for e in context["evidence"]]
+                        else:
+                            constrain_evidence(value)
+                elif isinstance(node, list):
+                    for value in node:
+                        constrain_evidence(value)
+            constrain_evidence(schema)
             # Muse Spark's budget includes reasoning AND visible output. The old
             # 3,000-token limit was reproduced live with finish_reason="length".
-            body = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM}] + messages,
+            body = {"model": self.model, "messages": [{"role": "system", "content": system}] + messages,
                     **META_INFERENCE_PARAMETERS,
                     "response_format": {"type": "json_schema", "json_schema": {
-                        "name": "financial_interpretation", "strict": True, "schema": schema,
+                        "name": schema_name, "strict": True, "schema": schema,
                     }}}
         else:
             url = f"{self.base}/messages"
             headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01"}
-            body = {"model": self.model, "system": SYSTEM, "messages": messages, "max_tokens": 3000}
+            body = {"model": self.model, "system": system, "messages": messages, "max_tokens": 3000}
         try:
             with httpx.Client(timeout=60) as client:
                 response = client.post(url, headers=headers, json=body)
@@ -253,7 +268,7 @@ class HTTPProvider:
                 raw = "".join(block["text"] for block in data["content"] if block.get("type") == "text")
             if not raw.strip():
                 raise output_error(self.provider, "empty_content", "The completed response contains no interpretation text. Check the model and output budget.")
-            return validate_interpretation(raw, context, self.provider)
+            return validate_interpretation(raw, context, self.provider, output_model)
         except httpx.TimeoutException as exc:
             raise ProviderError(f"Live {self.provider} inference timed out. Retry or check the endpoint. No demonstration fallback was used.") from exc
         except httpx.HTTPStatusError as exc:

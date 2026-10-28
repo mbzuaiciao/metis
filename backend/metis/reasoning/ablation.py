@@ -40,7 +40,8 @@ def write_private(path: Path, record: dict):
         output.write("\n")
 
 
-def run_comparison(output_dir: Path) -> dict:
+def run_comparison(output_dir: Path, *, reverse_order: bool = False) -> dict:
+    order = [("B", "evidence_only"), ("A", "full")] if reverse_order else [("A", "full"), ("B", "evidence_only")]
     output_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
     preset = next(s for s in load_json("scenarios") if s["id"] == "risk-off")
     shocks = Shocks(**preset["shocks"])
@@ -76,10 +77,10 @@ def run_comparison(output_dir: Path) -> dict:
         "numeric_inputs_sha256": digest(numeric_inputs(full)),
         "quantitative_inputs_identical": True,
         "removed_context_paths": ["market.commentary", *[f"historical_context[{i}].interpretation" for i in range(len(full["historical_context"]))], "alternative_scenarios[3].description (risk-off)"],
-        "execution_order": ["full", "evidence_only"], "conversation_history": [],
+        "execution_order": [mode for _, mode in order], "conversation_history": [],
         "runs": [],
     }
-    for condition, mode in [("A", "full"), ("B", "evidence_only")]:
+    for condition, mode in order:
         record = {
             "condition": condition, "context_mode": mode, "model": manifest["model"],
             "question": QUESTION, "scenario_shocks": shocks.model_dump(), "context": contexts[mode],
@@ -105,9 +106,10 @@ def run_comparison(output_dir: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("research/runs") / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
+    parser.add_argument("--reverse-order", action="store_true", help="Execute Evidence Only (B) before Full Context (A).")
     args = parser.parse_args()
     load_dotenv()
-    result = run_comparison(args.output_dir)
+    result = run_comparison(args.output_dir, reverse_order=args.reverse_order)
     # Never print model text, API credentials or context into terminal logs.
     print(json.dumps({"output_dir": str(args.output_dir.resolve()), "live_comparison_completed": result["live_comparison_completed"], "runs": result["runs"]}, indent=2))
     return 0 if result["live_comparison_completed"] else 1

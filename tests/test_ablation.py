@@ -53,7 +53,8 @@ def test_request_modes_and_demo_stay_runnable(monkeypatch):
     assert "commentary" not in response["context"]["market"]
 
 
-def test_paired_mock_preserves_every_other_inference_input(monkeypatch, tmp_path):
+@pytest.mark.parametrize("reverse_order", [False, True])
+def test_paired_mock_preserves_every_other_inference_input(monkeypatch, tmp_path, reverse_order):
     monkeypatch.setenv("METIS_PROVIDER", "meta")
     monkeypatch.setenv("METIS_MODEL", "fixture-model")
     monkeypatch.setenv("METIS_META_BASE_URL", "https://example.com/v1")
@@ -77,12 +78,13 @@ def test_paired_mock_preserves_every_other_inference_input(monkeypatch, tmp_path
     original = httpx.Client
     monkeypatch.setattr(httpx, "Client", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
     destination = tmp_path / "paired"
-    manifest = run_comparison(destination)
+    manifest = run_comparison(destination, reverse_order=reverse_order)
     assert manifest["live_comparison_completed"]
     assert manifest["quantitative_inputs_identical"]
-    assert manifest["execution_order"] == ["full", "evidence_only"]
+    assert manifest["execution_order"] == (["evidence_only", "full"] if reverse_order else ["full", "evidence_only"])
+    assert [run["condition"] for run in manifest["runs"]] == (["B", "A"] if reverse_order else ["A", "B"])
     assert len(captured) == 2
-    a, b = deepcopy(captured)
+    a, b = deepcopy(captured[::-1] if reverse_order else captured)
     payload_a = json.loads(a["messages"][-1]["content"])
     payload_b = json.loads(b["messages"][-1]["content"])
     assert payload_b["context"] == evidence_only_context(payload_a["context"])

@@ -1,0 +1,6 @@
+[
+ {"id":"rally","name":"Interest-rate rally","description":"Parallel government yield decline; other risk factors unchanged.","shocks":{"rates_bp":-50,"ig_bp":0,"hy_bp":0,"equity_pct":0,"fx_pct":0}},
+ {"id":"selloff","name":"Interest-rate selloff","description":"Parallel government yield increase; other risk factors unchanged.","shocks":{"rates_bp":50,"ig_bp":0,"hy_bp":0,"equity_pct":0,"fx_pct":0}},
+ {"id":"credit","name":"Credit spread widening","description":"IG and HY spreads widen with government rates held constant.","shocks":{"rates_bp":0,"ig_bp":50,"hy_bp":150,"equity_pct":0,"fx_pct":0}},
+ {"id":"risk-off","name":"Broad risk-off","description":"Growth shock: falling yields, wider spreads, lower equities and weaker EUR.","shocks":{"rates_bp":-50,"ig_bp":75,"hy_bp":250,"equity_pct":-15,"fx_pct":-5}}
+]

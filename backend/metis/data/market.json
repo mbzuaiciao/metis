@@ -1,0 +1,13 @@
+{
+  "id": "example-2025-03-10",
+  "as_of": "2025-03-10",
+  "previous_date": "2025-03-07",
+  "label": "Illustrative market snapshot — synthetic observations, not actual market closes",
+  "base_currency": "USD",
+  "yields": [{"tenor":"2Y","previous_pct":4.05,"current_pct":3.97},{"tenor":"5Y","previous_pct":4.18,"current_pct":4.10},{"tenor":"10Y","previous_pct":4.32,"current_pct":4.24},{"tenor":"30Y","previous_pct":4.62,"current_pct":4.54}],
+  "credit": [{"name":"Investment grade","bucket":"ig","level_bp":118,"change_bp":18},{"name":"High yield","bucket":"hy","level_bp":365,"change_bp":45}],
+  "equities": [{"name":"US large cap","change_pct":-2.2},{"name":"Developed ex-US","change_pct":-2.2}],
+  "fx": [{"name":"EUR/USD","level":1.075,"change_pct":-0.6}],
+  "daily_shocks": {"rates_bp":-8,"ig_bp":18,"hy_bp":45,"equity_pct":-2.2,"fx_pct":-0.6},
+  "commentary": "Illustrative growth scare: government yields fall as investors seek safety. Credit spreads widen and equities decline as earnings and refinancing concerns rise. EUR weakens against USD. This is an assumed market regime, not a report of actual events on this date."
+}

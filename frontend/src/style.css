@@ -1657,3 +1657,21 @@ footer > span:last-child {
 .causal-calculation { border-top: 1px solid #35465c; margin-top: 22px; padding-top: 8px; }
 .causal-calculation .factor-evidence { margin: 0; }
 @media (max-width: 1000px) { .causal-inputs, .causal-pair { grid-template-columns: 1fr; } }
+
+/* Verdicts cover explicit structured assertions, never the whole interpretation. */
+.verification-demo { margin: 20px 0; border: 1px solid #304258; border-radius: 5px; padding: 16px; background: #101c29; }
+.verification-demo > summary, .claim-result summary { cursor: pointer; color: #b9cce0; font-size: 12px; }
+.claim-result { margin: 14px 0; padding: 16px; border: 1px solid #304258; border-radius: 5px; }
+.claim-result-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; font-size: 12px; }
+.claim-verdict { font-size: 10px; padding: 4px 7px; border: 1px solid #42546a; border-radius: 3px; white-space: nowrap; }
+.claim-verdict.verified { color: #76dac0; border-color: #38675f; }
+.claim-verdict.contradicted { color: #f19a9a; border-color: #794e56; }
+.claim-verdict.not-established { color: #e4be79; border-color: #77684b; }
+.claim-verdict.not-checked { color: #9eacbc; }
+.claim-result p, .claim-result li, .claim-result blockquote { color: #a9bdd3; font-size: 12px; line-height: 1.8; }
+.claim-result .claim-mapping { color: #d0e1f1; overflow-wrap: anywhere; }
+.claim-result summary { margin: 14px 0 8px; }
+.claim-result dl { margin: 8px 0; font-size: 11px; }
+.claim-result dl > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(90px, 1fr); gap: 12px; padding: 6px 0; border-bottom: 1px solid #29394c; }
+.claim-result dt { overflow-wrap: anywhere; color: #829bb5; }
+.claim-result dd { margin: 0; color: #c7daed; overflow-wrap: anywhere; }

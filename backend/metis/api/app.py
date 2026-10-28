@@ -1,9 +1,11 @@
+from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
 from metis.reasoning.causal import CausalRequest, explore
-from metis.reasoning.harness import ProviderError, ReasoningRequest, reason
+from metis.reasoning.harness import ProviderError, ReasoningRequest, assemble_context, reason
+from metis.verification.claims import FinancialClaim, demonstration_claims, verify_claims
 
 load_dotenv()
 app = FastAPI(title="Metis", version="0.1.0")
@@ -38,3 +40,21 @@ def causal_exploration(request: CausalRequest):
         return explore(request)
     except ProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+class VerificationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    claims: list[FinancialClaim] = Field(max_length=12)
+    shocks: Shocks = Field(default_factory=Shocks)
+
+
+@app.post("/api/verify-claims")
+def verify_financial_claims(request: VerificationRequest):
+    # Callers supply assertions and shocks, never truth values or calculations.
+    context = assemble_context(request.shocks)
+    return {"results": verify_claims(request.claims, context)}
+
+
+@app.get("/api/verification-demo")
+def verification_demo():
+    return {"results": verify_claims(demonstration_claims(), assemble_context(Shocks()))}

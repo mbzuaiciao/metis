@@ -10,6 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
 
+from metis.verification.claims import FinancialClaim, claim, verify_claims
+
 ContextMode = Literal["full", "evidence_only"]
 META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2}
 
@@ -23,6 +25,7 @@ class Interpretation(BaseModel):
     potential_vulnerabilities: list[str] = Field(max_length=12)
     assumptions_and_uncertainties: list[str] = Field(min_length=1, max_length=12)
     evidence_references: list[str] = Field(min_length=1, max_length=20)
+    financial_claims: list[FinancialClaim] = Field(max_length=3)
 
 
 class Turn(BaseModel):
@@ -89,9 +92,12 @@ Use the existing output fields as follows:
 - historical_analogies: explain which supplied historical patterns apply, why, and where the analogy could fail. Historical descriptions are qualitative context, not calibrated replays.
 - potential_vulnerabilities: select only material concerns supported by the supplied context, rather than a generic catalogue. Begin each string with a short topic heading and colon, followed by Concern, Why it matters, Available evidence (cite IDs), and Next investigation (specific missing data or analysis). Put the most decision-relevant concerns first. Put ordering rationale and any inability to rank unmeasured risks in assumptions_and_uncertainties, never in a vulnerability preamble or standalone ordering-note item. Notional/DV01 alone do not establish a funding shortfall. Do not recommend trades or invent missing data. Consider unmeasured liquidity, funding, counterparty, default and nonlinear risks where relevant, and contrast recession/risk-off with inflation or rate-selloff conditions. Use supplied alternative_scenarios for numerical comparisons. A rate-only scenario holds other factors constant; do not present it as a complete inflation shock. Do not assign unsupported probabilities.
 - assumptions_and_uncertainties: identify synthetic data, the market date (not today's live market), linear sensitivities, omitted risks and missing information that could change the assessment.
+- financial_claims: submit at most three short important assertions from your answer for deterministic checking; do not self-grade. Each includes statement (original wording), kind, period (daily/scenario), target, metric, assertion, value (null unless numeric), rounding, components (empty unless decomposition). Use kind exactly number for numerical claims: metric total_pnl_usd/rates_pnl/credit_pnl/equity_pnl/fx_pnl/dv01_usd_per_bp/cs01_usd_per_bp (portfolio additionally ig_cs01_usd_per_bp/hy_cs01_usd_per_bp), assertion equals, target portfolio or position:ID or spread_bucket:ig/hy or asset_class:NAME. Use exact or whole rounding; million_2dp only for P&L rounded to 0.01 million USD. Sign claims: kind sign, assertion positive/negative/zero, value null, exact. Hedge claims: kind hedge_vs_total, target portfolio, metric rates_pnl, assertion rates_gain_total_loss_yields_down, rates_loss_total_loss_yields_down or rates_gain_total_gain_yields_down, value null, exact. Unmeasured claims: kind unmeasured_risk, target funding/margin/liquidity/default, metric loss_usd, assertion not_quantified/loss_exists/loss_absent/buffer_adequate/buffer_inadequate (value null) or loss_equals (numeric value), exact. An exhaustive additive DV01 claim may use kind dv01_decomposition, portfolio, dv01_usd_per_bp, equals, exact, value and components using the same target syntax. Unsupported claims may use kind other and are Not checked. Select existing assertions, preferably direct numerical copies; do not invent extra assertions merely to populate this list. Keep each statement to one sentence. Empty is allowed. Unstructured prose is not checked.
 - evidence_references: include the supporting IDs from context.evidence. Also cite the appropriate [ID] within observations and interpretations so users can associate claims with evidence.
 
 Numerical discipline: HY net position P&L includes its rates and spread legs; it is not spread-only P&L. DV01 asset-class and instrument views may overlap: do not add overlapping groups as a decomposition. Positive rates P&L does not imply positive total portfolio P&L or depend on other factors being positive. CS01 is a first-order spread sensitivity, not second-order or a default-loss estimate.
+
+Keep the complete response compact: at most three principal observations, two historical analogies and three vulnerabilities, with concise explanations and no duplicated tables.
 
 Distinguish synthetic market assumptions, deterministic calculations and economic interpretations. Do not invent prices, observations, historical shocks or evidence references. Do not calculate new financial results; use the backend results. Scenario shocks are illustrative, NOT forecasts. Do not give trading instructions. Return ONLY a JSON object conforming to the provided schema, with no markdown fences."""
 
@@ -169,6 +175,11 @@ class DemoProvider:
                 f"In the rate-selloff alternative, P&L is {money(next(a['total_pnl_usd'] for a in context['alternative_scenarios'] if a['id'] == 'selloff'))}. All other factors are held constant. An inflation shock could also pressure credit and equities; that combined outcome is not quantified here. [alternatives] [history-2022]"],
             assumptions_and_uncertainties=["Deterministic demonstration template; no live model was invoked. Answers are limited to a few question themes.", "All portfolio marks and dated market observations are synthetic. Historical descriptions are sourced qualitative context.", "Linear sensitivities remain constant; no probabilities, calibrated replay, carry or full derivative repricing."],
             evidence_references=[e["id"] for e in context["evidence"]],
+            financial_claims=[
+                claim(f"Daily portfolio P&L is {money(d['total_pnl_usd'])}.", "number", "total_pnl_usd", "equals", d["total_pnl_usd"]),
+                claim(f"Selected scenario rates contribution is {money(s['by_factor']['rates_pnl'])}.", "number", "rates_pnl", "equals", s["by_factor"]["rates_pnl"], period="scenario"),
+                claim("Funding losses are not quantified by the linear model.", "unmeasured_risk", "loss_usd", "not_quantified", target="funding"),
+            ],
         )
 
 
@@ -301,7 +312,7 @@ def reason(request: ReasoningRequest) -> dict:
     result = provider.interpret(request, context)
     return {"question": request.question, "mode": mode, "model": None if mode == "demo" else provider.model,
             "context_mode": request.context_mode, "usage": None if mode == "demo" else provider.last_usage,
-            "interpretation": result.model_dump(), "context": context,
+            "interpretation": result.model_dump(), "verification": verify_claims(result.financial_claims, context), "context": context,
             "context_operations": [{"operation": name, "source": source} for name, source in [
                 ("retrieve_portfolio", "portfolio"), ("retrieve_market", "market"),
                 ("calculate_scenario", "scenario"), ("retrieve_history", "historical_context")]]}

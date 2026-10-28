@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
+import { ClaimVerification, VerificationDemo } from "./ClaimVerification";
 import { CausalExploration } from "./CausalExploration";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
@@ -1079,6 +1080,7 @@ function ReasoningPage({
             {error}
           </p>
         )}
+        <VerificationDemo />
         {messages.length === 0 && (
           <div className="prompt-list">
             {prompts.map((q) => (
@@ -1128,6 +1130,10 @@ function ReasoningPage({
                   </details>
                 )}
               </section>
+              <details className="answer-section">
+                <summary>Bounded financial claim checks · original prose Not checked</summary>
+                <ClaimVerification results={m.verification} />
+              </details>
               <div className="captured-evidence">
                 <span className="eyebrow">
                   MEASURED DRIVERS & OFFSETS · BACKEND CALCULATIONS
@@ -1488,7 +1494,7 @@ export default function App() {
           </div>
         </a>
         <div className="workspace-label">
-          WORKSPACE <span>v0.6</span>
+          WORKSPACE <span>v0.7</span>
         </div>
         <nav aria-label="Main navigation">
           {pages.map((p, i) => (

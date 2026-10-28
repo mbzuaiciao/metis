@@ -78,11 +78,13 @@ export type Workstation = {
   history: Episode[];
 };
 export type Reasoning = {
+  verification?: ClaimVerdict[];
   investigation_focus?: "daily" | "scenario" | "question";
   question: string;
   mode: string;
   model: string | null;
   interpretation: {
+    financial_claims?: FinancialClaim[];
     summary: string;
     principal_risk_observations: string[];
     economic_interpretation: string;
@@ -124,4 +126,25 @@ export type CausalResult = {
   usage: Record<string, number> | null;
   exploration: { mechanisms: CausalMechanism[] };
   context: Pick<Reasoning["context"], "portfolio" | "market" | "daily" | "evidence">;
+};
+
+export type FinancialClaim = {
+  statement: string;
+  kind: string;
+  period: string;
+  target: string;
+  metric: string;
+  assertion: string;
+  value: number | null;
+  rounding: string;
+  components: string[];
+};
+export type ClaimVerdict = {
+  claim: FinancialClaim;
+  mapping: string;
+  verdict: "Verified" | "Contradicted" | "Not established" | "Not checked";
+  explanation: string;
+  evidence: { path: string; value: number | string }[];
+  limitations: string[];
+  original_wording_status: "Not checked";
 };

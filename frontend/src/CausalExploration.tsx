@@ -70,6 +70,7 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
     {state.error && <p role="alert" className="negative">{state.error}</p>}
     {result && <>
       <div className="causal-result-header">
+        <p className="context-note">Causal narratives are Not checked by the bounded financial claim verifier. Accepted shock consequences are calculated separately below.</p>
         <span className={result.mode === "demo" ? "badge amber" : "badge"}>{result.mode === "demo" ? "DETERMINISTIC DEMO" : `LIVE META · ${result.model}`}</span>
         <p><b>Captured comparison:</b> {result.request.hypothesis} versus {result.request.alternative} · shared government yields {result.request.common_rates_bp}bp.</p>
       </div>

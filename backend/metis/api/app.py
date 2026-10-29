@@ -6,11 +6,13 @@ from fastapi import FastAPI, HTTPException
 
 from metis.analytics.engine import Shocks, calculate, load_positions, workstation
 from metis.reasoning.causal import CausalRequest, explore
-from metis.reasoning.harness import ProviderError, ReasoningRequest, assemble_context, reason
+from metis.reasoning.followup import EvidenceSnapshots, FollowupRequest, InvestigationRequest, SnapshotUnavailable
+from metis.reasoning.harness import ProviderError, assemble_context, reason
 from metis.verification.claims import FinancialClaim, demonstration_claims, verify_claims
 
 load_dotenv()
 app = FastAPI(title="Metis", version="0.1.0")
+evidence_snapshots = EvidenceSnapshots()
 
 
 @app.get("/api/health")
@@ -29,9 +31,15 @@ def scenario(shocks: Shocks):
 
 
 @app.post("/api/reasoning")
-def reasoning(request: ReasoningRequest):
+def reasoning(request: InvestigationRequest | FollowupRequest):
     try:
-        return reason(request)
+        if isinstance(request, FollowupRequest):
+            return evidence_snapshots.resume(request)
+        if request.investigation_scope == 'daily':
+            request = request.model_copy(update={'shocks': Shocks(**workstation()['daily']['shocks'])})
+        return evidence_snapshots.capture(reason(request), request.investigation_scope)
+    except SnapshotUnavailable as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 

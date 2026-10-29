@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ClaimVerification, VerificationDemo } from "./ClaimVerification";
+import { InvestigationScope } from "./InvestigationScope";
 import { CausalExploration } from "./CausalExploration";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
@@ -42,13 +43,14 @@ import {
   FactorEvidence,
   PositionEvidence,
   InvestigationFindings,
-  ShockEvidence,
 } from "./InvestigationEvidence";
 import {
   executivePreview,
   dailyQuestion,
   scenarioQuestion,
   investigationRequest,
+  followupTarget,
+  scopeLabel,
   principalDrivers,
   type InvestigationFocus,
 } from "./investigation";
@@ -1002,8 +1004,8 @@ function Scenarios({
         <span>
           Illustrative shocks, not forecasts or calibrated historical replays.
           Linear sensitivities can materially misstate losses under large moves.
-          The selected shocks persist across pages and are sent with each AI
-          question.
+          Selected shocks persist across pages for new stress investigations.
+          Follow-ups retain their captured assumptions.
         </span>
       </div>
     </>
@@ -1027,6 +1029,8 @@ function ReasoningPage({
   error,
   ask,
   goScenario,
+  activeInvestigationId,
+  setActiveInvestigationId,
 }: {
   data: Workstation;
   calc: Calculation | null;
@@ -1038,7 +1042,11 @@ function ReasoningPage({
   error: string;
   ask: (q: string, focus?: InvestigationFocus) => Promise<void>;
   goScenario: () => void;
+  activeInvestigationId: string | null;
+  setActiveInvestigationId: (id: string) => void;
 }) {
+  const target = followupTarget(messages, activeInvestigationId);
+  const investigations = messages.filter((m, i) => messages.findIndex(other => other.investigation_id === m.investigation_id) === i);
   return (
     <div className="reasoning-layout">
       <div className="conversation">
@@ -1061,7 +1069,11 @@ function ReasoningPage({
             onClick={() => void ask(dailyQuestion, "daily")}
             disabled={busy}
           >
-            Explain the daily loss <ArrowRight size={15} />
+            Start new daily investigation <ArrowRight size={15} />
+          </button>
+          <button className="secondary" disabled={busy || pending || !calc}
+            onClick={() => void ask(scenarioQuestion, "scenario")}>
+            Start new investigation of current stress
           </button>
           <button className="secondary" onClick={goScenario}>
             3 · Explore a hypothetical scenario
@@ -1102,9 +1114,9 @@ function ReasoningPage({
               <details className="user-question">
                 <summary>
                   <span className="eyebrow">
-                    {m.investigation_focus === "daily"
+                    {m.investigation_scope === "daily"
                       ? "DAILY LOSS INVESTIGATION"
-                      : m.investigation_focus === "scenario"
+                      : m.investigation_scope === "scenario"
                         ? "HYPOTHETICAL SCENARIO INVESTIGATION"
                         : "YOUR QUESTION"}
                   </span> · View question
@@ -1120,6 +1132,7 @@ function ReasoningPage({
                     : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
                 </span>
               </div>
+              <InvestigationScope answer={m} label="Answer scope" />
               <section className="executive-conclusion">
                 <span className="eyebrow">WHAT MATTERS MOST · MODEL JUDGMENT</span>
                 <p className="answer-summary">{executivePreview(m.interpretation.summary)}</p>
@@ -1141,26 +1154,16 @@ function ReasoningPage({
                 <p>
                   Daily illustrative snapshot {m.context.market.as_of}:{" "}
                   <b>{money(m.context.daily.total_pnl_usd)}</b>.{" "}
-                  {m.investigation_focus !== "daily" && (
+                  {m.investigation_scope !== "daily" && (
                     <>
                       Hypothetical scenario:{" "}
                       <b>{money(m.context.scenario.total_pnl_usd)}</b>.
                     </>
                   )}
                 </p>
-                <details className="answer-section">
-                  <summary>Captured shock assumptions</summary>
-                  <ShockEvidence
-                    calculation={
-                      m.investigation_focus === "daily"
-                        ? m.context.daily
-                        : m.context.scenario
-                    }
-                  />
-                </details>
                 <FactorEvidence
                   calculation={
-                    m.investigation_focus === "daily"
+                    m.investigation_scope === "daily"
                       ? m.context.daily
                       : m.context.scenario
                   }
@@ -1168,7 +1171,7 @@ function ReasoningPage({
                 <PositionEvidence
                   id={`answer-evidence-${i}`}
                   calculation={
-                    m.investigation_focus === "daily"
+                    m.investigation_scope === "daily"
                       ? m.context.daily
                       : m.context.scenario
                   }
@@ -1210,6 +1213,10 @@ function ReasoningPage({
                 uncertainties={m.interpretation.assumptions_and_uncertainties}
                 evidenceId={`answer-evidence-${i}`}
               />
+              <button className="text-button" disabled={busy} onClick={() => {
+                setActiveInvestigationId(m.investigation_id);
+                document.getElementById("followup-composer")?.scrollIntoView({ behavior: "smooth" });
+              }}>Continue this investigation</button>
               <button className="text-button" onClick={goScenario}>
                 3 · Explore or adjust a hypothetical stress{" "}
                 <ArrowRight size={15} />
@@ -1256,11 +1263,22 @@ function ReasoningPage({
         })}
         <form
           className="composer"
+          id="followup-composer"
           onSubmit={(e) => {
             e.preventDefault();
             void ask(question);
           }}
         >
+          {target ? <>
+            <label htmlFor="followup-target">Continue captured investigation</label>
+            <select id="followup-target" value={target.investigation_id} disabled={busy}
+              onChange={e => setActiveInvestigationId(e.target.value)}>
+              {investigations.map((m, i) => <option key={m.investigation_id} value={m.investigation_id}>
+                {i + 1} · {scopeLabel(m)}
+              </option>)}
+            </select>
+            <InvestigationScope answer={target} label="Follow-up scope" />
+          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Start new daily investigation.</p>}
           <label className="sr-only" htmlFor="question">
             Ask Metis a portfolio question
           </label>
@@ -1269,28 +1287,27 @@ function ReasoningPage({
             maxLength={2000}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask Metis about your portfolio…"
+            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the current stress scenario…"}
             rows={3}
             disabled={busy}
           />
           <div>
             <small>
-              Grounded in the selected snapshot and scenario · no private
-              chain-of-thought
+              {target ? "Uses captured evidence and history from this investigation only. To analyze different assumptions, start a new investigation." : "Starts a new investigation; no earlier conversation is replayed."}
             </small>
             <button
               className="primary"
-              disabled={busy || pending || !calc || !question.trim()}
+              disabled={busy || (!target && (pending || !calc)) || !question.trim()}
               type="submit"
             >
               <Send size={15} />
-              {busy ? "Working…" : "Ask Metis"}
+              {busy ? "Working…" : target ? "Ask follow-up" : "Start stress investigation"}
             </button>
           </div>
         </form>
       </div>
       <aside className="context-sidebar">
-        <Panel title="Active evidence" note="Shared context">
+        <Panel title="Current controls" note="For new investigations">
           <span className="badge amber">SYNTHETIC DATA</span>
           <h3>{data.portfolio_name}</h3>
           <div className="context-stat">
@@ -1307,8 +1324,7 @@ function ReasoningPage({
           </div>
           <h3>Current hypothetical scenario</h3>
           <p className="context-note">
-            Each answer keeps its original evidence, even after these controls
-            change.
+            Used only when starting a new stress investigation. Existing answers and follow-ups use their captured evidence.
           </p>
           {calc && !pending ? (
             <>
@@ -1393,6 +1409,7 @@ export default function App() {
   const [pending, setPending] = useState(true);
   const [scenarioError, setScenarioError] = useState("");
   const [messages, setMessages] = useState<Reasoning[]>([]);
+  const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [reasoningBusy, setReasoningBusy] = useState(false);
   const [reasoningError, setReasoningError] = useState("");
@@ -1412,11 +1429,9 @@ export default function App() {
     navigate(5);
     setQuestion(q);
     setReasoningError("");
-    if (focus !== "daily" && (pending || scenarioError || !calc)) {
-      setReasoningError(
-        scenarioError ||
-          "Wait for the selected hypothetical scenario to finish calculating.",
-      );
+    const isFollowup = focus === "question" && messages.length > 0;
+    if (!isFollowup && focus !== "daily" && (pending || scenarioError || !calc)) {
+      setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
     }
     requestInFlight.current = true;
@@ -1424,12 +1439,13 @@ export default function App() {
     try {
       const result = await api<Reasoning>(
         "reasoning",
-        investigationRequest(focus, q, data.daily, calc, messages),
+        investigationRequest(focus, q, data.daily, calc, messages, activeInvestigationId),
       );
       setMessages((previous) => [
         ...previous,
-        { ...result, investigation_focus: focus },
+        { ...result, investigation_focus: result.investigation_scope },
       ]);
+      setActiveInvestigationId(result.investigation_id);
       setQuestion("");
     } catch (e) {
       setReasoningError((e as Error).message);
@@ -1659,7 +1675,9 @@ export default function App() {
                   question={question}
                   setQuestion={setQuestion}
                   busy={reasoningBusy}
-                  error={reasoningError || scenarioError}
+                  error={reasoningError}
+                  activeInvestigationId={activeInvestigationId}
+                  setActiveInvestigationId={setActiveInvestigationId}
                   ask={ask}
                   goScenario={() => navigate(4)}
                 />

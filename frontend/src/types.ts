@@ -79,6 +79,8 @@ export type Workstation = {
   history: Episode[];
 };
 export type Reasoning = {
+  investigation_id: string;
+  investigation_scope: "daily" | "scenario";
   verification?: ClaimVerdict[];
   investigation_focus?: "daily" | "scenario" | "question";
   question: string;

@@ -6,28 +6,51 @@ export const dailyQuestion =
 export const scenarioQuestion =
   "Interpret the selected hypothetical stress scenario. Explain its assumed shocks, factor contributions and total portfolio P&L, distinguish rate gains from spread losses and net position P&L, and identify vulnerabilities and missing evidence worth investigating. Keep this hypothetical result separate from the dated illustrative daily P&L; it is not a forecast.";
 
+// A follow-up targets an existing backend snapshot, regardless of current controls.
+export function followupTarget(messages: Reasoning[], investigationId?: string | null) {
+  const target = investigationId
+    ? [...messages].reverse().find(m => m.investigation_id === investigationId)
+    : messages.at(-1);
+  if (investigationId && !target) throw new Error("Select an available investigation.");
+  return target;
+}
+
 export function investigationRequest(
   focus: InvestigationFocus,
   question: string,
   daily: Calculation,
   scenario: Calculation | null,
   messages: Reasoning[],
+  investigationId?: string | null,
 ) {
+  if (focus === "question" && messages.length) {
+    const target = followupTarget(messages, investigationId);
+    if (!target?.investigation_id) throw new Error("Start a new daily or scenario investigation.");
+    return {
+      question: question.trim(),
+      investigation_id: target.investigation_id,
+      history: messages.filter(m => m.investigation_id === target.investigation_id).slice(-3)
+        .flatMap(m => [
+          { role: "user", content: m.question },
+          { role: "assistant", content: m.interpretation.summary },
+        ]),
+    };
+  }
   const calculation = focus === "daily" ? daily : scenario;
-  if (!calculation)
-    throw new Error("Wait for the selected scenario to finish calculating.");
+  if (!calculation) throw new Error("Wait for the selected scenario to finish calculating.");
   return {
     question: question.trim(),
+    investigation_scope: focus === "daily" ? "daily" : "scenario",
     shocks: { ...calculation.shocks },
-    // Contextual investigations start fresh; only explicit follow-up questions replay history.
-    history:
-      focus === "question"
-        ? messages.slice(-3).flatMap((m) => [
-            { role: "user", content: m.question },
-            { role: "assistant", content: m.interpretation.summary },
-          ])
-        : [],
+    history: [],
   };
+}
+
+export function scopeLabel(answer: Reasoning) {
+  const date = answer.context.market.as_of;
+  if (answer.investigation_scope === "daily") return `Daily snapshot · ${date}`;
+  const s = answer.context.scenario.shocks;
+  return `Captured stress · ${date} · rates ${s.rates_bp}bp, IG ${s.ig_bp}bp, HY ${s.hy_bp}bp, equities ${s.equity_pct}%, EUR/USD ${s.fx_pct}%`;
 }
 
 export function principalDrivers(calculation: Calculation) {

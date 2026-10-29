@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   executivePreview,
+  followupTarget,
+  scopeLabel,
   measuredContributions,
   investigationRequest,
   principalDrivers,
@@ -61,6 +63,7 @@ test("scenario request captures current shocks and stays stable after later edit
 });
 test("only explicit follow-up requests replay bounded conversational history", () => {
   const history = Array.from({ length: 5 }, (_, i) => ({
+    investigation_id: "captured-a",
     question: `Q${i}`,
     interpretation: { summary: `A${i}` },
   }));
@@ -77,6 +80,62 @@ test("only explicit follow-up requests replay bounded conversational history", (
     ["Q2", "A2", "Q3", "A3", "Q4", "A4"],
   );
 });
+function captured(id, scope = "scenario", calculation = stress) {
+  return {investigation_id: id, investigation_scope: scope, question: "Original question",
+    interpretation: {summary: "Original summary"},
+    context: {portfolio: {portfolio_name: "Captured portfolio", nav_usd: 100000000},
+      market: {as_of: "2025-03-10"}, daily: structuredClone(daily), scenario: structuredClone(calculation)}};
+}
+
+test("daily and stress follow-ups retain their snapshot reference before and after controls change", () => {
+  for (const scope of ["daily", "scenario"]) {
+    const original = captured("captured-a", scope, scope === "daily" ? daily : stress);
+    const unchanged = structuredClone(original);
+    const messages = [original];
+    const before = investigationRequest("question", "Which positions?", daily, stress, messages);
+    const edited = structuredClone(stress);
+    edited.shocks.rates_bp = 70;
+    const after = investigationRequest("question", "Which positions?", daily, edited, messages);
+    assert.deepEqual(after, before);
+    assert.equal(after.investigation_id, original.investigation_id);
+    assert.equal(after.shocks, undefined); // Only the server-owned snapshot is used.
+    assert.deepEqual(investigationRequest("question", "Which positions?", daily, null, messages), before);
+    assert.deepEqual(original, unchanged);
+    assert.equal(followupTarget(messages), original);
+  }
+});
+
+test("daily-to-stress and stress-to-daily start fresh; older investigations can still be continued", () => {
+  const first = captured("daily-a", "daily", daily);
+  const second = captured("stress-a");
+  const third = captured("daily-b", "daily", daily);
+  const messages = [first, second, third];
+  for (const focus of ["scenario", "daily"]) {
+    const request = investigationRequest(focus, "Analyze different scope", daily, stress, messages, first.investigation_id);
+    assert.deepEqual(request.history, []);
+    assert.equal(request.investigation_id, undefined);
+    assert.equal(request.investigation_scope, focus);
+    assert.deepEqual(request.shocks, (focus === "daily" ? daily : stress).shocks);
+  }
+  const follow = investigationRequest("question", "Follow up", daily, stress, messages, second.investigation_id);
+  assert.equal(follow.investigation_id, second.investigation_id);
+  assert.deepEqual(follow.history.map(t => t.content), [second.question, second.interpretation.summary]);
+  const repeatedDaily = investigationRequest("question", "Follow up", daily, stress, messages, third.investigation_id);
+  assert.equal(repeatedDaily.history.length, 2); // Same shocks do not merge independent investigations.
+  assert.equal(followupTarget(messages), third);
+  assert.equal(followupTarget(messages, first.investigation_id), first);
+  assert.throws(() => investigationRequest("question", "Follow up", daily, stress, messages, "missing"), /available investigation/);
+  assert.match(scopeLabel(first), /Daily snapshot.*2025-03-10/);
+  assert.match(scopeLabel(second), /Captured stress.*rates -50bp.*HY 250bp/);
+});
+
+test("history is bounded within the chosen investigation even when other investigations intervene", () => {
+  const messages = Array.from({length: 8}, (_, i) => ({...captured(i % 2 ? "other" : "chosen"), question: `Q${i}`}));
+  const request = investigationRequest("question", "Follow up", daily, null, messages, "chosen");
+  assert.deepEqual(request.history.filter(t => t.role === "user").map(t => t.content), ["Q2", "Q4", "Q6"]);
+  assert.equal(request.history.length, 6);
+});
+
 test("driver selection uses signed backend net P&L without altering positions", () => {
   const calculation = {
     positions: [

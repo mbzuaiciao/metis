@@ -73,3 +73,23 @@ test("empty assertions explicitly leave original prose unchecked", () => {
   assert.match(markup, /No structured assertions were submitted/);
   assert.match(markup, /original prose is Not checked/);
 });
+
+const { InvestigationScope } = await import("../src/InvestigationScope.tsx");
+test("answer and follow-up labels render captured daily or stress scope and assumptions", () => {
+  const shocks = {rates_bp: -50, ig_bp: 75, hy_bp: 250, equity_pct: -15, fx_pct: -5};
+  for (const scope of ["daily", "scenario"]) {
+    const answer = {investigation_scope: scope, context: {
+      market: {as_of: "2025-03-10"}, portfolio: {portfolio_name: "Original portfolio", nav_usd: 100000000},
+      daily: {shocks: {...shocks, rates_bp: -8}}, scenario: {shocks},
+    }};
+    for (const label of ["Answer scope", "Follow-up scope"]) {
+      const markup = renderToStaticMarkup(React.createElement(InvestigationScope, {answer, label}));
+      assert.match(markup, new RegExp(label));
+      assert.match(markup, scope === "daily" ? /Daily snapshot/ : /Captured stress/);
+      assert.match(markup, /Original portfolio/);
+      assert.match(markup, /2025-03-10/);
+      assert.match(markup, /Current scenario controls do not change this investigation/);
+      assert.match(markup, scope === "daily" ? /<b>-8<\/b>/ : /<b>-50<\/b>/);
+    }
+  }
+});

@@ -17,7 +17,7 @@ def test_representative_inputs_use_production_context_and_baseline():
     assert rows[3]['context']==rows[1]['context']
     assert 'expected' not in rows[0]['context']
     assert s.COMPACT_SYSTEM==s.SYSTEM+'\n\n'+s.COMPACT_OUTPUT
-    assert s.META_INFERENCE_PARAMETERS=={'max_completion_tokens':8000,'temperature':.2}
+    assert s.META_INFERENCE_PARAMETERS=={'max_completion_tokens':8000,'temperature':.2,'reasoning_effort':'low'}
 
 
 def test_eight_attempts_frozen_before_calls_no_retry(tmp_path,monkeypatch):

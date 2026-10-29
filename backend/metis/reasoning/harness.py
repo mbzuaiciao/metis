@@ -13,7 +13,7 @@ from metis.analytics.engine import Shocks, calculate, load_positions, workstatio
 from metis.verification.claims import FinancialClaim, claim, verify_claims
 
 ContextMode = Literal["full", "evidence_only"]
-META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2}
+META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2, "reasoning_effort": "low"}
 
 
 class Interpretation(BaseModel):

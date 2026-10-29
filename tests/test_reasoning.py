@@ -19,8 +19,12 @@ def demo_environment(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
 
 
-def test_demo_receives_actual_selected_scenario():
+def test_demo_receives_actual_selected_scenario(monkeypatch):
+    def unexpected_http_client(**kwargs):
+        pytest.fail("Deterministic demo must not create an HTTP client")
+    monkeypatch.setattr(httpx, "Client", unexpected_http_client)
     result = reason(ReasoningRequest(question="Why are rates not protecting the portfolio?", shocks=Shocks(rates_bp=-50)))
+    assert result == reason(ReasoningRequest(question="Why are rates not protecting the portfolio?", shocks=Shocks(rates_bp=-50)))
     assert result["mode"] == "demo"
     assert result["model"] is None
     assert result["context"]["scenario"]["total_pnl_usd"] == 2_578_000
@@ -50,6 +54,8 @@ def test_live_provider_contract(monkeypatch, provider):
             assert req.headers["authorization"] == "Bearer test-only"
             assert body["messages"][0]["role"] == "system"
             assert body["max_completion_tokens"] == 8000
+            assert body["temperature"] == 0.2
+            assert body["reasoning_effort"] == "low"
             assert "max_tokens" not in body
             output_format = body["response_format"]
             assert output_format["type"] == "json_schema"
@@ -63,9 +69,16 @@ def test_live_provider_contract(monkeypatch, provider):
         assert req.headers["x-api-key"] == "test-only"
         assert req.headers["anthropic-version"] == "2023-06-01"
         assert "system" in body
+        assert body["max_tokens"] == 3000
+        assert "reasoning_effort" not in body
+        assert "max_completion_tokens" not in body
+        assert "temperature" not in body
         return httpx.Response(200, json={"content":[{"type":"text","text":expected.model_dump_json()}],"stop_reason":"end_turn"})
     original = httpx.Client
-    monkeypatch.setattr(httpx, "Client", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
+    def mock_client(**kwargs):
+        assert kwargs["timeout"] == 60
+        return original(transport=httpx.MockTransport(handler), **kwargs)
+    monkeypatch.setattr(httpx, "Client", mock_client)
     assert HTTPProvider(provider).interpret(request, context) == expected
 
 

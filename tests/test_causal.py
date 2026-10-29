@@ -23,6 +23,7 @@ def mock_reply(monkeypatch, payload, finish="stop"):
     def handler(request):
         body = json.loads(request.content)
         assert request.url.path == "/v1/chat/completions"
+        assert body["reasoning_effort"] == "low"
         assert body["response_format"]["json_schema"]["name"] == "causal_exploration"
         schema = body["response_format"]["json_schema"]["schema"]
         assert schema["$defs"]["ProposedShocks"]["required"] == list(Shocks.model_fields)

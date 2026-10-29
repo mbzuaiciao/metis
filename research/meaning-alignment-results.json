@@ -1,0 +1,1605 @@
+{
+  "date_utc": "2026-10-29T17:43:22.529301+00:00",
+  "git_revision": "f99d11cf734a914fb02af385877da80b3475c160",
+  "model": null,
+  "model_calls": 0,
+  "inference_tokens": 0,
+  "inference_latency": null,
+  "source_sha256": {
+    "research/meaning-alignment-cases.json": "95205091c6572ca7c95df4b263a1dc29105252216a96f0357f54105410a74ba2",
+    "research/meaning-alignment-protocol.md": "5ecb3dca13fb95540e4efa630d6a0bca4ce7d368500a6630cfaff6311f0414ff",
+    "research/meaning_alignment.py": "f7677fbdb404ea46577b83b86136a67d2e9fb3bf9fb08cc60ae48069bc1901eb",
+    "research/meaning_alignment_evaluation.py": "e82a3f962c009a0541deae50489bdb49c19621f621b1a25b4f8a296f704fc4c5",
+    "research/evidence_grounding.py": "15990cba44f77a48c1ec1566b616236a58bc4aa281a266c678fadecad1bf565b",
+    "research/evidence-grounded-cases.json": "f49f978fc541a0aea333fc2d3a8a010fd14cbc3220715823634d3b02874f6c36",
+    "backend/metis/verification/claims.py": "2894be634168365f1f7652eb8e87b454b0363d16986c97ece69425e5dd600664",
+    "backend/metis/analytics/engine.py": "b80b1ffcef81a3c3f91110cc87160118e129aa11e9c092a6b49bb31f824f4fcc",
+    "backend/metis/reasoning/harness.py": "8c63a0a457a3b209e2add139ed9b1039ba70af1b61fca22cc156f851492c6da2",
+    "backend/metis/data/positions.csv": "9a5630d27ac057c750745b9dfecac54d1979e9ceb36922569104360639ce648d",
+    "backend/metis/data/market.json": "72d0a3113c3fafa16fbf621bd3c06f0f8e834e33b786d99e182e42f3ff36b33f"
+  },
+  "context_sha256": "7e52abbbe432d75e40b8411984063344b32bd9dbec2b9c6d261ff262389feefd",
+  "catalog": {
+    "hy_net": {
+      "value": -872500.0,
+      "path": [
+        "scenario",
+        "positions[spread_bucket=hy]",
+        "pnl_usd"
+      ]
+    },
+    "hy_spread": {
+      "value": -1112500.0,
+      "path": [
+        "scenario",
+        "positions[spread_bucket=hy]",
+        "credit_pnl"
+      ]
+    },
+    "scenario_rates": {
+      "value": 2578000.0,
+      "path": [
+        "scenario",
+        "by_factor",
+        "rates_pnl"
+      ]
+    },
+    "scenario_total": {
+      "value": -3347000.0,
+      "path": [
+        "scenario",
+        "total_pnl_usd"
+      ]
+    },
+    "daily_fx": {
+      "value": -60000.0,
+      "fx_delta_usd": -3000000,
+      "eurusd_pct": 2.0,
+      "path": [
+        "fx_snapshot",
+        "positions[FX-X]",
+        "fx_pnl"
+      ]
+    },
+    "daily_total": {
+      "value": -560770.0,
+      "path": [
+        "daily",
+        "total_pnl_usd"
+      ]
+    },
+    "cs01": {
+      "value": 15950.0,
+      "path": [
+        "portfolio",
+        "exposures",
+        "cs01_usd_per_bp"
+      ]
+    },
+    "funding": {
+      "available": 1900000,
+      "required": 1400000,
+      "horizon": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon",
+      "path": [
+        "supplemental_evidence",
+        "funding"
+      ]
+    },
+    "default": {
+      "value": 4160000.0,
+      "path": [
+        "supplemental_evidence",
+        "default"
+      ]
+    }
+  },
+  "summary": {
+    "expected_counts": {
+      "supported": 5,
+      "error": 8,
+      "conditional": 2,
+      "unresolved": 1
+    },
+    "candidate_counts": {
+      "Scoped match": 5,
+      "Mismatch": 3,
+      "Not established": 4,
+      "Conditional hypothesis": 2,
+      "Uncheckable": 2
+    },
+    "detected_errors": [
+      "02",
+      "04",
+      "06",
+      "08",
+      "10",
+      "11",
+      "13"
+    ],
+    "missed_errors": [
+      "15"
+    ],
+    "incorrect_verdicts": [],
+    "abstentions": [
+      "15",
+      "16"
+    ]
+  },
+  "records": [
+    {
+      "id": "01",
+      "statement": "In the scenario, HY net P&L is -$872,500.",
+      "citation": "hy_net",
+      "expected": "supported",
+      "rationale": "HY rates +240,000 plus spread -1,112,500 equals net -872,500; net is the correct attribution.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, HY net P&L is -$872,500.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "spread_bucket:hy",
+          "metric": "pnl_usd",
+          "assertion": "equals",
+          "value": -872500.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 Credit bucket hy \u00b7 net P&L equals -872,500.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.positions[HY-US].pnl_usd",
+            "value": -472500.0
+          },
+          {
+            "path": "scenario.positions[HY-EU].pnl_usd",
+            "value": -400000.0
+          },
+          {
+            "path": "mapped_target_total.pnl_usd",
+            "value": -872500.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Fact interface has no aggregate/list-selector path."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Scoped match",
+        "reason": "Sentence names hy_net; cited hy_net. Authoritative named value: -872500.0.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -872500.0,
+          "path": [
+            "scenario",
+            "positions[spread_bucket=hy]",
+            "pnl_usd"
+          ]
+        }
+      },
+      "existing_seconds": 0.0007150410674512386,
+      "candidate_seconds": 0.00012924999464303255
+    },
+    {
+      "id": "02",
+      "statement": "In the scenario, HY spread-only P&L is -$872,500.",
+      "citation": "hy_net",
+      "expected": "error",
+      "rationale": "The cited net amount is correct but spread-only P&L is -1,112,500; contribution attribution is wrong.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, HY spread-only P&L is -$872,500.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "spread_bucket:hy",
+          "metric": "pnl_usd",
+          "assertion": "equals",
+          "value": -872500.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 Credit bucket hy \u00b7 net P&L equals -872,500.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.positions[HY-US].pnl_usd",
+            "value": -472500.0
+          },
+          {
+            "path": "scenario.positions[HY-EU].pnl_usd",
+            "value": -400000.0
+          },
+          {
+            "path": "mapped_target_total.pnl_usd",
+            "value": -872500.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Fact interface has no aggregate/list-selector path."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "claim": {
+          "statement": "In the scenario, HY spread-only P&L is -$872,500.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "spread_bucket:hy",
+          "metric": "credit_pnl",
+          "assertion": "equals",
+          "value": -872500.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 Credit bucket hy \u00b7 spread-only P&L equals -872,500.00 USD (precision: exact)",
+        "verdict": "Contradicted",
+        "explanation": "The claimed value differs from the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.positions[HY-US].credit_pnl",
+            "value": -612500.0
+          },
+          {
+            "path": "scenario.positions[HY-EU].credit_pnl",
+            "value": -500000.0
+          },
+          {
+            "path": "mapped_target_total.credit_pnl",
+            "value": -1112500.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "candidate": {
+        "verdict": "Mismatch",
+        "reason": "Sentence names hy_spread; cited hy_net. Authoritative named value: -1112500.0.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -872500.0,
+          "path": [
+            "scenario",
+            "positions[spread_bucket=hy]",
+            "pnl_usd"
+          ]
+        }
+      },
+      "existing_seconds": 4.1749910451471806e-05,
+      "candidate_seconds": 4.875008016824722e-06
+    },
+    {
+      "id": "03",
+      "statement": "In the scenario, portfolio rates P&L is +$2,578,000.",
+      "citation": "scenario_rates",
+      "expected": "supported",
+      "rationale": "51,560 USD/bp times a 50bp decline gives a positive 2,578,000 rates contribution.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, portfolio rates P&L is +$2,578,000.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "portfolio",
+          "metric": "rates_pnl",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 portfolio \u00b7 government-rate P&L equals 2,578,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.by_factor.rates_pnl",
+            "value": 2578000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, portfolio rates P&L is +$2,578,000.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "fact_path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ],
+          "value": 2578000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Scoped match",
+        "reason": "Sentence names scenario_rates; cited scenario_rates. Authoritative named value: 2578000.0.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 2578000.0,
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 2.6124995201826096e-05,
+      "candidate_seconds": 4.624947905540466e-06
+    },
+    {
+      "id": "04",
+      "statement": "In the scenario, portfolio total P&L is +$2,578,000.",
+      "citation": "scenario_rates",
+      "expected": "error",
+      "rationale": "A correct positive rates contribution is not portfolio total P&L, which is -3,347,000.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, portfolio total P&L is +$2,578,000.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "portfolio",
+          "metric": "rates_pnl",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 portfolio \u00b7 government-rate P&L equals 2,578,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.by_factor.rates_pnl",
+            "value": 2578000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "In the scenario, portfolio total P&L is +$2,578,000.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "fact_path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ],
+          "value": 2578000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "claim": {
+          "statement": "In the scenario, portfolio total P&L is +$2,578,000.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "portfolio",
+          "metric": "total_pnl_usd",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 portfolio \u00b7 total P&L equals 2,578,000.00 USD (precision: exact)",
+        "verdict": "Contradicted",
+        "explanation": "The claimed value differs from the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.total_pnl_usd",
+            "value": -3347000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "candidate": {
+        "verdict": "Mismatch",
+        "reason": "Sentence names scenario_total; cited scenario_rates. Authoritative named value: -3347000.0.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 2578000.0,
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 2.8832932002842426e-05,
+      "candidate_seconds": 2.666027285158634e-06
+    },
+    {
+      "id": "05",
+      "statement": "In the daily snapshot, EUR appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+      "citation": "daily_fx",
+      "expected": "supported",
+      "rationale": "EUR/USD +1% and negative EUR delta produce -60,000; this is a model-factor attribution, not an identified macro cause.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the daily snapshot, EUR appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+          "kind": "number",
+          "period": "daily",
+          "target": "position:FX-X",
+          "metric": "fx_pnl",
+          "assertion": "equals",
+          "value": -60000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 Position FX-X \u00b7 FX P&L equals -60,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "daily.positions[FX-X].fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "mapped_target_total.fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "In the daily snapshot, EUR appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": -60000.0,
+          "fact_path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ],
+          "value": -60000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Scoped match",
+        "reason": "Rising EUR/USD is EUR appreciation; negative EUR delta loses in the linear model.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -60000.0,
+          "fx_delta_usd": -3000000,
+          "eurusd_pct": 2.0,
+          "path": [
+            "fx_snapshot",
+            "positions[FX-X]",
+            "fx_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 1.791701652109623e-05,
+      "candidate_seconds": 0.00014283298514783382
+    },
+    {
+      "id": "06",
+      "statement": "In the daily snapshot, USD appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+      "citation": "daily_fx",
+      "expected": "error",
+      "rationale": "EUR/USD +1% is EUR appreciation, not USD appreciation; the copied FX amount remains correct.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "In the daily snapshot, USD appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+          "kind": "number",
+          "period": "daily",
+          "target": "position:FX-X",
+          "metric": "fx_pnl",
+          "assertion": "equals",
+          "value": -60000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 Position FX-X \u00b7 FX P&L equals -60,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "daily.positions[FX-X].fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "mapped_target_total.fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "In the daily snapshot, USD appreciation causes the short-EUR position's FX P&L of -$60,000 in the linear model.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": -60000.0,
+          "fact_path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ],
+          "value": -60000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Mismatch",
+        "reason": "Rising EUR/USD is EUR appreciation; negative EUR delta loses in the linear model.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -60000.0,
+          "fx_delta_usd": -3000000,
+          "eurusd_pct": 2.0,
+          "path": [
+            "fx_snapshot",
+            "positions[FX-X]",
+            "fx_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 4.241697024554014e-05,
+      "candidate_seconds": 5.084089934825897e-06
+    },
+    {
+      "id": "07",
+      "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for the next day.",
+      "citation": "funding",
+      "expected": "supported",
+      "rationale": "Fixture07 supplies available cash plus facility and exhaustive next-day outflows; 1.9m >= 1.4m for that horizon.",
+      "production_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Supplemental calculation outside production numerical vocabulary."
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for the next day.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 1500000.0,
+          "fact_path": [
+            "supplemental_evidence",
+            "funding",
+            "available_cash_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "supplemental_evidence",
+            "funding",
+            "available_cash_usd"
+          ],
+          "value": 1500000
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for the next day.",
+          "category": "funding",
+          "stance": "definitive",
+          "assertion": "adequate",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [],
+        "evidence": {
+          "available_usd": 1900000,
+          "required_usd": 1400000,
+          "scope": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon"
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported scoped conclusion",
+        "reason": "Within the exact supplied scenario/definition only; not general adequacy, future exposure, optimality or causation."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Scoped match",
+        "reason": "Coverage of the specified next-day outflows only.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "available": 1900000,
+          "required": 1400000,
+          "horizon": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon",
+          "path": [
+            "supplemental_evidence",
+            "funding"
+          ]
+        }
+      },
+      "existing_seconds": 1.791701652109623e-05,
+      "candidate_seconds": 0.0001449999399483204
+    },
+    {
+      "id": "08",
+      "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for all future horizons.",
+      "citation": "funding",
+      "expected": "error",
+      "rationale": "Next-day figures cannot establish funding adequacy at other horizons; this is unsupported, not proof of an eventual shortfall.",
+      "production_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Supplemental calculation outside production numerical vocabulary."
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for all future horizons.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 1500000.0,
+          "fact_path": [
+            "supplemental_evidence",
+            "funding",
+            "available_cash_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "supplemental_evidence",
+            "funding",
+            "available_cash_usd"
+          ],
+          "value": 1500000
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "Available funding of $1,900,000 covers the specified $1,400,000 outflows for all future horizons.",
+          "category": "funding",
+          "stance": "definitive",
+          "assertion": "adequate",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [],
+        "evidence": {
+          "available_usd": 1900000,
+          "required_usd": 1400000,
+          "scope": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon"
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported scoped conclusion",
+        "reason": "Within the exact supplied scenario/definition only; not general adequacy, future exposure, optimality or causation."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Not established",
+        "reason": "Evidence covers next day only, not other horizons.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "available": 1900000,
+          "required": 1400000,
+          "horizon": "Next business day; resources unencumbered and drawable; obligations exhaustive for this horizon",
+          "path": [
+            "supplemental_evidence",
+            "funding"
+          ]
+        }
+      },
+      "existing_seconds": 1.5709083527326584e-05,
+      "candidate_seconds": 5.499925464391708e-06
+    },
+    {
+      "id": "09",
+      "statement": "The specified issuer default scenario loss is $4,160,000.",
+      "citation": "default",
+      "expected": "supported",
+      "rationale": "Fixture08 face 6.4m times 100% default times 65% loss given default equals 4.16m in the specified scenario.",
+      "production_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Supplemental calculation outside production numerical vocabulary."
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "The specified issuer default scenario loss is $4,160,000.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 6400000.0,
+          "fact_path": [
+            "supplemental_evidence",
+            "default",
+            "issuer_face_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "supplemental_evidence",
+            "default",
+            "issuer_face_usd"
+          ],
+          "value": 6400000
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "The specified issuer default scenario loss is $4,160,000.",
+          "category": "default",
+          "stance": "definitive",
+          "assertion": "equals",
+          "value": 4160000.0,
+          "fact_path": []
+        },
+        "missing": [],
+        "evidence": {
+          "scenario_loss_usd": 4160000.0,
+          "scope": "specified_issuer_default_scenario"
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported scoped conclusion",
+        "reason": "Within the exact supplied scenario/definition only; not general adequacy, future exposure, optimality or causation."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Scoped match",
+        "reason": "Specified issuer default scenario only; no forecast.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 4160000.0,
+          "path": [
+            "supplemental_evidence",
+            "default"
+          ]
+        }
+      },
+      "existing_seconds": 1.3499986380338669e-05,
+      "candidate_seconds": 9.133398998528719e-05
+    },
+    {
+      "id": "10",
+      "statement": "The expected issuer default loss is $4,160,000.",
+      "citation": "default",
+      "expected": "error",
+      "rationale": "A conditional default scenario amount is not an expected loss; no default probability is supplied.",
+      "production_cited_fact": {
+        "verdict": "Uncheckable",
+        "reason": "Supplemental calculation outside production numerical vocabulary."
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "The expected issuer default loss is $4,160,000.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 6400000.0,
+          "fact_path": [
+            "supplemental_evidence",
+            "default",
+            "issuer_face_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "supplemental_evidence",
+            "default",
+            "issuer_face_usd"
+          ],
+          "value": 6400000
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "The expected issuer default loss is $4,160,000.",
+          "category": "default",
+          "stance": "definitive",
+          "assertion": "equals",
+          "value": 4160000.0,
+          "fact_path": []
+        },
+        "missing": [],
+        "evidence": {
+          "scenario_loss_usd": 4160000.0,
+          "scope": "specified_issuer_default_scenario"
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported scoped conclusion",
+        "reason": "Within the exact supplied scenario/definition only; not general adequacy, future exposure, optimality or causation."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Not established",
+        "reason": "Scenario loss supplies no probability-weighted expected loss.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 4160000.0,
+          "path": [
+            "supplemental_evidence",
+            "default"
+          ]
+        }
+      },
+      "existing_seconds": 1.4625024050474167e-05,
+      "candidate_seconds": 4.415982402861118e-06
+    },
+    {
+      "id": "11",
+      "statement": "Portfolio CS01 of $15,950 per bp proves issuer concentration exceeds policy limits.",
+      "citation": "cs01",
+      "expected": "error",
+      "rationale": "Spread sensitivity establishes neither issuer look-through nor a concentration policy threshold.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "Portfolio CS01 of $15,950 per bp proves issuer concentration exceeds policy limits.",
+          "kind": "number",
+          "period": "daily",
+          "target": "portfolio",
+          "metric": "cs01_usd_per_bp",
+          "assertion": "equals",
+          "value": 15950.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 portfolio \u00b7 CS01 equals 15,950.00 USD/bp (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "portfolio.exposures.cs01_usd_per_bp",
+            "value": 15950.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "Portfolio CS01 of $15,950 per bp proves issuer concentration exceeds policy limits.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 15950.0,
+          "fact_path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ],
+          "value": 15950.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "Portfolio CS01 of $15,950 per bp proves issuer concentration exceeds policy limits.",
+          "category": "issuer_concentration",
+          "stance": "definitive",
+          "assertion": "concentrated",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [
+          "issuer_amounts_usd",
+          "covered_credit_mark_usd",
+          "threshold_share"
+        ],
+        "evidence": {},
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Not established",
+        "reason": "Required category evidence is unavailable."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Not established",
+        "reason": "A CS01 scalar supplies neither issuer look-through nor policy limits.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 15950.0,
+          "path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ]
+        }
+      },
+      "existing_seconds": 2.645794302225113e-05,
+      "candidate_seconds": 8.124997839331627e-05
+    },
+    {
+      "id": "12",
+      "statement": "If issuer look-through reveals a policy breach, portfolio CS01 of $15,950 per bp could coexist with excessive issuer concentration.",
+      "citation": "cs01",
+      "expected": "conditional",
+      "rationale": "Explicit hypothesis does not assert that a breach exists; CS01 figure is correct, but possibility is not verified concentration.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "If issuer look-through reveals a policy breach, portfolio CS01 of $15,950 per bp could coexist with excessive issuer concentration.",
+          "kind": "number",
+          "period": "daily",
+          "target": "portfolio",
+          "metric": "cs01_usd_per_bp",
+          "assertion": "equals",
+          "value": 15950.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 portfolio \u00b7 CS01 equals 15,950.00 USD/bp (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "portfolio.exposures.cs01_usd_per_bp",
+            "value": 15950.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "If issuer look-through reveals a policy breach, portfolio CS01 of $15,950 per bp could coexist with excessive issuer concentration.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 15950.0,
+          "fact_path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ],
+          "value": 15950.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "If issuer look-through reveals a policy breach, portfolio CS01 of $15,950 per bp could coexist with excessive issuer concentration.",
+          "category": "issuer_concentration",
+          "stance": "conditional",
+          "assertion": "concentrated",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [
+          "issuer_amounts_usd",
+          "covered_credit_mark_usd",
+          "threshold_share"
+        ],
+        "evidence": {},
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Conditional hypothesis",
+        "reason": "Possibility is not a definitive assertion; its economic validity is not verified."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Conditional hypothesis",
+        "reason": "Explicit possibility; issuer breach and economic validity unchecked.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 15950.0,
+          "path": [
+            "portfolio",
+            "exposures",
+            "cs01_usd_per_bp"
+          ]
+        }
+      },
+      "existing_seconds": 2.233404666185379e-05,
+      "candidate_seconds": 9.87079693004489e-05
+    },
+    {
+      "id": "13",
+      "statement": "The daily portfolio P&L of -$560,770 proves forced liquidation caused the market moves.",
+      "citation": "daily_total",
+      "expected": "error",
+      "rationale": "P&L under observed synthetic moves cannot identify the cause of those moves; no identification evidence is supplied.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "The daily portfolio P&L of -$560,770 proves forced liquidation caused the market moves.",
+          "kind": "number",
+          "period": "daily",
+          "target": "portfolio",
+          "metric": "total_pnl_usd",
+          "assertion": "equals",
+          "value": -560770.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 portfolio \u00b7 total P&L equals -560,770.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "daily.total_pnl_usd",
+            "value": -560770.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "The daily portfolio P&L of -$560,770 proves forced liquidation caused the market moves.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": -560770.0,
+          "fact_path": [
+            "daily",
+            "total_pnl_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "daily",
+            "total_pnl_usd"
+          ],
+          "value": -560770.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "The daily portfolio P&L of -$560,770 proves forced liquidation caused the market moves.",
+          "category": "causation",
+          "stance": "definitive",
+          "assertion": "established",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [
+          "identification_design",
+          "exogenous_variation",
+          "outcomes",
+          "confounder_controls",
+          "uncertainty"
+        ],
+        "evidence": {},
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Not established",
+        "reason": "Required category evidence is unavailable."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Not established",
+        "reason": "A P&L calculation does not identify the cause of its input moves.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -560770.0,
+          "path": [
+            "daily",
+            "total_pnl_usd"
+          ]
+        }
+      },
+      "existing_seconds": 2.1499930880963802e-05,
+      "candidate_seconds": 8.000002708286047e-05
+    },
+    {
+      "id": "14",
+      "statement": "If funding pressure drove sales, the daily portfolio P&L of -$560,770 could be consistent with forced liquidation.",
+      "citation": "daily_total",
+      "expected": "conditional",
+      "rationale": "Conditional mechanism is not an established cause; the P&L is correct but does not validate the hypothesis.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "If funding pressure drove sales, the daily portfolio P&L of -$560,770 could be consistent with forced liquidation.",
+          "kind": "number",
+          "period": "daily",
+          "target": "portfolio",
+          "metric": "total_pnl_usd",
+          "assertion": "equals",
+          "value": -560770.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 portfolio \u00b7 total P&L equals -560,770.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "daily.total_pnl_usd",
+            "value": -560770.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "If funding pressure drove sales, the daily portfolio P&L of -$560,770 could be consistent with forced liquidation.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": -560770.0,
+          "fact_path": [
+            "daily",
+            "total_pnl_usd"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "daily",
+            "total_pnl_usd"
+          ],
+          "value": -560770.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "claim": {
+          "statement": "If funding pressure drove sales, the daily portfolio P&L of -$560,770 could be consistent with forced liquidation.",
+          "category": "causation",
+          "stance": "conditional",
+          "assertion": "established",
+          "value": null,
+          "fact_path": []
+        },
+        "missing": [
+          "identification_design",
+          "exogenous_variation",
+          "outcomes",
+          "confounder_controls",
+          "uncertainty"
+        ],
+        "evidence": {},
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Conditional hypothesis",
+        "reason": "Possibility is not a definitive assertion; its economic validity is not verified."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Conditional hypothesis",
+        "reason": "Conditional mechanism only; causal plausibility and identification unchecked.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -560770.0,
+          "path": [
+            "daily",
+            "total_pnl_usd"
+          ]
+        }
+      },
+      "existing_seconds": 1.962494570761919e-05,
+      "candidate_seconds": 9.470910299569368e-05
+    },
+    {
+      "id": "15",
+      "statement": "The short-EUR book dropped $60,000 as the greenback strengthened.",
+      "citation": "daily_fx",
+      "expected": "error",
+      "rationale": "Greenback strengthened paraphrases USD appreciation, contrary to EUR/USD +1%; unfamiliar wording remains a real error even if a checker abstains.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "The short-EUR book dropped $60,000 as the greenback strengthened.",
+          "kind": "number",
+          "period": "daily",
+          "target": "position:FX-X",
+          "metric": "fx_pnl",
+          "assertion": "equals",
+          "value": -60000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Daily snapshot \u00b7 Position FX-X \u00b7 FX P&L equals -60,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "daily.positions[FX-X].fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "mapped_target_total.fx_pnl",
+            "value": -60000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "The short-EUR book dropped $60,000 as the greenback strengthened.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": -60000.0,
+          "fact_path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "fx_snapshot",
+            "by_factor",
+            "fx_pnl"
+          ],
+          "value": -60000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Uncheckable",
+        "reason": "Entire sentence is outside the fixed grammar.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": -60000.0,
+          "fx_delta_usd": -3000000,
+          "eurusd_pct": 2.0,
+          "path": [
+            "fx_snapshot",
+            "positions[FX-X]",
+            "fx_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 2.1999934688210487e-05,
+      "candidate_seconds": 4.500034265220165e-06
+    },
+    {
+      "id": "16",
+      "statement": "With rates P&L of +$2,578,000, the hedge worked.",
+      "citation": "scenario_rates",
+      "expected": "unresolved",
+      "rationale": "Worked may mean positive contribution or mandate success; no hedge objective or designated sleeve is supplied. Request scope clarification rather than assert success or failure.",
+      "production_cited_fact": {
+        "claim": {
+          "statement": "With rates P&L of +$2,578,000, the hedge worked.",
+          "kind": "number",
+          "period": "scenario",
+          "target": "portfolio",
+          "metric": "rates_pnl",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "rounding": "exact",
+          "components": []
+        },
+        "mapping": "Selected scenario \u00b7 portfolio \u00b7 government-rate P&L equals 2,578,000.00 USD (precision: exact)",
+        "verdict": "Verified",
+        "explanation": "The claimed value matches the backend value at the declared absolute tolerance.",
+        "evidence": [
+          {
+            "path": "scenario.by_factor.rates_pnl",
+            "value": 2578000.0
+          },
+          {
+            "path": "absolute_tolerance",
+            "value": 0.01
+          }
+        ],
+        "limitations": [
+          "Only the explicit structured assertion is checked. Original wording, causal explanations and omitted claims are Not checked.",
+          "Tolerance is in USD for P&L or USD/bp for sensitivities. It does not validate wording or economic causation."
+        ],
+        "original_wording_status": "Not checked"
+      },
+      "prototype_cited_fact": {
+        "claim": {
+          "statement": "With rates P&L of +$2,578,000, the hedge worked.",
+          "category": "funding",
+          "stance": "fact",
+          "assertion": "equals",
+          "value": 2578000.0,
+          "fact_path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        },
+        "missing": [],
+        "evidence": {
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ],
+          "value": 2578000.0
+        },
+        "original_wording_status": "Not checked",
+        "limitation": "Only this human-specified typed mapping and scoped synthetic inputs are checked; prose equivalence, omitted claims and real-world truth are not checked.",
+        "verdict": "Supported fact",
+        "reason": "Numeric equality only; a mark does not establish adequacy or exposure."
+      },
+      "prototype_human_conclusion": {
+        "verdict": "Uncheckable",
+        "reason": "No supported conclusion vocabulary."
+      },
+      "production_human_literal_diagnostic": {
+        "verdict": "Uncheckable",
+        "reason": "No additional literal diagnostic specified."
+      },
+      "candidate": {
+        "verdict": "Uncheckable",
+        "reason": "Entire sentence is outside the fixed grammar.",
+        "coverage": "This sentence pattern and cited synthetic scope only; no whole-answer verification.",
+        "evidence": {
+          "value": 2578000.0,
+          "path": [
+            "scenario",
+            "by_factor",
+            "rates_pnl"
+          ]
+        }
+      },
+      "existing_seconds": 1.5457975678145885e-05,
+      "candidate_seconds": 3.832974471151829e-06
+    }
+  ],
+  "evaluation_seconds": 0.01548516598995775
+}

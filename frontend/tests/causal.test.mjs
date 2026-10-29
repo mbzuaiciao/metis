@@ -27,3 +27,15 @@ test("comparison captures two distinct hypotheses and a bounded shared move", ()
   assert.throws(() => causalRequest({...initialCausalState, commonRates: NaN}), /between/);
   assert.equal(causalRequest({...initialCausalState, alternative: "Supply normalization"}).alternative, "Supply normalization");
 });
+
+
+test("demo rejects custom hypotheses before generation while Meta preserves free-form requests", () => {
+  const custom = {...initialCausalState, hypothesis: "Supply normalization"};
+  assert.throws(() => causalRequest(custom, "demo"), /three named hypotheses/);
+  assert.throws(() => causalRequest({...initialCausalState, alternative: "Supply normalization"}, "demo"), /three named hypotheses/);
+  assert.equal(causalRequest(custom, "meta").hypothesis, "Supply normalization");
+  for (const hypothesis of ["Recession fears", "Inflation relief", "Liquidity and funding stress"]) {
+    const alternative = hypothesis === "Inflation relief" ? "Recession fears" : "Inflation relief";
+    assert.equal(causalRequest({...initialCausalState, hypothesis, alternative}, "demo").hypothesis, hypothesis);
+  }
+});

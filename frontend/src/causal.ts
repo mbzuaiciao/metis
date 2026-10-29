@@ -1,5 +1,7 @@
 import type { Calculation, CausalRequest, CausalResult, Shocks } from "./types";
 
+export const demoHypotheses = ["Recession fears", "Inflation relief", "Liquidity and funding stress"];
+
 export type CausalState = {
   hypothesis: string;
   alternative: string;
@@ -24,7 +26,8 @@ export function editAssumption(state: CausalState, index: number, factor: keyof 
   return { ...state, error: "", calculations: [],
     drafts: state.drafts.map((draft, i) => i === index ? { ...draft, [factor]: value } : draft) };
 }
-export function causalRequest(state: CausalState): CausalRequest {
+export function causalRequest(state: CausalState, mode?: string): CausalRequest {
+  if (mode === "demo" && [state.hypothesis, state.alternative].some(h => !demoHypotheses.includes(h))) throw new Error("Demo supports only the three named hypotheses. Custom hypotheses require live Meta mode.");
   if (!state.hypothesis.trim() || !state.alternative.trim()) throw new Error("Describe both economic hypotheses.");
   if (state.hypothesis.trim().toLowerCase() === state.alternative.trim().toLowerCase()) throw new Error("Choose two different hypotheses.");
   if (!Number.isFinite(state.commonRates) || Math.abs(state.commonRates) > 300) throw new Error("The shared yield assumption must be between −300 and +300bp.");

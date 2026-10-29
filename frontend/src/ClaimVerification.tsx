@@ -3,12 +3,12 @@ import type { ClaimVerdict } from "./types";
 
 export function ClaimVerification({ results = [] }: { results?: ClaimVerdict[] }) {
   return <div className="claim-verification">
-    <p className="context-note">Checks apply only to the explicit mappings below. Original wording, economic explanations, omitted claims and evidence-ID validity alone are <b>Not checked</b>.</p>
-    {results.length === 0 && <p>No structured assertions were submitted. No financial claims have been verified for this answer.</p>}
+    <p className="context-note">Verdicts check structured assertions against backend calculations; they do not verify the semantic truth of the original prose. A correct mapping can accompany a misleading sentence. Original wording, economic explanations, omitted claims and evidence-ID validity alone are <b>Not checked</b>.</p>
+    {results.length === 0 && <p>No structured assertions were submitted. The original prose is Not checked.</p>}
     {results.map((r, i) => <article className="claim-result" key={i}>
-      <p className="context-note">Original statement · {r.original_wording_status} as unconstrained prose</p>
+      <p className="context-note">Original prose · {r.original_wording_status}</p>
       <blockquote>{r.claim.statement}</blockquote>
-      <div className="claim-result-heading"><b>Mapped assertion</b><span className={`claim-verdict ${r.verdict.toLowerCase().replaceAll(" ", "-")}`}>{r.verdict}</span></div>
+      <div className="claim-result-heading"><b>Structured assertion</b><span className={`claim-verdict ${r.verdict.toLowerCase().replaceAll(" ", "-")}`}>Structured assertion: {r.verdict}</span></div>
       <p className="claim-mapping">{r.mapping}</p>
       <p>{r.explanation}</p>
       <details open><summary>Supporting backend evidence</summary>
@@ -33,7 +33,7 @@ export function VerificationDemo() {
     return () => controller.abort();
   }, []);
   return <details className="verification-demo">
-    <summary>Financial claim verification · three reproducible examples</summary>
+    <summary>Structured assertion checks · three reproducible examples</summary>
     <p className="context-note">Fixed analyst-authored claims against the illustrative daily calculation. No live model is required. The challenge, correct distinction and unsupported funding assertion demonstrate the three verdicts.</p>
     {error ? <p role="alert" className="negative">{error}</p> : results.length ? <ClaimVerification results={results} /> : <p>Loading verification examples…</p>}
   </details>;

@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Calculation, CausalRequest, CausalResult, Shocks, Workstation } from "./types";
-import { acceptProposals, causalRequest, editAssumption, type CausalState } from "./causal";
+import { acceptProposals, causalRequest, editAssumption, demoHypotheses, type CausalState } from "./causal";
 import { FactorEvidence, PositionEvidence } from "./InvestigationEvidence";
 
 const factors: [keyof Shocks, string, string, number, number][] = [
@@ -11,7 +11,6 @@ const factors: [keyof Shocks, string, string, number, number][] = [
   ["equity_pct", "Equities", "%", -60, 60],
   ["fx_pct", "EUR/USD", "%", -30, 30],
 ];
-const hypotheses = ["Recession fears", "Inflation relief", "Liquidity and funding stress"];
 
 export function CausalExploration({ state, setState, data, generate, calculate, useShocks }: {
   state: CausalState;
@@ -23,12 +22,13 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
 }) {
   const inFlight = useRef(false);
   const result = state.result;
+  const demo = data.causal_mode === "demo";
   const locked = state.busy || state.calculating;
   const validDrafts = state.drafts.length === 2 && state.drafts.every(shocks => factors.every(([key, , , min, max]) => Number.isFinite(shocks[key]) && shocks[key] >= min && shocks[key] <= max));
   async function explore() {
     if (inFlight.current || locked) return;
     try {
-      const request = causalRequest(state);
+      const request = causalRequest(state, data.causal_mode);
       inFlight.current = true;
       // Retain earlier answers only until a new generation explicitly starts.
       setState(s => ({ ...s, busy: true, error: "", result: null, drafts: [], calculations: [] }));
@@ -56,16 +56,20 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
     <div className="causal-inputs">
       {(["hypothesis", "alternative"] as const).map((key, index) => <label key={key}>
         {index === 0 ? "Economic hypothesis A" : "Competing hypothesis B"}
-        <input list="causal-hypotheses" maxLength={600} value={state[key]} disabled={locked}
-          onChange={e => setState(s => ({ ...s, [key]: e.target.value }))} />
+        {demo ? <select value={demoHypotheses.includes(state[key]) ? state[key] : ""} disabled={locked}
+          onChange={e => setState(s => ({ ...s, [key]: e.target.value }))}>
+          {!demoHypotheses.includes(state[key]) && <option value="" disabled>Choose a demo hypothesis</option>}
+          {demoHypotheses.map(h => <option value={h} key={h}>{h}</option>)}
+        </select> : <input list="causal-hypotheses" maxLength={600} value={state[key]} disabled={locked}
+          onChange={e => setState(s => ({ ...s, [key]: e.target.value }))} />}
       </label>)}
-      <datalist id="causal-hypotheses">{hypotheses.map(h => <option value={h} key={h} />)}</datalist>
+      {!demo && <datalist id="causal-hypotheses">{demoHypotheses.map(h => <option value={h} key={h} />)}</datalist>}
       <label>Shared government-yield move · bp
         <input type="number" min={-300} max={300} step="any" value={Number.isNaN(state.commonRates) ? "" : state.commonRates} disabled={locked}
           onChange={e => setState(s => ({ ...s, commonRates: e.target.valueAsNumber }))} />
       </label>
     </div>
-    <p className="context-note">Choose a suggested hypothesis or type your own. The shared move is an assumption, not a real-time observation. Editing these inputs changes only the next request; existing results retain their captured hypotheses.</p>
+    <p className="context-note">{demo ? "Demo supports only the three named hypotheses. Custom hypotheses require live Meta mode." : "Choose a suggested hypothesis or type your own."} The shared move is an assumption, not a real-time observation. Editing these inputs changes only the next request; existing results retain their captured hypotheses.</p>
     <button className="primary" disabled={locked} onClick={() => void explore()}>{state.busy ? "Exploring hypotheses…" : "Generate competing mechanisms"}</button>
     {state.error && <p role="alert" className="negative">{state.error}</p>}
     {result && <>

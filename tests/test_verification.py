@@ -154,3 +154,26 @@ def test_valid_evidence_ids_do_not_prove_an_incorrect_amount(context):
     c=claim('Incorrect amount despite a known evidence ID','number','total_pnl_usd','equals',560770)
     assert verify_claim(c,context)['verdict']=='Contradicted'
     assert context==before
+
+
+@pytest.mark.parametrize("shocks,rates,total", [
+    (Shocks(rates_bp=50), -2578000, -2578000),
+    (Shocks(rates_bp=50, equity_pct=20), -2578000, 2022000),
+    (Shocks(), 0, 0),
+])
+def test_rising_and_zero_yields_preserve_documented_verification_scope(shocks, rates, total):
+    context = assemble_context(shocks)
+    for metric, value in [("rates_pnl", rates), ("total_pnl_usd", total)]:
+        c = claim("Mapped scenario amount", "number", metric, "equals", value, period="scenario")
+        assert verify_claim(c, context)["verdict"] == "Verified"
+        sign = "negative" if value < 0 else "positive" if value > 0 else "zero"
+        c = claim("Mapped scenario sign", "sign", metric, sign, period="scenario")
+        assert verify_claim(c, context)["verdict"] == "Verified"
+    # These supported composite assertions explicitly require declining yields.
+    for assertion in ["rates_loss_total_loss_yields_down", "rates_gain_total_loss_yields_down", "rates_gain_total_gain_yields_down"]:
+        c = claim("Falling-yield premises", "hedge_vs_total", "rates_pnl", assertion, period="scenario")
+        result = verify_claim(c, context)
+        assert result["verdict"] == "Contradicted"
+        assert next(e["value"] for e in result["evidence"] if e["path"] == "scenario.shocks.rates_bp") == shocks.rates_bp
+    c = claim("Unsupported rising-yield composite", "hedge_vs_total", "rates_pnl", "rates_loss_total_loss_yields_up", period="scenario")
+    assert verify_claim(c, context)["verdict"] == "Not checked"

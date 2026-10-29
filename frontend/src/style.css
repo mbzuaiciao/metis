@@ -1643,8 +1643,8 @@ footer > span:last-child {
 .scenario-modes .active { border-color: #52d6bb; color: #76dac1; }
 .causal-inputs { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 16px; margin: 20px 0 12px; }
 .causal-inputs label, .causal-shocks label { display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: #b6c8de; }
-.causal-exploration input { width: 100%; min-width: 0; border: 1px solid #34465c; border-radius: 4px; background: #101b29; padding: 10px; color: #deebf8; }
-.causal-exploration input:focus { outline: 1px solid #52d6bb; }
+.causal-exploration input, .causal-exploration select { width: 100%; min-width: 0; border: 1px solid #34465c; border-radius: 4px; background: #101b29; padding: 10px; color: #deebf8; }
+.causal-exploration input:focus, .causal-exploration select:focus { outline: 1px solid #52d6bb; }
 .causal-result-header { margin: 25px 0 18px; }
 .causal-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 20px 0; }
 .causal-card { padding: 20px; background: #111d2c; border: 1px solid #2c3c51; border-radius: 6px; min-width: 0; }

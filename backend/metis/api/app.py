@@ -1,3 +1,5 @@
+import os
+
 from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -18,7 +20,7 @@ def health():
 
 @app.get("/api/workstation")
 def get_workstation():
-    return workstation()
+    return {**workstation(), "causal_mode": os.getenv("METIS_PROVIDER", "demo").strip().lower()}
 
 
 @app.post("/api/scenario")

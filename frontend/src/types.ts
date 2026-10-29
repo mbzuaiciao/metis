@@ -48,6 +48,7 @@ export type Scenario = {
   shocks: Shocks;
 };
 export type Workstation = {
+  causal_mode: string;
   portfolio_name: string;
   data_kind: string;
   nav_usd: number;

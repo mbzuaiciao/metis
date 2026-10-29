@@ -1131,7 +1131,7 @@ function ReasoningPage({
                 )}
               </section>
               <details className="answer-section">
-                <summary>Bounded financial claim checks · original prose Not checked</summary>
+                <summary>Structured assertion checks · original prose Not checked</summary>
                 <ClaimVerification results={m.verification} />
               </details>
               <div className="captured-evidence">

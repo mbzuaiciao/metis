@@ -67,7 +67,7 @@ Validation: 63 backend tests and 9 frontend tests pass; production build succeed
 
 Open **Scenario Analysis → Causal Exploration**. Independent Shocks preserves the existing sliders and presets. Causal Exploration instead asks how two possible economic mechanisms could produce the same initial government-yield movement with different credit, equity and FX consequences.
 
-1. Choose **Recession fears**, **Inflation relief**, or **Liquidity and funding stress**, or type your own hypothesis and comparator. Review the shared hypothetical yield move (default −50bp).
+1. In Demo, choose **Recession fears**, **Inflation relief**, or **Liquidity and funding stress** for each hypothesis. Live Meta mode also accepts free-form hypotheses. Review the shared hypothetical yield move (default −50bp).
 2. Select **Generate competing mechanisms**. The configured Meta model returns two structured hypotheses with transmission mechanisms, all five factor directions/rationales, alternatives, discriminating evidence, uncertainty and illustrative shocks. Responses show LIVE META or DETERMINISTIC DEMO explicitly. Supplied synthetic facts and original historical references remain inspectable; history is qualitative, not a calibrated causal estimate.
 3. Review/edit both shock sets. Proposals do not execute automatically. Select **Accept reviewed shocks & calculate both** to invoke the existing scenario endpoint. Edits clear both old results. A warning identifies comparisons in which edited yield assumptions differ.
 4. Compare the calculated factor/position P&L. **Use accepted A/B shocks in Independent Shocks** transfers those inputs to the existing scenario and AI investigation workflow. Captured causal results and edits survive mode/page switches within the session; reload clears them. Changing hypothesis controls affects only the next generation, never relabels an earlier answer.
@@ -80,7 +80,7 @@ Validation: **73 backend tests, 12 frontend tests and production build pass**. T
 
 ## v0.7 bounded financial claim verification
 
-Open **Metis AI Reasoning → Financial claim verification · three reproducible examples**. No model is required: the misleading hedge-loss explanation is **Contradicted**, the positive-rate-contribution/negative-total distinction is **Verified**, and the unsupported funding-shortfall assertion is **Not established**. Each shows its mapped premises, backend paths/values, original statement and missing information.
+Open **Metis AI Reasoning → Structured assertion checks · three reproducible examples**. No model is required: the mapped hedge-loss premises are **Contradicted**, the mapped positive-rate-contribution/negative-total premises are **Verified**, and the unsupported funding-shortfall assertion is **Not established**. Original prose remains **Not checked** in every case. Each shows its mapped premises, backend paths/values, original statement and missing information.
 
 New live/demo interpretations can submit up to three `financial_claims` using an explicit interface. The backend checks numbers/signs for P&L and DV01/CS01, selected hedge-versus-total premises, exhaustive/disjoint DV01 decompositions, and whether funding/margin/liquidity/default losses are quantified. Unknown types/targets/metrics/precision are **Not checked**. Unmeasured risk is not automatically zero. Valid evidence IDs or model confidence do not establish correctness.
 

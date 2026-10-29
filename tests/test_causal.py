@@ -113,3 +113,27 @@ def test_missing_credentials_and_bad_input_are_explicit(meta, monkeypatch):
         assert client.post("/api/causal-exploration", json=request().model_dump()).status_code == 502
         for change in [{"common_rates_bp": 301}, {"hypothesis": " "}, {"alternative": "Recession fears"}]:
             assert client.post("/api/causal-exploration", json=request().model_dump() | change).status_code == 422
+
+
+@pytest.mark.parametrize("mode", ["demo", "meta"])
+def test_workstation_reports_causal_mode_without_inference(monkeypatch, mode):
+    monkeypatch.setenv("METIS_PROVIDER", f" {mode.upper()} ")
+    with TestClient(app) as client:
+        assert client.get("/api/workstation").json()["causal_mode"] == mode
+
+
+def test_workstation_defaults_to_demo(monkeypatch):
+    monkeypatch.delenv("METIS_PROVIDER", raising=False)
+    with TestClient(app) as client:
+        assert client.get("/api/workstation").json()["causal_mode"] == "demo"
+
+
+def test_live_custom_hypotheses_still_reach_meta(meta, monkeypatch):
+    payload = demo_exploration(request()).model_dump()
+    payload["mechanisms"][0]["title"] = "Supply normalization"
+    mock_reply(monkeypatch, json.dumps(payload))
+    with TestClient(app) as client:
+        response = client.post("/api/causal-exploration", json=request().model_dump() | {"hypothesis": "Supply normalization"})
+    assert response.status_code == 200
+    assert response.json()["request"]["hypothesis"] == "Supply normalization"
+    assert response.json()["mode"] == "meta"

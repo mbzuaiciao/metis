@@ -112,6 +112,14 @@ Dates below use PDT when execution timestamps establish it. The causal-workflow 
 - **Failures/limits:** research-host concurrent filename capture caused a local500 during first acceptance; fixed and regression-tested, then calculation checks repeated without inference. Static404 handling fixed too; prior records preserved. Live scenario prose still overstates default losses beyond supplied evidence. These are operational demos with human review, not proof of general financial correctness or reliability; v1.0 truncation risk remains.
 - **Provenance/validation:** [report](inference-reliability.md), [paired runner](inference_reliability.py), [bounded temporary host](demo_readiness_host.py); ignored `research/runs/inference-reliability-v11-20261028/`. 138 backend / 12 frontend tests, production build and integration checks pass; existing warnings remain. Prior reports/data unchanged. Commit containing this entry supplies Git provenance.
 
+
+### 2026-10-29 — offline claim–evidence binding feasibility probe
+
+- **Question/setup:** can explicit subject/metric/period/stance binding distinguish statement-to-mapping mismatches? Twelve analyst-authored synthetic cases, one offline deterministic rule run; no LLM, no production integration, no repeat of v0.7–v1.1 evaluations.
+- **Observed:** 12/12 matched author-assigned categories (3 aligned, 5 mismatched, 3 unsupported, 1 conditional); this is largely by construction because gold semantic slots were supplied manually. Production v0.7 and research-only v1.0 were not run on these new cases; **no measured incremental gain or NLP reliability**.
+- **Cost/failures:** 0 inference calls, 0 model tokens; no failed cases. Local execution latency and repository tests unavailable/not measured.
+- **Decision:** **Stop with no production change**. A future study would require independent held-out prose annotations and explicit semantic extraction plus actual baseline comparison. [Detailed report](claim-evidence-binding-feasibility-20261029.md).
+
 ## C. Cumulative lessons — observations versus hypotheses
 
 | Topic | Demonstrated observations in these records | Not established / hypothesis requiring another study |

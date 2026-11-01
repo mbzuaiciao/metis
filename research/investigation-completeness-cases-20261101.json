@@ -1,0 +1,78 @@
+{
+  "study": "metis-investigation-completeness-20261101",
+  "design": "six frozen case questions and analyst-authored rubrics, not independently blinded; not actual experimental observations",
+  "cases": [
+    {
+      "id": "01",
+      "question": "For the supplied portfolio, explain whether the $6m cash balance establishes adequate liquidity under a severe spread-and-rates stress. What must be checked before making a funding judgment?",
+      "required_questions": [
+        "Contractual margin and collateral needs (CSA/netting, timing)",
+        "Unencumbered cash, drawable facilities and other available liquidity",
+        "Stress liquidation costs and executable market depth"
+      ],
+      "unjustified_conclusions": [
+        "Cash is sufficient or insufficient without obligations and terms"
+      ]
+    },
+    {
+      "id": "02",
+      "question": "The daily rates book gains while the overall portfolio loses. Has the duration hedge succeeded, and what additional risks should the portfolio manager review?",
+      "required_questions": [
+        "Hedge objective, benchmark and permitted risk budget",
+        "Credit and equity losses relative to rate hedge contribution",
+        "Basis/curve or nonlinear exposures not captured by parallel first-order DV01"
+      ],
+      "unjustified_conclusions": [
+        "Positive rates P&L proves effective or optimally sized hedge"
+      ]
+    },
+    {
+      "id": "03",
+      "question": "High-yield spreads widen sharply in the selected stress. Is the resulting portfolio loss a full measure of credit risk, and what evidence is missing?",
+      "required_questions": [
+        "Issuer-level concentrations, maturities and ratings",
+        "Default/recovery or migration loss beyond linear CS01",
+        "Market liquidity and exit costs for HY positions"
+      ],
+      "unjustified_conclusions": [
+        "CS01 spread P&L measures total default loss"
+      ]
+    },
+    {
+      "id": "04",
+      "question": "During market stress, derivative marks look small relative to notionals. What does that imply for counterparty and funding vulnerability?",
+      "required_questions": [
+        "Netting sets, counterparty exposures and collateral arrangements",
+        "Variation/initial margin cash requirements and timing",
+        "Gross notional and signed mark do not alone measure payment obligations"
+      ],
+      "unjustified_conclusions": [
+        "Gross notional is cash due or marks fully determine counterparty risk"
+      ]
+    },
+    {
+      "id": "05",
+      "question": "Suppose yields fall sharply while corporate spreads and equities decline. What alternative explanations and unmodeled exposures should be investigated before deciding why?",
+      "required_questions": [
+        "Growth scare versus liquidity-driven safe-asset demand as hypotheses, not identified causes",
+        "Correlated credit/equity downside and diversification assumptions",
+        "Evidence for transmission (flows, funding conditions, market depth)"
+      ],
+      "unjustified_conclusions": [
+        "Observed portfolio P&L uniquely identifies the macroeconomic cause"
+      ]
+    },
+    {
+      "id": "06",
+      "question": "Can the portfolio be considered resilient because its rate-only stress produces a gain? What else needs investigation?",
+      "required_questions": [
+        "Joint rates/credit/equities/FX shocks rather than rate-only gains",
+        "Opposite rate-direction stress and exposure asymmetry or convexity",
+        "Funding/liquidity requirements under joint adverse conditions"
+      ],
+      "unjustified_conclusions": [
+        "Rate-only gain proves resilience across crises"
+      ]
+    }
+  ]
+}

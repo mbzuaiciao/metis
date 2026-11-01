@@ -93,3 +93,22 @@ test("answer and follow-up labels render captured daily or stress scope and assu
     }
   }
 });
+
+const { ResearchLimitations } = await import("../src/ResearchLimitations.tsx");
+test("research tab exposes six sourced studies and unresolved boundaries", () => {
+  const html = renderToStaticMarkup(React.createElement(ResearchLimitations));
+  assert.equal((html.match(/Read the report/g) || []).length, 6);
+  assert.match(html, /STUDY 06/);
+  assert.match(html, /six were truncated/);
+  assert.match(html, /not yet in the committed research archive/);
+  assert.match(html, /RESEARCH_LOG\.md/);
+  assert.match(html, /Numerical claim checks do not validate entire/);
+});
+test("research page is the seventh sidebar item and renders without backend data", () => {
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const ai = app.indexOf('name: "Metis AI Reasoning"');
+  const research = app.indexOf('name: "Research & Limitations"');
+  assert.ok(ai > 0 && research > ai);
+  assert.match(app, /page === 6 \? \(\s*<ResearchLimitations \/>/);
+  assert.match(app, /page === 6\s*\? "Documented studies"/);
+});

@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BarChart3,
   BrainCircuit,
+  BookOpen,
   ChevronRight,
   CircleHelp,
   FlaskConical,
@@ -19,6 +20,7 @@ import {
 import { ClaimVerification, VerificationDemo } from "./ClaimVerification";
 import { InvestigationScope } from "./InvestigationScope";
 import { CausalExploration } from "./CausalExploration";
+import { ResearchLimitations } from "./ResearchLimitations";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -91,6 +93,7 @@ const pages = [
   { name: "Risk Analytics", icon: BarChart3 },
   { name: "Scenario Analysis", icon: SlidersHorizontal },
   { name: "Metis AI Reasoning", icon: BrainCircuit },
+  { name: "Research & Limitations", icon: BookOpen },
 ];
 const subtitles = [
   "Your portfolio, in perspective.",
@@ -99,6 +102,7 @@ const subtitles = [
   "Understand the drivers. Look beyond the headline.",
   "Test the portfolio against a different market.",
   "From measured exposure to economic understanding.",
+  "Experiments, evidence, limitations, and open research questions.",
 ];
 async function api<T>(
   path: string,
@@ -1554,7 +1558,7 @@ export default function App() {
               <FlaskConical size={12} /> EXAMPLE DATA
             </span>
             <span className="date">
-              {data?.market.as_of ?? "Loading snapshot"}
+              {page === 6 ? "Research archive" : data?.market.as_of ?? "Loading snapshot"}
             </span>
             <div className="avatar">MG</div>
           </div>
@@ -1564,19 +1568,23 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                GLOBAL OPPORTUNITIES <span>/</span> USD BASE
+                {page === 6 ? "METIS RESEARCH / METHODS & LIMITATIONS" : <>GLOBAL OPPORTUNITIES <span>/</span> USD BASE</>}
               </div>
               <h1>{pages[page].name}</h1>
               <p>{subtitles[page]}</p>
             </div>
             <div className="snapshot-tag">
               <span className="status-dot" />{" "}
-              {data
-                ? `${data.positions.length} positions · ${data.market.as_of}`
-                : "Connecting to backend"}
+              {page === 6
+                ? "Documented studies"
+                : data
+                  ? `${data.positions.length} positions · ${data.market.as_of}`
+                  : "Connecting to backend"}
             </div>
           </div>
-          {error ? (
+          {page === 6 ? (
+            <ResearchLimitations />
+          ) : error ? (
             <div role="alert" className="error">
               Could not load workstation: {error} Start the backend on port
               8000, then reload.

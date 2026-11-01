@@ -1,0 +1,58 @@
+# Muse Spark independent reviewer experiment — 2026-11-01
+
+**Inconclusive: all six reviewer attempts failed with `httpx.ConnectError`; no reviewer responses were collected.** Whether the reviewer detects the baseline omissions or unsupported conclusions is unavailable. This is an execution failure, not a negative finding about reviewer capability. No retries, replacements, fallback responses, revisions or further model calls were made. Stop this experiment.
+
+## Preparation and frozen inputs
+
+Read `AGENTS.md`, `RESEARCH_LOG.md`, the completed [baseline assessment](investigation-completeness-results-20261101.md), its [frozen protocol](investigation-completeness-protocol-20261101.md), cases, runner and archived answers. Committed the completed baseline assessment and its existing log entry separately at **`c9d7b234654b85072af59f8674ef8b6baa4495f2`**, before preparing reviewer requests, on existing branch `research/omission-probe-20261101`. No unrelated pending changes were present after that commit.
+
+The new [protocol](independent-reviewer-protocol-20261101.md) and [bounded runner](independent_reviewer_20261101.py) freeze the review instruction and six private request bodies before execution. Each request contains only the original question, full relevant portfolio context, and complete original structured answer. No required questions, expected omissions, prohibited conclusions, baseline assessment or prior reviewer output is supplied. Reviewers have separate system/user messages and no history. The generic instruction permits no issues and asks to distinguish already recognized qualifications from additional findings. No production prompt or code is changed. Review uses plain text rather than the production Interpretation schema; this is a research task/output-format difference.
+
+The runner reconstructs the portfolio evidence with `assemble_context(Shocks())` and verifies context SHA-256 **`62b3620ce0e24fc02ca9c0938d7724476449b279af5ba5f65b8372626f830f65`**, matching every original archive record. Exact historical context bytes were not archived; the matching canonical hash supports equality of reconstructed content under the same serialization. Original six answers and manifest were hashed before execution and verified unchanged afterward. Prior cases/protocol/report remain unchanged. Original archive remains `research/runs/investigation-completeness-20261101-20261101T125907Z/`.
+
+Private new records are in ignored `research/runs/independent-reviewer-20261101/`: protocol with hashes, six exact request bodies, exclusive execution-start marker, six failure-metadata files and final manifest. Directory mode 0700, all 15 files 0600. No provider envelope or review files exist because no HTTP response was obtained. Credentials are loaded from existing local configuration and never saved. Runner SHA-256 at preparation and execution: `ab565bd8dc7ccadf4b81ca9c3c1599d9f68b613c247808293f5ea0dcdcff278a`.
+
+## Execution and cost
+
+Configured model **`muse-spark-1.3`**, endpoint **`https://api.meta.ai/v1/chat/completions`**, existing production inference parameters **temperature 0.2, `reasoning_effort="low"`, `max_completion_tokens=8000`**, 60-second HTTP timeout. One `client.post` attempt per case in ID order, six total, transport retries explicitly zero. The runner continues to the next distinct case after a failure; it never retries a failed case. An exclusive start marker prevents rerunning the same prepared experiment.
+
+Prepared at 2026-11-01 07:16:49 PST; execution 07:16:52.039818–07:16:52.203003 PST (15:16:52 UTC). These are America/Los_Angeles times after the daylight-saving transition. Six attempts, **zero completed reviewer responses**, six connection failures; no HTTP status, provider usage or finish reason received. Zero successful model executions are observed; actual provider receipt/execution is unconfirmed. Do not label six local request attempts as six successful live inferences.
+
+| Case | Attempt outcome | Elapsed seconds | Prompt / completion / reasoning / total tokens |
+|---|---|---:|---|
+| 01 | ConnectError; no HTTP response | 0.136153 | Unavailable / unavailable / unavailable / unavailable |
+| 02 | ConnectError; no HTTP response | 0.008051 | Unavailable / unavailable / unavailable / unavailable |
+| 03 | ConnectError; no HTTP response | 0.004255 | Unavailable / unavailable / unavailable / unavailable |
+| 04 | ConnectError; no HTTP response | 0.004232 | Unavailable / unavailable / unavailable / unavailable |
+| 05 | ConnectError; no HTTP response | 0.004554 | Unavailable / unavailable / unavailable / unavailable |
+| 06 | ConnectError; no HTTP response | 0.003582 | Unavailable / unavailable / unavailable / unavailable |
+| **Total** | **6 failed attempts / 0 outputs** | **0.160827 summed attempts** | **Unavailable; not asserted to be zero** |
+
+Total loop wall duration **0.163184s**; mean attempt duration **0.026805s**. These measure failed connection attempts and local overhead, not model inference latency. Monetary cost unavailable. Assistant assessment token usage and offline review duration unavailable. The environment has restricted network access, consistent with these immediate connection failures, but the recorded exception class alone does not distinguish sandbox restrictions, DNS, routing or another connection cause. The runner did not retain nested exception details; exact cause is unavailable. No additional network diagnostic or inference retry was performed.
+
+## Case-by-case comparison with frozen baseline
+
+All reviewer detection judgments below are **unavailable**, including false-criticism and irrelevant-question judgments. They are not scored as missed detections, correct abstentions or zero false positives. There are no reviewer excerpts to quote. The short supporting excerpts below are from the unchanged baseline assessment/original answers and identify what the planned comparison would have tested; they are not reviewer findings.
+
+| Case | Frozen baseline and supporting original excerpt | Reviewer finding / incremental contribution |
+|---|---|---|
+| 01 — cash adequacy | Two Present, one Ambiguous. Original requests “bid-ask, turnover,” leaving executable size/depth unclear; already asks for “CSA terms, margin schedules and liquidity lines.” | Unavailable. Cannot determine detection of executable-depth gap or distinguish added questions from repeated liquidity caveats. |
+| 02 — duration hedge | Two Present, one Missing. Original says hedge “worked directionally” and distinguishes contribution from total loss; objective, benchmark and permitted risk budget absent. | Unavailable for **all three mandate components**; no evidence reviewer identifies any. This is not evidence it failed to identify them. |
+| 03 — full credit risk | Three Present. Original already requests “issuer concentration, ratings, maturities, recovery and CDS hedge availability,” plus quotes/forced-sale sizing. | Unavailable. Cannot assess new findings or whether reviewer would falsely criticize already covered credit/liquidity questions. |
+| 04 — derivatives | Two Present, one Ambiguous. Original says “notional/DV01 alone do not prove a shortfall,” but leaves signed mark versus payment obligations unclear. Separately, “mask large margin and replacement exposures” and “imply large future exposure” assert unsupported magnitude. | Unavailable for both mark/notional-to-obligation distinction and unsupported replacement-exposure magnitude. |
+| 05 — competing causes | Three Ambiguous: growth scare versus liquidity-driven safe-asset demand; credit/equity dependence/diversification assumptions; transmission evidence. Original instead develops “growth scare vs inflation selloff” and asks for “inflation expectations, policy statements, and curve shape decomposition.” | Unavailable for each of the three ambiguous items. Existing generic funding/bid-ask inquiries cannot be credited as new reviewer findings. |
+| 06 — resilience | Three Present. Original already requests joint tail/correlation stress, reverse-direction/curve/convexity review and margin/collateral schedules. Separately, “linear P&L understates stress costs” asserts a direction not established by excluded risks alone. | Unavailable for unsupported direction-of-bias detection; no evidence about additional questions or redundant criticisms. |
+
+Thus the comparison has **0 evaluable pairs out of 6**, and no measured detection count for the one missing compound mandate question, five ambiguous questions, or two separately flagged unsupported conclusions. There are no observed reviewer findings, genuinely new discoveries, repeated objections, false criticisms or irrelevant questions to classify. Absence of output is not a financial-quality judgment. Baseline findings remain **12 Present / 5 Ambiguous / 1 Missing**, with zero frozen prohibited conclusions asserted and two separate unsupported-conclusion concerns. They are neither repaired nor independently corroborated by this run.
+
+## Interpretation, limitations and recommendation
+
+**Observation:** all six configured calls failed before a response was obtained. **Interpretation:** this environment/run did not yield evidence that can answer the experiment's substantive question. **Hypothesis:** a completed execution could add useful investigation questions, but this run supplies no test of that hypothesis. **Engineering decision:** do not integrate a reviewer; preserve the baseline, failed-run records and stopping boundary. No further experiment is performed or automatically scheduled.
+
+Even with successful outputs, this design would test **independent execution and review instructions, not independent model expertise**, because both roles use Muse Spark. Six synthetic variants of one portfolio, one sample per role/case, question/domain cues, existing narrative evidence and no held-out sample limit generalization. The baseline and planned scoring are not independently blinded or adjudicated; the baseline was a Codex assistant assessment, not independent human validation. Five ambiguous judgments are sensitive to interpretation. Case 05's question says spreads decline while its rubric/answer use widening; zero selected shocks coexist with stress wording in other cases. Preserve these limitations rather than repairing inputs retrospectively. A reviewer finding would demonstrate detection only, not corrected answers, better decisions, causal benefit or multi-agent superiority. No self-review/extra-reading control is present.
+
+Recommendation: **record the execution failure and stop**. No evidence from this run supports reviewer integration or a claim of improved detection. Any future attempt requires a separately authorized scope; no retry is authorized by this report.
+
+## Validation and repository scope
+
+Performed offline compilation; inspected the bounded runner's one-call-per-case loop, zero-retry transport and exclusive run marker; verified six request hashes, source hash, matching context hash and complete original response inclusion; verified unchanged original archive hashes and frozen baseline/case/protocol bytes; verified exactly six distinct metadata records, no review/envelope files, total latency arithmetic, private permissions and ignored boundary. Checked report links, Git scope and whitespace. No production/UI/analytics code, prompts, tests, framework or financial calculations changed. Full application tests/build were not rerun because only research artifacts changed; no live validation call was added. Baseline commit is separate; the final research commit contains this report, protocol, runner and appended log entry. No push.

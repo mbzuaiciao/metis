@@ -62,7 +62,7 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
   }
   return <section className="causal-exploration">
     <div className="causal-intro">
-      <span className="eyebrow">META-POWERED ECONOMIC EXPLORATION</span>
+      <span className="eyebrow">{demo ? "DETERMINISTIC DEMO · TEMPLATE HYPOTHESES" : "META-POWERED ECONOMIC EXPLORATION"}</span>
       <h2>One market movement. Different possible explanations.</h2>
       <p>Explore how competing economic mechanisms could lead to different portfolio outcomes. You review the assumptions before Metis calculates the consequences.</p>
     </div>

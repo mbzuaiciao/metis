@@ -2,6 +2,10 @@
 
 An institutional portfolio risk workstation with deterministic analytics and an independent financial interpretation harness. Runs locally with React / TypeScript / Vite, Tailwind CSS, Plotly.js, AG Grid Community, Python 3.12, FastAPI, NumPy and pandas. No database, trading, deployment infrastructure or agent framework. The v0.7 bounded financial claim checks extend AI Reasoning while preserving the six pages, four-stage workflow, Causal Exploration, financial analytics and live integration.
 
+## Hackathon showcase: competing explanations
+
+Metis's [three-minute causal-exploration showcase](research/meta-hackathon-causal-showcase-3min.md) starts on **Overview → Explore competing explanations**. It compares alternative economic explanations for the same hypothetical yield movement. The analyst accepts illustrative assumptions before the deterministic engine calculates both scenarios side by side; live model output is labeled **LIVE META** and fixed templates are labeled **DETERMINISTIC DEMO**. These are not calibrated forecasts or identified causes. The historical [longer demonstration plan](research/meta-hackathon-demo-plan.md) remains available.
+
 **Live inference status (v0.2.1):** a live interpretation was verified with `muse-spark-1.3` at `https://api.meta.ai/v1/chat/completions` using locally configured credentials. This is Meta's Muse Spark model, not a Llama model. The returned interpretation passed all seven field definitions and the allowed evidence-ID check. No API key, sensitive context or full upstream response body was logged or saved. This verifies the harness; the browser workflow was not rerun for this correction. Demo mode still runs without credentials.
 
 ## Run locally

@@ -286,11 +286,13 @@ function Overview({
   data,
   goAI,
   goRisk,
+  goCausal,
   busy,
 }: {
   data: Workstation;
   goAI: () => void;
   goRisk: () => void;
+  goCausal: () => void;
   busy: boolean;
 }) {
   const drivers = principalDrivers(data.daily);
@@ -333,10 +335,15 @@ function Overview({
             economic relationships.
           </p>
         </div>
-        <button className="primary" onClick={goAI} disabled={busy}>
-          {busy ? "Interpretation in progress…" : "2 · Explain the daily loss"}
-          <ArrowRight size={16} />
-        </button>
+        <div className="investigation-actions">
+          <button className="primary" onClick={goCausal}>
+            Explore competing explanations <ArrowRight size={16} />
+          </button>
+          <button className="secondary" onClick={goAI} disabled={busy}>
+            {busy ? "Interpretation in progress…" : "2 · Explain the daily loss"}
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </section>
       <div className="grid-main">
         <Panel
@@ -1635,6 +1642,7 @@ export default function App() {
                   data={data}
                   goAI={() => void ask(dailyQuestion, "daily")}
                   goRisk={() => navigate(3)}
+                  goCausal={() => { setScenarioMode("causal"); navigate(4); }}
                   busy={reasoningBusy}
                 />
               )}

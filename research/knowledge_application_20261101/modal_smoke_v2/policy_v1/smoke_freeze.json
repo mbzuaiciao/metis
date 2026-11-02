@@ -1,0 +1,14 @@
+{
+  "version": "metis-modal-synthetic-smoke-v2-preparation-1",
+  "v2_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "frozen_inputs": {
+    "config.json": "b6b8dc8f84bc90283da338533d53db20022655e9f63b40edee5a9884af3bc01a",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be"
+  },
+  "sha256": {
+    "modal_smoke.py": "e64c8fa860e4d72055ba942ab499aa392b50712d7bcb62f38dfff0310c75bf51",
+    "smoke_runtime.py": "dc8fdb91cd8adb65172c759d6f94d343b3b07e45cbcc91c68aba0c882c53a5ff",
+    "validate_offline.py": "55c6d288b899bd4624409de8d60e902aaa4261d5c9fcdf3132ceb5177e0ece70",
+    "README.md": "bdab274c6257f94f079a2d571b2a8b25bb966f26b96b89aac77f90991482956f"
+  }
+}

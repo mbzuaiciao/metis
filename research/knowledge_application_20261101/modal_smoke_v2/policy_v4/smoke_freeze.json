@@ -1,0 +1,33 @@
+{
+  "version": "metis-modal-synthetic-smoke-v2-preparation-4",
+  "v2_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "frozen_inputs": {
+    "config.json": "b6b8dc8f84bc90283da338533d53db20022655e9f63b40edee5a9884af3bc01a",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be"
+  },
+  "predecessor_manifest_sha256": "d541d51a1444fb5997a18dcc641d2cd4637651ce7e9c673fc11762db951394cd",
+  "sha256": {
+    "modal_smoke.py": "585276703b07a90108453df238758cb09fd8325942a38a3db911458cae3ff901",
+    "smoke_runtime.py": "ddab7c1e088f26ff8231e911ee83ab2ae20f0846a5799c9b4965d89796f184df",
+    "validate_offline.py": "bd0f7557fff665f3ffbf7a218a3ede4a930e05595797060994063d4934fef62e",
+    "README.md": "48031586641ac7de924c6841229cd7e8de4f1d22a6022ebaa99f63fffa0ba99a",
+    "policy_v1/OFFLINE_VALIDATION.md": "2b29865292e8974013e9ad0ae8975c7579a5938078cfd479038cd81f313a3155",
+    "policy_v1/README.md": "bdab274c6257f94f079a2d571b2a8b25bb966f26b96b89aac77f90991482956f",
+    "policy_v1/modal_smoke.py": "e64c8fa860e4d72055ba942ab499aa392b50712d7bcb62f38dfff0310c75bf51",
+    "policy_v1/smoke_freeze.json": "8621a3174e6729bdc9f186803739cdf3e7d3b5e833228ad74b580e11792b506c",
+    "policy_v1/smoke_runtime.py": "dc8fdb91cd8adb65172c759d6f94d343b3b07e45cbcc91c68aba0c882c53a5ff",
+    "policy_v1/validate_offline.py": "55c6d288b899bd4624409de8d60e902aaa4261d5c9fcdf3132ceb5177e0ece70",
+    "policy_v2/OFFLINE_VALIDATION.md": "5a4ee9c91c24b9b6ade4b9bb105aa0337f5e5ee5028700a3a34acec4c7b699fa",
+    "policy_v2/README.md": "de340f9ef69577050ff908912e1a03e7808731c47b02897d69cba3b547bc4ab9",
+    "policy_v2/modal_smoke.py": "3126dc6a2ad43a91901883dbc8ae1bdf6e5ac6ce3409b71e73fe68d6f78695cd",
+    "policy_v2/smoke_freeze.json": "24d747195caab242996f5adfe8f286586a3878cc7cded8a7bfe65fe8ca5a1cd4",
+    "policy_v2/smoke_runtime.py": "ddab7c1e088f26ff8231e911ee83ab2ae20f0846a5799c9b4965d89796f184df",
+    "policy_v2/validate_offline.py": "bcce6e0230f818fe4ce993ae53efbf1c2f775bb15f6e6933e2acc873ef90d9cf",
+    "policy_v3/README.md": "b9361f0425c30c5d39cb37a33b5db46cb4805d5644ff7ee25b74197f1d358bbc",
+    "policy_v3/smoke_runtime.py": "ddab7c1e088f26ff8231e911ee83ab2ae20f0846a5799c9b4965d89796f184df",
+    "policy_v3/smoke_freeze.json": "d541d51a1444fb5997a18dcc641d2cd4637651ce7e9c673fc11762db951394cd",
+    "policy_v3/modal_smoke.py": "ea68c6c6850c1b00af7a47369fdf6ebcfcef758d34d5ca7a3bc26c912f85a342",
+    "policy_v3/OFFLINE_VALIDATION.md": "ee3d8df920427dcc8608f19678f8fbc39d7b9d1dfac208df58cd96367d9f42fe",
+    "policy_v3/validate_offline.py": "dc7829afc6f7065e5f60d7d907926e3e75f5128e5014de487e1ed42fc57ec093"
+  }
+}

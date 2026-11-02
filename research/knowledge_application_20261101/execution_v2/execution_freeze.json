@@ -1,0 +1,9 @@
+{
+  "version": "metis-v2-modal-execution-preparation-1",
+  "scientific_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "sha256": {
+    "execute.py": "b9884823cf7d52d15232105e44cce769f72f3b48f833e152e130597286c98311",
+    "validate_offline.py": "ffa2e1a8391c4bc4a984ec47aa24e7528af0f34bd7f590b3e72100447ca032bc",
+    "READINESS.md": "cb3bfb9d9ad057158f57096fc1a266c55c80fc2364928bc767b9536bbafaacd9"
+  }
+}

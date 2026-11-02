@@ -1,0 +1,20 @@
+{
+  "version": "metis-knowledge-application-20261101-v1",
+  "created_date": "2026-11-01 America/Los_Angeles",
+  "sha256": {
+    "COMMANDS.md": "466d44af11e272462edd37343c05d68b2978b7d7d191e8197f1612453e7b84a1",
+    "PROTOCOL.md": "4ba6d713238dc4f1f1059cf38ce78b9233e7ed83955b0527fb529d691400992a",
+    "RESULTS_TEMPLATE.md": "17929700b3c5a649253ff2291c1b202fb4f32f2a46f6a9987d2bc608d40feff9",
+    "RUBRIC.md": "53845521d805c24c70faf7b612b6554a9a8c470d813b17bdace3ef7ad3d81397",
+    "SPLIT_AUDIT.md": "76fc75767634552f51a53d61189e78262077a7b29ba10de9d55946cd304b0a51",
+    "common.py": "521ce8a87979d92ba875471aa395e23caa53d8a125582b89606c6795a037e060",
+    "config.json": "74a61fb443a8449587b33506c36f9715ba4f6cd3b7fe4ffec8772fb0fccfddca",
+    "evaluate.py": "a719334ffda72d3a754e238fb7ac0c615855b5ca081e594bb2096cd8017666d0",
+    "heldout.jsonl": "1ffc3d65b0518356c37b1730fbfc3f6099e3ecde54ed23414ec99f048e174998",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be",
+    "score.py": "21a2932b3c62c16c8cc48e1c03e6182929fe071e18a50bd7a6b0d3120bc27f00",
+    "train.jsonl": "180570c69e603f89c734fab5d4a90ca66e440d7fcbf27b2f5866673e2e997541",
+    "train.py": "d3f351ac68a40a06a1ff4e2c75db9338d1f6b7ff2eb872839656af7b60e74d88",
+    "validate_offline.py": "0ecabee3448149e52d83c6d1a9afd34bc15fadc87c7275dd1f5afa88a927cb5b"
+  }
+}

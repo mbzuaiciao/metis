@@ -1,0 +1,21 @@
+{
+  "version": "metis-modal-synthetic-smoke-v2-preparation-2",
+  "v2_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "frozen_inputs": {
+    "config.json": "b6b8dc8f84bc90283da338533d53db20022655e9f63b40edee5a9884af3bc01a",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be"
+  },
+  "predecessor_manifest_sha256": "8621a3174e6729bdc9f186803739cdf3e7d3b5e833228ad74b580e11792b506c",
+  "sha256": {
+    "modal_smoke.py": "3126dc6a2ad43a91901883dbc8ae1bdf6e5ac6ce3409b71e73fe68d6f78695cd",
+    "smoke_runtime.py": "ddab7c1e088f26ff8231e911ee83ab2ae20f0846a5799c9b4965d89796f184df",
+    "validate_offline.py": "bcce6e0230f818fe4ce993ae53efbf1c2f775bb15f6e6933e2acc873ef90d9cf",
+    "README.md": "de340f9ef69577050ff908912e1a03e7808731c47b02897d69cba3b547bc4ab9",
+    "policy_v1/OFFLINE_VALIDATION.md": "2b29865292e8974013e9ad0ae8975c7579a5938078cfd479038cd81f313a3155",
+    "policy_v1/README.md": "bdab274c6257f94f079a2d571b2a8b25bb966f26b96b89aac77f90991482956f",
+    "policy_v1/modal_smoke.py": "e64c8fa860e4d72055ba942ab499aa392b50712d7bcb62f38dfff0310c75bf51",
+    "policy_v1/smoke_freeze.json": "8621a3174e6729bdc9f186803739cdf3e7d3b5e833228ad74b580e11792b506c",
+    "policy_v1/smoke_runtime.py": "dc8fdb91cd8adb65172c759d6f94d343b3b07e45cbcc91c68aba0c882c53a5ff",
+    "policy_v1/validate_offline.py": "55c6d288b899bd4624409de8d60e902aaa4261d5c9fcdf3132ceb5177e0ece70"
+  }
+}

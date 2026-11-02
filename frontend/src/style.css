@@ -1378,6 +1378,19 @@ footer > span:last-child {
 .investigation-start button {
   flex-shrink: 0;
 }
+.investigation-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 255px;
+}
+.investigation-actions button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
 .factor-evidence {
   padding: 8px 19px 13px;
 }
@@ -1641,6 +1654,19 @@ footer > span:last-child {
 /* Causal exploration extends the existing scenario workspace. */
 .scenario-modes { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 .scenario-modes .active { border-color: #52d6bb; color: #76dac1; }
+.causal-intro { margin: 5px 0 20px; }
+.causal-intro h2 { font-size: 20px; font-weight: 550; color: #e3eef9; margin: 8px 0; }
+.causal-intro p { max-width: 780px; }
+.causal-comparison { margin: 22px 0; border: 1px solid #438879; border-radius: 6px; padding: 20px; background: #11282a; scroll-margin-top: 16px; }
+.causal-comparison h2 { font-size: 19px; color: #e3f5ee; margin: 9px 0; }
+.causal-comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.causal-comparison-card { background: #101d2a; border: 1px solid #344b53; border-radius: 5px; padding: 17px; min-width: 0; }
+.causal-comparison-card h3 { font-size: 15px; font-weight: 500; margin: 10px 0 14px; }
+.causal-comparison-card > strong { display: block; font-size: 27px; font-weight: 550; font-variant-numeric: tabular-nums; }
+.causal-comparison-card dl { margin: 17px 0 0; }
+.causal-comparison-card dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid #2a3a4b; font-size: 11px; }
+.causal-comparison-card dt { color: #9bacbf; }
+.causal-comparison-card dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
 .causal-inputs { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 16px; margin: 20px 0 12px; }
 .causal-inputs label, .causal-shocks label { display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: #b6c8de; }
 .causal-exploration input, .causal-exploration select { width: 100%; min-width: 0; border: 1px solid #34465c; border-radius: 4px; background: #101b29; padding: 10px; color: #deebf8; }
@@ -1656,7 +1682,8 @@ footer > span:last-child {
 .causal-shocks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 15px 0; }
 .causal-calculation { border-top: 1px solid #35465c; margin-top: 22px; padding-top: 8px; }
 .causal-calculation .factor-evidence { margin: 0; }
-@media (max-width: 1000px) { .causal-inputs, .causal-pair { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .causal-inputs, .causal-pair, .causal-comparison-grid { grid-template-columns: 1fr; } }
+@media (max-width: 650px) { .investigation-actions { width: 100%; min-width: 0; } .causal-comparison { padding: 14px; } }
 
 /* Verdicts cover explicit structured assertions, never the whole interpretation. */
 .verification-demo { margin: 20px 0; border: 1px solid #304258; border-radius: 5px; padding: 16px; background: #101c29; }

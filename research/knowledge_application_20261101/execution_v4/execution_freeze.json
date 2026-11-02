@@ -1,0 +1,10 @@
+{
+  "version": "metis-v4-modal-evaluation-preparation-1",
+  "scientific_freeze_sha256": "f1324b29108af9216c9eb140035dcdd99698af21052764e34d902f5493edddb1",
+  "parent_execution_v3_manifest_sha256": "fd7f2bc84867ded6b0a93b8d59d35f5205208d51c3902f840065dc4e108f8430",
+  "sha256": {
+    "execute.py": "b2652fc0c1771d6cc1ff366fcb0e1e2f0987ec94db720cac2f12594353f35683",
+    "validate_offline.py": "e88a8978471b6e422e18d4f7a48dcf9b60d0f40a432823353612913086693ba3",
+    "READINESS.md": "c435e2ca3232f36e6ce6ff91f012aeb3b41a828382d3d2fa37ba444309cf4a45"
+  }
+}

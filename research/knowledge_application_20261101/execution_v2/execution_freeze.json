@@ -1,9 +1,20 @@
 {
-  "version": "metis-v2-modal-execution-preparation-1",
+  "version": "metis-v2-modal-execution-preparation-3",
   "scientific_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
   "sha256": {
-    "execute.py": "b9884823cf7d52d15232105e44cce769f72f3b48f833e152e130597286c98311",
-    "validate_offline.py": "ffa2e1a8391c4bc4a984ec47aa24e7528af0f34bd7f590b3e72100447ca032bc",
-    "READINESS.md": "cb3bfb9d9ad057158f57096fc1a266c55c80fc2364928bc767b9536bbafaacd9"
-  }
+    "execute.py": "0f51d90f27c0ec18fa4569c03b279ecd119074fa1a8285e0f9492123984e1890",
+    "validate_offline.py": "2a6f7714b2ce405f48dac0a4ee413fe6ba4050a6299e5ac735412b71249175f8",
+    "READINESS.md": "a0e97a696ff3341b8ae6f4a550e6e3cacf5f9cafd7fe3fc4851a52b9655efb2a",
+    "preflight_v1/execute.py": "b9884823cf7d52d15232105e44cce769f72f3b48f833e152e130597286c98311",
+    "preflight_v1/READINESS.md": "cb3bfb9d9ad057158f57096fc1a266c55c80fc2364928bc767b9536bbafaacd9",
+    "preflight_v1/OFFLINE_VALIDATION.md": "bb3f168219e1f919224101ff4a72d002de983e1fd0a88fc6d6cd171e6f599afc",
+    "preflight_v1/validate_offline.py": "ffa2e1a8391c4bc4a984ec47aa24e7528af0f34bd7f590b3e72100447ca032bc",
+    "preflight_v1/execution_freeze.json": "62a2b8947f93c645422018cf2424b8011829f92a415a7bdafe0aa45d0cd4cb04",
+    "preflight_v2/execute.py": "fbbbcbdcbb90bb0b788d09c812be766eba59a1c0c4de903220cefc1b00a7dd1a",
+    "preflight_v2/READINESS.md": "f70e30bf46665b03d993fa04aea16f6ae827c20b078dccd58d498566af786beb",
+    "preflight_v2/OFFLINE_VALIDATION.md": "93c3942cc679d6b124b67941f972a374c49bdbe7a2aa949324d60c2557c9b72f",
+    "preflight_v2/validate_offline.py": "76bf2ae94e43e1379ca200e2daadca4d63fe5afa4f717dd625a5d16ecba19faf",
+    "preflight_v2/execution_freeze.json": "b6966eaf235a37edec24f07c26e3e3304073117a1de781a6ac585f6e25a9b71e"
+  },
+  "predecessor_manifest_sha256": "b6966eaf235a37edec24f07c26e3e3304073117a1de781a6ac585f6e25a9b71e"
 }

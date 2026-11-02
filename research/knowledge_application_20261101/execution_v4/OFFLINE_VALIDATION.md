@@ -1,0 +1,5 @@
+# V4 execution validation — 2026-11-02
+
+See [complete source/test/acceptance/cost inventory](../v4/OFFLINE_VALIDATION.md). V4freeze **f1324b29108af9216c9eb140035dcdd99698af21052764e34d902f5493edddb1**,executionmanifest **ed947bd8f3065f3df957a284a10f32dc0234a2b8e6142246b9e76ba54e2287d6**.13executiontests and8scientifictests pass0skips;actual Transformers4.56.2 regression14checks and unchanged35v3tests pass. Real installed Modal1.2.3 lazy definitions only,no calls/builds/resources. Synthetic C success/failure plumbing tested without inference. Original adapter unchanged;v3responses stripped from imported bundle. Correct incomplete/history/privacy/hash/config gates retained.
+
+$17.3724016projected/$20with$8historical+$5reserve+$4.3724016freshA/B/Callowance;actualbillingunknown. Pending private acceptance correctly blocks actual local launcher before Modal import/output creation. **NO-GO to execute until explicit v4amendment approval and separate launch authorization.** No further independent financial review fabricated. See [future commands](READINESS.md). No workload launched.

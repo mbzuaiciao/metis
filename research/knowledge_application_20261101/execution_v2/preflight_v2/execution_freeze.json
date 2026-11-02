@@ -1,0 +1,15 @@
+{
+  "version": "metis-v2-modal-execution-preparation-2",
+  "scientific_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "sha256": {
+    "execute.py": "fbbbcbdcbb90bb0b788d09c812be766eba59a1c0c4de903220cefc1b00a7dd1a",
+    "validate_offline.py": "76bf2ae94e43e1379ca200e2daadca4d63fe5afa4f717dd625a5d16ecba19faf",
+    "READINESS.md": "f70e30bf46665b03d993fa04aea16f6ae827c20b078dccd58d498566af786beb",
+    "preflight_v1/execute.py": "b9884823cf7d52d15232105e44cce769f72f3b48f833e152e130597286c98311",
+    "preflight_v1/READINESS.md": "cb3bfb9d9ad057158f57096fc1a266c55c80fc2364928bc767b9536bbafaacd9",
+    "preflight_v1/OFFLINE_VALIDATION.md": "bb3f168219e1f919224101ff4a72d002de983e1fd0a88fc6d6cd171e6f599afc",
+    "preflight_v1/validate_offline.py": "ffa2e1a8391c4bc4a984ec47aa24e7528af0f34bd7f590b3e72100447ca032bc",
+    "preflight_v1/execution_freeze.json": "62a2b8947f93c645422018cf2424b8011829f92a415a7bdafe0aa45d0cd4cb04"
+  },
+  "predecessor_manifest_sha256": "62a2b8947f93c645422018cf2424b8011829f92a415a7bdafe0aa45d0cd4cb04"
+}

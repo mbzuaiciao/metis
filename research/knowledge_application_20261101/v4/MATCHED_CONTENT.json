@@ -1,0 +1,23 @@
+{
+  "parent_v3_freeze_sha256": "4a65d1ed2eab32e24fe228d0f79ed045a4b4135de6a6c465f5c3ec249efda983",
+  "byte_identical_to_v3": {
+    "train.jsonl": "e4ad10f6ab41e298388ca6c926769ce979024af0573b1eac1705ca7ba5eead89",
+    "heldout.jsonl": "bdd2f01bf950056ff8a4e4382d16f81e282fcd01b35181a955faaab60e7bc6f7",
+    "RUBRIC.md": "40835429a9fb60e16d8aeb2ae32509db228cdc17b9df28449f342352f31f41f9",
+    "KNOWLEDGE_RUBRIC.md": "e03fef33c139464842d248395c88f497e070b15669ac4230de90c32cd0efde47",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be",
+    "score.py": "94506bcb6fe250049d45fdae2993ff895070edcfffb1c97d1c18b5fe86799a8a",
+    "QWEN_GENERATION_DEFAULTS.json": "835fffe355c9438e7a25be099b3fccaa98350b83451f9fd2d99512e74f1ade48",
+    "CASE_REVIEW.md": "e92b2d6e0f86f96cdcabec913aa0b14b824c6e823f938c8a106bc0646915c60c",
+    "SPLIT_AUDIT.md": "6c697cf11f7d4195e1a92df4bedab6268d2bddff72d59eabe58df9fc76189481"
+  },
+  "unchanged_protocol_copies": {
+    "INHERITED_V3_PROTOCOL.md": "16dd7b154f3ac7b0674d19891225a6ea792213125e7c2885e28f66f05b413658",
+    "INHERITED_V2_PROTOCOL.md": "431cd807f8ea31116fbbd1997dc5a5ac353c80fefed3b12252d7f5092f515fb4"
+  },
+  "config_differences": [
+    "study",
+    "generation.no_repeat_ngram_size"
+  ],
+  "training": "No v4 training;import original v3 adapter unchanged."
+}

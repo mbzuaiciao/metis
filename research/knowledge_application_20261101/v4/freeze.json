@@ -1,0 +1,27 @@
+{
+  "version": "metis-knowledge-application-20261101-v4",
+  "parent_v3_freeze_sha256": "4a65d1ed2eab32e24fe228d0f79ed045a4b4135de6a6c465f5c3ec249efda983",
+  "sha256": {
+    "ADAPTER_IMPORT.json": "5bfde81d32b09815d39ff3357b846a4afa15ba798c25f150095202fff6db4a8a",
+    "CASE_REVIEW.md": "e92b2d6e0f86f96cdcabec913aa0b14b824c6e823f938c8a106bc0646915c60c",
+    "COMMANDS.md": "5461a8b86516e18b4cc3dc01ff5601367d2058d0ecc5295de93427c94ca2e944",
+    "INHERITED_V2_PROTOCOL.md": "431cd807f8ea31116fbbd1997dc5a5ac353c80fefed3b12252d7f5092f515fb4",
+    "INHERITED_V3_PROTOCOL.md": "16dd7b154f3ac7b0674d19891225a6ea792213125e7c2885e28f66f05b413658",
+    "KNOWLEDGE_RUBRIC.md": "e03fef33c139464842d248395c88f497e070b15669ac4230de90c32cd0efde47",
+    "MATCHED_CONTENT.json": "065b211a4ce3d9db72e31cba370e4291c0ac6a13a079582f80003ddb52c74d41",
+    "PROTOCOL.md": "8a39c13d6dd62b76587d2440987fda6a36dfe8951b9640147e84f805ed989cb0",
+    "QWEN_GENERATION_DEFAULTS.json": "835fffe355c9438e7a25be099b3fccaa98350b83451f9fd2d99512e74f1ade48",
+    "RUBRIC.md": "40835429a9fb60e16d8aeb2ae32509db228cdc17b9df28449f342352f31f41f9",
+    "SPLIT_AUDIT.md": "6c697cf11f7d4195e1a92df4bedab6268d2bddff72d59eabe58df9fc76189481",
+    "V3_MANIFEST.json": "4a65d1ed2eab32e24fe228d0f79ed045a4b4135de6a6c465f5c3ec249efda983",
+    "common.py": "2acae7ccbcaeb490b709384a7972d925aec237a970fcaaa5b07c699806091b01",
+    "config.json": "615a935f686eb8ce6958f4dc3da53364f72295bf6a73a5ed1082f98bfbcab062",
+    "evaluate.py": "0c1cfe6e08175fe54326f916d5f949fcd27574aac39a282781042ce06082578f",
+    "generation_regression.py": "39a59746830611ff0a3e5f4e8caa0d96779a41b2e1f4c1d2e7b510fc10ca6004",
+    "heldout.jsonl": "bdd2f01bf950056ff8a4e4382d16f81e282fcd01b35181a955faaab60e7bc6f7",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be",
+    "score.py": "94506bcb6fe250049d45fdae2993ff895070edcfffb1c97d1c18b5fe86799a8a",
+    "train.jsonl": "e4ad10f6ab41e298388ca6c926769ce979024af0573b1eac1705ca7ba5eead89",
+    "validate_offline.py": "32f6dd16361d21ebe75d7bad5d03a4854048f56726e5e7211695590ac133a8bc"
+  }
+}

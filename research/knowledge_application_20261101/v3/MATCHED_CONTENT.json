@@ -1,0 +1,20 @@
+{
+  "parent_v2_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "identical_files": {
+    "SPLIT_AUDIT.md": "6c697cf11f7d4195e1a92df4bedab6268d2bddff72d59eabe58df9fc76189481",
+    "train.jsonl": "e4ad10f6ab41e298388ca6c926769ce979024af0573b1eac1705ca7ba5eead89",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be",
+    "RESULTS_TEMPLATE.md": "746f5c8b0df277d1a5ff16fd474c8728ed9533088b1ba1fe91048aaa5c70b428",
+    "heldout.jsonl": "bdd2f01bf950056ff8a4e4382d16f81e282fcd01b35181a955faaab60e7bc6f7",
+    "common.py": "f16c9739fdf3f61b04bb920e2ea260bb4369976795da2ad8422652a460166318",
+    "RUBRIC.md": "40835429a9fb60e16d8aeb2ae32509db228cdc17b9df28449f342352f31f41f9",
+    "train.py": "ace6108d76da103aed23f951ec9a8b60fe7744973780af4feb7e092e5e43801b",
+    "KNOWLEDGE_RUBRIC.md": "e03fef33c139464842d248395c88f497e070b15669ac4230de90c32cd0efde47",
+    "CHANGES.md": "3a2cb2f0d85619fa98446b5aec3b10f5ba4c9cb04b27f7b9d2bedf3f8d58a8a2",
+    "V1_MANIFEST.json": "bc68b1cb0d8800dcbcf4f5f73fa8c7758c54bfe5c8926cd2ac68c535afd24e63",
+    "score.py": "94506bcb6fe250049d45fdae2993ff895070edcfffb1c97d1c18b5fe86799a8a",
+    "CASE_REVIEW.md": "e92b2d6e0f86f96cdcabec913aa0b14b824c6e823f938c8a106bc0646915c60c"
+  },
+  "config_change": "study identity only; all other fields identical",
+  "scientific_dataset_change": false
+}

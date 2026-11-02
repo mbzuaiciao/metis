@@ -1,0 +1,43 @@
+{
+  "study": "metis-knowledge-application-20261101-v3",
+  "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+  "model_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "license": "Apache-2.0",
+  "seed": 20261101,
+  "data_seed": 20261102,
+  "order_seed": 20261103,
+  "generation": {
+    "do_sample": false,
+    "num_beams": 1,
+    "max_new_tokens": 512,
+    "repetition_penalty": 1.0,
+    "use_cache": true
+  },
+  "max_input_tokens": 1536,
+  "max_train_tokens": 2048,
+  "training": {
+    "epochs": 3,
+    "learning_rate": 0.0001,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "warmup_steps": 3,
+    "weight_decay": 0.0,
+    "lr_scheduler_type": "linear",
+    "max_grad_norm": 1.0
+  },
+  "lora": {
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "bias": "none",
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "task_type": "CAUSAL_LM"
+  },
+  "standard_instruction": "You are a financial analyst. Answer the user's question accurately and concisely using the supplied information. Explain your reasoning and state any limitations. Keep the answer within 250 words.",
+  "improved_instruction": "You are a financial analyst. Answer the user's question accurately and concisely using the supplied information. First distinguish the exact conclusion requested from related claims. Check whether the evidence covers the financial relationships, contractual conditions, timing and scope needed for that conclusion. If a decision-critical fact is missing, withhold that conclusion and identify the specific information needed. Do not infer missing values or directions of omitted effects. If the evidence already determines the answer, give it directly; a justified negative answer is not missing evidence. Do not request irrelevant information or broader guarantees. Explain your reasoning and state any limitations. Keep the answer within 250 words."
+}

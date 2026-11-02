@@ -1,0 +1,29 @@
+{
+  "version": "metis-knowledge-application-20261101-v3",
+  "parent_v2_freeze_sha256": "4deeb8fb0a8babdaf3c776f0859d26ccbe771ac55748fec08da94e1f440c5d91",
+  "sha256": {
+    "CASE_REVIEW.md": "e92b2d6e0f86f96cdcabec913aa0b14b824c6e823f938c8a106bc0646915c60c",
+    "CHANGES.md": "3a2cb2f0d85619fa98446b5aec3b10f5ba4c9cb04b27f7b9d2bedf3f8d58a8a2",
+    "COMMANDS.md": "ab7d5ea2bbc08463e82ba8576a3759d7e40b5285ff46bb39261bfd5a7375f36a",
+    "INHERITED_V2_PROTOCOL.md": "431cd807f8ea31116fbbd1997dc5a5ac353c80fefed3b12252d7f5092f515fb4",
+    "KNOWLEDGE_RUBRIC.md": "e03fef33c139464842d248395c88f497e070b15669ac4230de90c32cd0efde47",
+    "MATCHED_CONTENT.json": "34b3371f307ed4dff3fd59850599d4ed1243a13f351720177fe613217d734a2f",
+    "PROTOCOL.md": "16dd7b154f3ac7b0674d19891225a6ea792213125e7c2885e28f66f05b413658",
+    "QWEN_GENERATION_DEFAULTS.json": "835fffe355c9438e7a25be099b3fccaa98350b83451f9fd2d99512e74f1ade48",
+    "RESULTS_TEMPLATE.md": "746f5c8b0df277d1a5ff16fd474c8728ed9533088b1ba1fe91048aaa5c70b428",
+    "RUBRIC.md": "40835429a9fb60e16d8aeb2ae32509db228cdc17b9df28449f342352f31f41f9",
+    "SPLIT_AUDIT.md": "6c697cf11f7d4195e1a92df4bedab6268d2bddff72d59eabe58df9fc76189481",
+    "V1_MANIFEST.json": "bc68b1cb0d8800dcbcf4f5f73fa8c7758c54bfe5c8926cd2ac68c535afd24e63",
+    "V2_MANIFEST.json": "763a9ee8aa3c51b990d0f50b9b8c67b65e6ab0909b20e05babee7327ae6e3d19",
+    "common.py": "f16c9739fdf3f61b04bb920e2ea260bb4369976795da2ad8422652a460166318",
+    "config.json": "4012e6e7914c1c8639486fa60fdfe05f6c751e11ec384edee940be5a14a1cd3e",
+    "evaluate.py": "832a5c8b8d947ea7d5990e863156318b678ba9343ab99cf1888755eb407cd8c1",
+    "generation_regression.py": "c23f972edc8ae7a73829be4437e0205ae5797169180070994b2f9863b50f4779",
+    "heldout.jsonl": "bdd2f01bf950056ff8a4e4382d16f81e282fcd01b35181a955faaab60e7bc6f7",
+    "requirements.txt": "46c61c3afa57d2e21181a0f03c742dca88e8585b41907b9995f56f235eb347be",
+    "score.py": "94506bcb6fe250049d45fdae2993ff895070edcfffb1c97d1c18b5fe86799a8a",
+    "train.jsonl": "e4ad10f6ab41e298388ca6c926769ce979024af0573b1eac1705ca7ba5eead89",
+    "train.py": "ace6108d76da103aed23f951ec9a8b60fe7744973780af4feb7e092e5e43801b",
+    "validate_offline.py": "eb352dc7734096ab2489b92f81d40de5a766da2969d8c1a33d2ef47b46339edd"
+  }
+}

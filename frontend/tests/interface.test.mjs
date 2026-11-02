@@ -43,6 +43,7 @@ test("Demo renders only named hypothesis selectors; Meta retains free-form input
   assert.equal((demo.match(/<select/g) || []).length, 2);
   assert.doesNotMatch(demo, /<datalist|type your own|<input list=/);
   assert.match(demo, /Custom hypotheses require live Meta mode/);
+  assert.match(demo, /DETERMINISTIC DEMO · TEMPLATE HYPOTHESES/);
   for (const hypothesis of ["Recession fears", "Inflation relief", "Liquidity and funding stress"]) {
     assert.ok(demo.includes(`value="${hypothesis}"`));
   }
@@ -51,6 +52,7 @@ test("Demo renders only named hypothesis selectors; Meta retains free-form input
   assert.equal((live.match(/<input list=/g) || []).length, 2);
   assert.match(live, /value="Supply normalization"/);
   assert.match(live, /type your own/);
+  assert.match(live, /META-POWERED ECONOMIC EXPLORATION/);
   assert.match(causalMarkup("demo", {...initialCausalState, hypothesis: "Supply normalization"}), /Choose a demo hypothesis/);
 });
 
@@ -108,7 +110,7 @@ test("accepted causal hypotheses show backend P&L side by side, never before cal
     result: {
       mode: "demo", model: null,
       request: {hypothesis: "Recession fears", alternative: "Inflation relief", common_rates_bp: -50},
-      context: {market: {as_of: "2025-03-10"}, evidence: [], portfolio: {exposures: {}}},
+      context: {market: {as_of: "2025-03-10"}, evidence: [], portfolio: {exposures: {dv01_usd_per_bp: 0, cs01_usd_per_bp: 0}}},
       exploration: {mechanisms: [makeMechanism("Recession fears", first), makeMechanism("Inflation relief", second)]},
     },
     drafts: [first, second],

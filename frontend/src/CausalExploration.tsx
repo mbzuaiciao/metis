@@ -1,8 +1,13 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Calculation, CausalRequest, CausalResult, Shocks, Workstation } from "./types";
 import { acceptProposals, causalRequest, editAssumption, demoHypotheses, type CausalState } from "./causal";
 import { FactorEvidence, PositionEvidence } from "./InvestigationEvidence";
+
+const usd = (value: number) => new Intl.NumberFormat("en-US", {
+  style: "currency", currency: "USD", maximumFractionDigits: 0,
+}).format(value === 0 ? 0 : value);
+const pnlTone = (value: number) => value > 0 ? "positive" : value < 0 ? "negative" : "muted";
 
 const factors: [keyof Shocks, string, string, number, number][] = [
   ["rates_bp", "Government yields", "bp", -300, 300],
@@ -25,6 +30,11 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
   const demo = data.causal_mode === "demo";
   const locked = state.busy || state.calculating;
   const validDrafts = state.drafts.length === 2 && state.drafts.every(shocks => factors.every(([key, , , min, max]) => Number.isFinite(shocks[key]) && shocks[key] >= min && shocks[key] <= max));
+  useEffect(() => {
+    if (state.calculations.length === 2) {
+      document.getElementById("causal-comparison")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [state.calculations.length]);
   async function explore() {
     if (inFlight.current || locked) return;
     try {
@@ -51,6 +61,11 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
     } finally { inFlight.current = false; }
   }
   return <section className="causal-exploration">
+    <div className="causal-intro">
+      <span className="eyebrow">META-POWERED ECONOMIC EXPLORATION</span>
+      <h2>One market movement. Different possible explanations.</h2>
+      <p>Explore how competing economic mechanisms could lead to different portfolio outcomes. You review the assumptions before Metis calculates the consequences.</p>
+    </div>
     <div className="notice"><span><b>Explore possible causes, not the true cause.</b> Correlation does not establish causation. Two hypotheses share an initial hypothetical yield move; their other factor assumptions may differ.</span></div>
     <p className="context-note">Supplied facts: {data.positions.length} synthetic positions · dated market snapshot {data.market.as_of}. No live market-data feed.</p>
     <div className="causal-inputs">
@@ -78,6 +93,32 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
         <span className={result.mode === "demo" ? "badge amber" : "badge"}>{result.mode === "demo" ? "DETERMINISTIC DEMO" : `LIVE META · ${result.model}`}</span>
         <p><b>Captured comparison:</b> {result.request.hypothesis} versus {result.request.alternative} · shared government yields {result.request.common_rates_bp}bp.</p>
       </div>
+      {state.calculations.length === 2 && <section className="causal-comparison" id="causal-comparison" aria-label="Accepted scenario comparison">
+        <span className="eyebrow">ACCEPTED ASSUMPTIONS · CALCULATED BY METIS</span>
+        <h2>{state.calculations[0].shocks.rates_bp === state.calculations[1].shocks.rates_bp
+          ? "Same yield move. Different portfolio outcomes."
+          : "Different yield assumptions. Compare the outcomes."}</h2>
+        <p className="context-note">These are hypothetical portfolio results from the accepted shocks, not predictions or identified causes. The model generated possible mechanisms; Metis calculated the numbers.</p>
+        <div className="causal-comparison-grid">
+          {state.calculations.map((calc, i) => <article className="causal-comparison-card" key={i}>
+            <span className="eyebrow">HYPOTHESIS {i === 0 ? "A" : "B"}</span>
+            <h3>{result.exploration.mechanisms[i].title}</h3>
+            <strong className={pnlTone(calc.total_pnl_usd)}>{usd(calc.total_pnl_usd)}</strong>
+            <span className="context-note">Calculated portfolio P&amp;L</span>
+            <dl>
+              <div><dt>Government yields</dt><dd>{calc.shocks.rates_bp > 0 ? "+" : ""}{calc.shocks.rates_bp}bp</dd></div>
+              {([
+                ["Rates", "rates_pnl"],
+                ["Credit spreads", "credit_pnl"],
+                ["Equities", "equity_pnl"],
+                ["FX", "fx_pnl"],
+              ] as const).map(([name, key]) => <div key={key}>
+                <dt>{name} contribution</dt><dd className={pnlTone(calc.by_factor[key])}>{usd(calc.by_factor[key])}</dd>
+              </div>)}
+            </dl>
+          </article>)}
+        </div>
+      </section>}
       <details className="answer-section"><summary>Supplied facts & original historical sources</summary>
         <p>Synthetic portfolio and dated market snapshot: {result.context.market.as_of}. These facts are separate from the proposed causal relationships and hypothetical shared yield move. Historical sources provide qualitative context, not calibrated causal estimates.</p>
         {result.context.evidence.map(e => <p key={e.id}>{e.url ? <a href={e.url} target="_blank" rel="noreferrer">[{e.id}] {e.description} ↗</a> : `[${e.id}] ${e.description}`}</p>)}

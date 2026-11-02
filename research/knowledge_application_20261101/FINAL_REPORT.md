@@ -19,6 +19,8 @@ The final scientific freeze SHA-256 is `f1324b29108af9216c9eb140035dcdd99698af21
 
 ## Verified technical observations
 
+The technical observations below were verified against local execution artifacts under `research/runs/`; raw inference outputs are excluded from Git.
+
 Model: `Qwen/Qwen3-4B-Instruct-2507`, revision `cdbee75f17c01a7cc42f958dc650907174af0554`; one recorded L40S, BF16/SDPA, and the [pinned stack](v4/requirements.txt), including Transformers 4.56.2. Training/data/order seeds were 20261101/20261102/20261103. All v4 arms used verified identical effective greedy decoding, one beam, no-repeat 20, 512-new-token limit, EOS 151645, pad 151643, repetition_penalty=1 and `use_model_defaults=False`.
 
 The returned training run processed **60 examples, 3 epochs, 45 optimizer steps**, supported by 45 finite step records and 45/45 progress (no saved global_step checkpoint). Fixed LoRA: r=16, alpha=32, dropout=0.05, no bias, q/k/v/o projections; AdamW, LR=1e-4, batch=1/accumulation=4, linear schedule/warmup=3, completion-only loss. Training processed 27,549 input/target tokens; mean training loss 3.3022, runtime 37.7024s. Loss is not a financial-performance measure. The adapter has 288 finite tensors / 11,796,480 parameters; all 11 artifact hashes match [the original v3 import binding](v4/ADAPTER_IMPORT.json). Adapter-model SHA-256: `1963de65f0bcc6b3ddbb68d7c243ce0b024938be81ec4b481b4d66f3c6d14751`. No checkpoint selection or retraining; optimizer/RNG resume state was intentionally not saved.
@@ -31,7 +33,7 @@ The returned training run processed **60 examples, 3 epochs, 45 optimizer steps*
 | C application |3|0|17|
 | **All 120 scheduled slots** |**84**|**1**|**35**|
 
-**V4 A/B completed all 80 responses.** Record hashes, unique case/probe IDs, raw termination records and 87-entry archive integrity passed. All 20 A/B knowledge outputs have identical token sequences, a technical control observation rather than a correctness score. Final C's 109-entry ZIP matches extracted files; all inherited A/B and training artifacts remain byte-identical. No complete C knowledge/application pair exists.
+**V4 A/B completed all 80 responses.** Record hashes, unique case/probe IDs, raw termination records and 87-entry archive integrity passed. All 20 A/B knowledge outputs have identical token sequences, a technical control observation rather than a correctness score. Final C's 109-entry ZIP matches extracted files; all inherited A/B and training artifacts remain byte-identical. Condition C has zero complete paired knowledge/application cases.
 
 **Final failure:** the fifth C call, eval-10/knowledge, returned 512 tokens ending in token 279. There was no EOS 151645 or alternative terminator 151643 anywhere in its raw output. The evaluator saved it, raised TruncatedResponse at evaluate.py:44, and exited 1; the wrapper recorded CalledProcessError in C_subprocess. Git metadata/deprecation warnings were nonfatal. Adapter loading and generation succeeded; this was not an adapter integrity, timeout or artifact-transfer failure.
 

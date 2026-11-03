@@ -855,3 +855,44 @@ test("Portfolio presents compact 12-position snapshot leading with dated P&L and
   assert.doesNotMatch(html, /<select/);
   assert.doesNotMatch(html, /Event window/);
 });
+
+test("historical stress cards render dates, input basis, all results and custom controls", async () => {
+  const { Scenarios } = await import('../src/App.tsx');
+  const data = marketData();
+  const calculations = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import *; print(json.dumps([calculate(load_positions(), Shocks(**s['shocks'])) for s in load_json('historical-stress-presets')]))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+  const render = (shocks, calc, extra = {}) => renderToStaticMarkup(React.createElement(Scenarios, {
+    data, shocks, calc, setShocks() {}, pending: false, error: '', goAI() {}, busy: false, ...extra,
+  }));
+  data.historical_stress_presets.forEach((preset, i) => {
+    const html = render(preset.shocks, calculations[i]);
+    assert.match(html, /Historical-event-inspired illustrative stress tests/);
+    assert.equal((html.match(/class="preset(?: active)?"/g) || []).length, 4);
+    assert.equal((html.match(/class="preset active"/g) || []).length, 1);
+    for (const card of data.historical_stress_presets) {
+      assert.ok(html.includes(card.name));
+      assert.ok(html.includes(card.window));
+    }
+    assert.ok(html.includes(preset.basis.replaceAll("&", "&amp;")));
+    assert.match(html, /12 positions/);
+    assert.match(html, /HYPOTHETICAL PORTFOLIO P&amp;L/);
+    assert.match(html, /of current NAV/);
+    assert.match(html, /Scenario attribution/);
+    assert.match(html, /Scenario P&amp;L by position/);
+    assert.match(html, /Interpret this scenario with Metis/);
+    assert.equal((html.match(/type="range"/g) || []).length, 5);
+    for (const p of calculations[i].positions) assert.ok(html.includes(p.name));
+    assert.doesNotMatch(html, /<b>Broad risk-off<\/b>|<b>Interest-rate rally<\/b>/);
+  });
+  const custom = render({...calculations[0].shocks, rates_bp: -17.25}, calculations[0]);
+  assert.doesNotMatch(custom, /class="preset active"/);
+  assert.match(custom, /Custom shocks/);
+  assert.match(custom, /Reset all shocks to zero/);
+  // Property order must not determine preset matching (e.g. causal handoff).
+  const reversed = Object.fromEntries(Object.entries(calculations[1].shocks).reverse());
+  assert.match(render(reversed, calculations[1]), /class="preset active"/);
+  const pending = render(calculations[0].shocks, calculations[1], {pending: true});
+  assert.match(pending, /Recalculating/);
+  assert.doesNotMatch(pending, /Scenario P&amp;L by position/);
+});

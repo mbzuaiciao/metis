@@ -82,4 +82,4 @@ def workstation(investigation_date: str | None = None) -> dict:
     return {"portfolio_name": "Metis Global Opportunities", "data_kind": "synthetic", "nav_usd": nav,
             "opening_nav_usd": opening, "daily_return_pct": daily["total_pnl_usd"] / opening * 100,
             "positions": daily["positions"], "allocation": allocation, "exposures": exposures(frame),
-            "daily": daily, "market": market, "scenarios": load_json("scenarios"), "history": load_json("history")}
+            "daily": daily, "market": market, "scenarios": load_json("scenarios"), "historical_stress_presets": load_json("historical-stress-presets"), "history": load_json("history")}

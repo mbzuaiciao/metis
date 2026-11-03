@@ -1,0 +1,70 @@
+[
+  {
+    "id": "covid-2020",
+    "name": "COVID-19 market crash",
+    "window": "March 2–23, 2020",
+    "start_date": "2020-03-02",
+    "end_date": "2020-03-23",
+    "description": "Growth collapse and credit stress overwhelm a government-bond rally; USD demand weakens EUR.",
+    "basis": "All five shocks are illustrative assumptions, not observed returns. Net window assumes lower yields despite interim Treasury selling.",
+    "source_url": "https://libertystreeteconomics.newyorkfed.org/2020/05/treasury-market-liquidity-and-the-federal-reserve-during-the-covid-19-pandemic/",
+    "shocks": {
+      "rates_bp": -50,
+      "ig_bp": 200,
+      "hy_bp": 650,
+      "equity_pct": -25,
+      "fx_pct": -3
+    }
+  },
+  {
+    "id": "inflation-2022",
+    "name": "US inflation shock",
+    "window": "September 12–13, 2022",
+    "start_date": "2022-09-12",
+    "end_date": "2022-09-13",
+    "description": "Higher yields, equity losses and a stronger USD after the CPI surprise; HY widens while IG is unchanged.",
+    "basis": "Reuse cached September research: 10Y +5.37bp, US IG/HY OAS 0/+18bp, S&P −4.32%, EUR/USD −1.46%. Illustrative parallel-rate, global-equity and European-credit mappings; asynchronous quotes, not authenticated portfolio returns.",
+    "source_url": "https://www.bls.gov/news.release/archives/cpi_09132022.htm",
+    "shocks": {
+      "rates_bp": 5.37,
+      "ig_bp": 0,
+      "hy_bp": 18,
+      "equity_pct": -4.32,
+      "fx_pct": -1.46
+    }
+  },
+  {
+    "id": "banking-2023",
+    "name": "Regional banking crisis",
+    "window": "March 10–13, 2023",
+    "start_date": "2023-03-10",
+    "end_date": "2023-03-13",
+    "description": "Safety demand lowers yields; banking contagion widens credit and weighs on equities. Lower US rate expectations support EUR.",
+    "basis": "All five shocks are illustrative assumptions for Friday March 10 to Monday March 13, not observed returns. Parallel rates miss the larger front-end repricing; no bank-specific/default loss is modeled.",
+    "source_url": "https://www.fdic.gov/news/speeches/2023/spmar2923.html",
+    "shocks": {
+      "rates_bp": -15,
+      "ig_bp": 15,
+      "hy_bp": 40,
+      "equity_pct": -1,
+      "fx_pct": 0.8
+    }
+  },
+  {
+    "id": "yen-2024",
+    "name": "Yen carry-trade unwind",
+    "window": "August 2–5, 2024",
+    "start_date": "2024-08-02",
+    "end_date": "2024-08-05",
+    "description": "Deleveraging depresses equities and widens credit; a modest haven rally lowers yields. EUR strengthens slightly against USD.",
+    "basis": "All five shocks are illustrative assumptions between Friday August 2 and Monday August 5 trading sessions; August 3–4 is the weekend. EUR/USD does not capture JPY directly; no yen exposure, leverage or margin loss is modeled.",
+    "source_url": "https://www.bis.org/publ/bisbull90.pdf",
+    "shocks": {
+      "rates_bp": -5,
+      "ig_bp": 5,
+      "hy_bp": 20,
+      "equity_pct": -3,
+      "fx_pct": 0.5
+    }
+  }
+]

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import type { EventSnapshot } from './types';
 const money = (v: number | null) => v === null ? 'Unavailable' : new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0}).format(Math.round(v / 1000) * 1000);
 
@@ -14,16 +15,34 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
       Starting illustrative value {money(snapshot.start_nav_usd)} → ending illustrative value {money(snapshot.end_nav_usd)} · {snapshot.coverage_count}/12 rows.<br />
       <small className="context-note">Illustrative estimate — not actual portfolio returns.</small></p>
     {snapshot.estimated_pnl_usd === null && <p>Covered subtotal only: {money(snapshot.covered_pnl_usd)}. Missing rows are excluded, never assumed zero.</p>}
-    <div className="etf-table-wrap"><table className="etf-table">
-      <thead><tr><th>Holding</th><th>Starting USD value<br />{snapshot.start}</th><th>Ending USD value<br />{snapshot.end}</th><th>Estimated P&amp;L</th><th>Method / inputs</th></tr></thead>
+    <div className="etf-table-wrap"><table className="etf-table event-table">
+      <thead><tr>
+        <th>Holding</th>
+        <th>Starting USD value<br />{snapshot.start}</th>
+        <th>Ending USD value<br />{snapshot.end}</th>
+        <th>Estimated P&amp;L</th>
+      </tr></thead>
       <tbody>{snapshot.positions.map(p => <tr key={p.id} data-event-position={p.id}>
-        <td><b>{p.id}</b><br />{p.label}</td>
-        <td>{money(p.start_value_usd)}</td><td>{money(p.end_value_usd)}</td><td>{money(p.pnl_usd)}</td>
-        <td><details><summary>Inspect basis</summary><p>{p.method}</p>
-          {p.inputs.map((i, n) => <p key={n}><b>{i.status}</b> · {i.label}: {i.value} {i.unit} {i.source_url && <a href={i.source_url} target="_blank" rel="noreferrer">Source</a>}</p>)}
-          {Object.entries(p.terms).map(([key, value]) => <p key={key}>{key.replaceAll('_', ' ')}: {String(value)}</p>)}
-          {p.assumptions.map((a, i) => <p key={i}>{a}</p>)}
-        </details></td>
+        <td>
+          <details className="holding-details">
+            <summary className="holding-summary">
+              <span className="holding-chevron" aria-hidden="true"><ChevronRight size={14} /></span>
+              <span className="holding-title">
+                <b>{p.id}</b>
+                <span className="holding-label">{p.label}</span>
+              </span>
+            </summary>
+            <div className="holding-basis">
+              <p>{p.method}</p>
+              {p.inputs.map((i, n) => <p key={n}><b>{i.status}</b> · {i.label}: {i.value} {i.unit} {i.source_url && <a href={i.source_url} target="_blank" rel="noreferrer">Source</a>}</p>)}
+              {Object.entries(p.terms).map(([key, value]) => <p key={key}>{key.replaceAll('_', ' ')}: {String(value)}</p>)}
+              {p.assumptions.map((a, i) => <p key={i}>{a}</p>)}
+            </div>
+          </details>
+        </td>
+        <td>{money(p.start_value_usd)}</td>
+        <td>{money(p.end_value_usd)}</td>
+        <td>{money(p.pnl_usd)}</td>
       </tr>)}</tbody>
     </table></div>
     {onExplore && <button onClick={() => onExplore(snapshot.id)}>Use this snapshot as a causal reference</button>}

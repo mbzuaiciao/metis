@@ -1,4 +1,5 @@
 import os
+from datetime import date as Date
 
 from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
@@ -22,7 +23,9 @@ def health():
 
 @app.get("/api/workstation")
 def get_workstation():
-    return {**workstation(), "investigation": load_json('investigation'),
+    config = load_json('investigation')
+    return {**workstation(), "investigation": {**config,
+            'snapshots': [workstation(date) for date in config['snapshots']]},
             "causal_mode": os.getenv("METIS_PROVIDER", "demo").strip().lower()}
 
 
@@ -37,14 +40,13 @@ def reasoning(request: InvestigationRequest | FollowupRequest):
         if isinstance(request, FollowupRequest):
             return evidence_snapshots.resume(request)
         if request.investigation_scope == 'daily':
-            data = workstation()
             date = request.investigation_date.isoformat() if request.investigation_date else load_json('investigation')['default_date']
-            if date != data['market']['as_of']:
-                raise HTTPException(status_code=422, detail=(
-                    f'Investigation data unavailable for {date}. '
-                    f"The available daily snapshot is synthetic and dated {data['market']['as_of']}; "
-                    'no data was substituted.'))
-            request = request.model_copy(update={'shocks': Shocks(**data['daily']['shocks'])})
+            try:
+                data = workstation(date)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+            request = request.model_copy(update={'shocks': Shocks(**data['daily']['shocks']),
+                                                 'investigation_date': Date.fromisoformat(date)})
         elif request.investigation_date is not None:
             raise HTTPException(status_code=422, detail='investigation_date applies only to daily investigations; historical events and stress scenarios retain their own scope.')
         return evidence_snapshots.capture(reason(request), request.investigation_scope)

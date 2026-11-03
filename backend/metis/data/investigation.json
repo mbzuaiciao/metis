@@ -1,5 +1,8 @@
 {
   "default_date": "2026-10-30",
-  "status": "unavailable",
-  "limitation": "No portfolio valuation or sourced market dataset for 2026-10-30 is configured. Select the dated synthetic snapshot or the prepared historical event; neither represents October 2026 observations."
+  "disclosure": "Fictional demonstration: all dated levels, moves, position marks, notionals, sensitivities and calculated P&L are synthetic. These are not sourced market observations or real portfolio valuations. Scenario dates do not establish hackathon development provenance.",
+  "snapshots": {
+    "2026-10-30": {"market": "market-20261030", "positions": "positions-20261030.csv"},
+    "2025-03-10": {"market": "market", "positions": "positions.csv"}
+  }
 }

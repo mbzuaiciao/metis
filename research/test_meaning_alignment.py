@@ -49,7 +49,7 @@ def test_frozen_record_integrity_and_independent_expectations():
     import hashlib
     for path, digest in result['source_sha256'].items():
         source = (HERE.parent/path).read_bytes()
-        if path == 'backend/metis/reasoning/harness.py':
+        if path in {'backend/metis/reasoning/harness.py', 'backend/metis/analytics/engine.py'}:
             # Product schema/prompt changes in November do not rewrite the
             # experiment's source provenance. Check the preserved Git revision,
             # then undo its sole effort-setting delta as before.

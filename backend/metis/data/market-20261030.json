@@ -1,0 +1,13 @@
+{
+  "id": "synthetic-demo-2026-10-30",
+  "as_of": "2026-10-30",
+  "previous_date": "2026-10-29",
+  "label": "Fictional October demonstration — all levels and moves synthetic, not actual market closes",
+  "base_currency": "USD",
+  "yields": [{"tenor":"2Y","previous_pct":3.70,"current_pct":3.60},{"tenor":"5Y","previous_pct":3.85,"current_pct":3.75},{"tenor":"10Y","previous_pct":4.00,"current_pct":3.90},{"tenor":"30Y","previous_pct":4.25,"current_pct":4.15}],
+  "credit": [{"name":"Investment grade","bucket":"ig","level_bp":130,"change_bp":12},{"name":"High yield","bucket":"hy","level_bp":410,"change_bp":35}],
+  "equities": [{"name":"US large cap","change_pct":-1.5},{"name":"Developed ex-US","change_pct":-1.5}],
+  "fx": [{"name":"EUR/USD","level":1.100,"change_pct":-0.5}],
+  "daily_shocks": {"rates_bp":-10,"ig_bp":12,"hy_bp":35,"equity_pct":-1.5,"fx_pct":-0.5},
+  "commentary": "Fictional demonstration growth scare: assumed haven demand lowers government yields while credit spreads widen, equities fall and EUR weakens. Every level and move is invented for this synthetic scenario, not a report of October events. Parallel rates, common equity returns and constant synthetic sensitivities are modeling assumptions. Credit prior levels are current less change; FX prior level is current divided by (1 + return/100); equity prior index is normalized to 100."
+}

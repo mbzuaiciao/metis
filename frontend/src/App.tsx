@@ -49,6 +49,7 @@ import {
 } from "./InvestigationEvidence";
 import {
   dailyQuestion,
+  dailySnapshot,
   historicalQuestion,
   scenarioQuestion,
   investigationRequest,
@@ -1034,6 +1035,8 @@ const prompts = [
 ];
 function ReasoningPage({
   data,
+  selectedDate,
+  setSelectedDate,
   calc,
   pending,
   messages,
@@ -1047,6 +1050,8 @@ function ReasoningPage({
   setActiveInvestigationId,
 }: {
   data: Workstation;
+  selectedDate: string;
+  setSelectedDate: (date: string) => void;
   calc: Calculation | null;
   pending: boolean;
   messages: Reasoning[];
@@ -1059,6 +1064,7 @@ function ReasoningPage({
   activeInvestigationId: string | null;
   setActiveInvestigationId: (id: string) => void;
 }) {
+  const dailyData = dailySnapshot(data, selectedDate);
   const target = followupTarget(messages, activeInvestigationId);
   const investigations = messages.filter((m, i) => messages.findIndex(other => other.investigation_id === m.investigation_id) === i);
   return (
@@ -1076,7 +1082,8 @@ function ReasoningPage({
             </p>
           </div>
         </div>
-        <DefaultInvestigationDate investigation={data.investigation} />
+        <DefaultInvestigationDate investigation={data.investigation} selectedDate={selectedDate}
+          onSelect={setSelectedDate} disabled={busy} />
         <section className="reasoning-actions">
           <div>
             <button className="primary" disabled={busy}
@@ -1095,10 +1102,10 @@ function ReasoningPage({
               disabled={busy}
               aria-describedby="daily-option-description"
             >
-              Explain {data.market.as_of} Synthetic P&L <ArrowRight size={15} />
+              Explain {dailyData.market.as_of} Synthetic P&L <ArrowRight size={15} />
             </button>
             <p id="daily-option-description" className="context-note">
-              Explicitly investigate the {data.market.as_of} synthetic snapshot. Its holdings, market moves and calculated P&L are illustrative.
+              Investigate the {dailyData.market.as_of} fictional snapshot. Its holdings, market moves and calculated P&L are synthetic.
             </p>
           </div>
           <div>
@@ -1207,7 +1214,7 @@ function ReasoningPage({
               </option>)}
             </select>
             <InvestigationScope answer={target} label="Follow-up scope" />
-          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Explain Daily P&L.</p>}
+          </> : <p className="context-note">New daily investigation of the selected {dailyData.market.as_of} synthetic snapshot.</p>}
           <label className="sr-only" htmlFor="question">
             Ask Metis a portfolio question
           </label>
@@ -1216,7 +1223,7 @@ function ReasoningPage({
             maxLength={2000}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the current stress scenario…"}
+            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the selected synthetic daily scenario…"}
             rows={3}
             disabled={busy}
           />
@@ -1226,11 +1233,11 @@ function ReasoningPage({
             </small>
             <button
               className="primary"
-              disabled={busy || (!target && (pending || !calc)) || !question.trim()}
+              disabled={busy || !question.trim()}
               type="submit"
             >
               <Send size={15} />
-              {busy ? "Working…" : target ? "Ask follow-up" : "Start stress investigation"}
+              {busy ? "Working…" : target ? "Ask follow-up" : "Start daily investigation"}
             </button>
           </div>
         </form>
@@ -1238,22 +1245,22 @@ function ReasoningPage({
       <aside className="context-sidebar">
         <Panel title="Current controls" note="For new investigations">
           <span className="badge amber">SYNTHETIC DATA</span>
-          <h3>{data.portfolio_name}</h3>
+          <h3>{dailyData.portfolio_name}</h3>
           <div className="context-stat">
             <span>NAV</span>
-            <b>{money(data.nav_usd, true)}</b>
+            <b>{money(dailyData.nav_usd, true)}</b>
           </div>
           <div className="context-stat">
             <span>Daily P&L</span>
-            <b className="negative">{money(data.daily.total_pnl_usd)}</b>
+            <b className={tone(dailyData.daily.total_pnl_usd)}>{money(dailyData.daily.total_pnl_usd)}</b>
           </div>
           <div className="context-stat">
             <span>Market snapshot</span>
-            <b>{data.market.as_of}</b>
+            <b>{dailyData.market.as_of}</b>
           </div>
           <h3>Current hypothetical scenario</h3>
           <p className="context-note">
-            Used only when starting a new stress investigation. Existing answers and follow-ups use their captured evidence.
+            Uses the separate {data.market.as_of} synthetic holdings only when starting a new stress investigation. Existing answers and follow-ups use their captured evidence.
           </p>
           {calc && !pending ? (
             <>
@@ -1331,6 +1338,9 @@ export default function App() {
   const [page, setPage] = useState(0);
   const [causalState, setCausalState] = useState(initialCausalState);
   const [data, setData] = useState<Workstation | null>(null);
+  const [selectedDate, setSelectedDate] = useState("");
+  const selectedDaily = data ? dailySnapshot(data, selectedDate || data.investigation.default_date) : null;
+  const displayData = data && page === 6 && selectedDaily ? { ...data, ...selectedDaily } : data;
   const [error, setError] = useState("");
   const [shocks, setShocks] = useState<Shocks | null>(null);
   const [calc, setCalc] = useState<Calculation | null>(null);
@@ -1352,12 +1362,13 @@ export default function App() {
       else window.scrollTo({ top: 0 });
     });
   }
-  async function ask(q: string, focus: InvestigationFocus = "question") {
+  async function ask(q: string, focus: InvestigationFocus = "question", dailyDate = selectedDate) {
     if (!data || requestInFlight.current || !q.trim()) return;
     navigate(6);
     setQuestion(q);
     setReasoningError("");
     const isFollowup = focus === "question" && messages.length > 0;
+    if (focus === "question" && !isFollowup) focus = "daily";
     if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !calc)) {
       setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
@@ -1367,7 +1378,9 @@ export default function App() {
     try {
       const result = await api<Reasoning>(
         "reasoning",
-        investigationRequest(focus, q, data.daily, calc, messages, activeInvestigationId, data.market.as_of),
+        investigationRequest(focus, q,
+          dailySnapshot(data, dailyDate).daily,
+          calc, messages, activeInvestigationId, dailyDate),
       );
       setMessages((previous) => [
         ...previous,
@@ -1387,6 +1400,7 @@ export default function App() {
     api<Workstation>("workstation", undefined, c.signal)
       .then((d) => {
         setData(d);
+        setSelectedDate(d.investigation.default_date);
         setShocks(d.scenarios[3].shocks);
       })
       .catch((e) => {
@@ -1482,12 +1496,12 @@ export default function App() {
               <FlaskConical size={12} /> EXAMPLE DATA
             </span>
             <span className="date">
-              {page === 7 ? "Research archive" : data?.market.as_of ?? "Loading snapshot"}
+              {page === 7 ? "Research archive" : displayData?.market.as_of ?? "Loading snapshot"}
             </span>
             <div className="avatar">MG</div>
           </div>
         </header>
-        {data && <MarketTicker data={data} />}
+        {displayData && <MarketTicker data={displayData} />}
         <main className="content">
           <div className="page-heading">
             <div>
@@ -1502,7 +1516,7 @@ export default function App() {
               {page === 7
                 ? "Documented studies"
                 : data
-                  ? `${data.positions.length} positions · ${data.market.as_of}`
+                  ? `${displayData!.positions.length} synthetic positions · ${displayData!.market.as_of}`
                   : "Connecting to backend"}
             </div>
           </div>
@@ -1565,7 +1579,7 @@ export default function App() {
               {page === 0 && (
                 <Overview
                   data={data}
-                  goAI={() => void ask(dailyQuestion, "daily")}
+                  goAI={() => void ask(dailyQuestion, "daily", data.market.as_of)}
                   goRisk={() => navigate(3)}
                   goCausal={() => navigate(5)}
                   busy={reasoningBusy}
@@ -1595,6 +1609,8 @@ export default function App() {
               {page === 6 && (
                 <ReasoningPage
                   data={data}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
                   calc={scenarioError ? null : calc}
                   pending={pending}
                   messages={messages}

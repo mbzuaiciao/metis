@@ -126,9 +126,9 @@ def evidence_only_context(context: dict) -> dict:
     return evidence
 
 
-def assemble_context(shocks: Shocks, context_mode: ContextMode = "full") -> dict:
-    data = workstation()
-    positions = load_positions()
+def assemble_context(shocks: Shocks, context_mode: ContextMode = "full", investigation_date: str | None = None) -> dict:
+    data = workstation(investigation_date)
+    positions = load_positions(investigation_date)
     scenario = calculate(positions, shocks)
     alternatives = []
     for preset in data["scenarios"]:
@@ -358,7 +358,9 @@ def reason(request: ReasoningRequest) -> dict:
         from metis.reasoning.historical import historical_context
         context = historical_context()
     else:
-        context = assemble_context(request.shocks, request.context_mode)
+        investigation_date = getattr(request, 'investigation_date', None)
+        context = assemble_context(request.shocks, request.context_mode,
+                                   investigation_date.isoformat() if investigation_date else None)
     if hasattr(request, "investigation_scope"):
         context["investigation_scope"] = request.investigation_scope
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()

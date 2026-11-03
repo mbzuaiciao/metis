@@ -1074,24 +1074,48 @@ function ReasoningPage({
           </div>
         </div>
         <section className="reasoning-actions">
-          <button className="primary" disabled={busy}
-            onClick={() => void ask(historicalQuestion, "historical")}>
-            Investigate September 13, 2022 · US CPI surprise
-          </button>
-          <button
-            className="primary"
-            onClick={() => void ask(dailyQuestion, "daily")}
-            disabled={busy}
-          >
-            Start new daily investigation <ArrowRight size={15} />
-          </button>
-          <button className="secondary" disabled={busy || pending || !calc}
-            onClick={() => void ask(scenarioQuestion, "scenario")}>
-            Start new investigation of current stress
-          </button>
-          <button className="secondary" onClick={goScenario}>
-            3 · Explore a hypothetical scenario
-          </button>
+          <div>
+            <button className="primary" disabled={busy}
+              aria-describedby="historical-option-description"
+              onClick={() => void ask(historicalQuestion, "historical")}>
+              Investigate a Historical Event
+            </button>
+            <p id="historical-option-description" className="context-note">
+              September 13, 2022 · US CPI surprise. Examine how historical market movements would affect the synthetic portfolio and explore competing macroeconomic explanations.
+            </p>
+          </div>
+          <div>
+            <button
+              className="primary"
+              onClick={() => void ask(dailyQuestion, "daily")}
+              disabled={busy}
+              aria-describedby="daily-option-description"
+            >
+              Explain Daily P&L <ArrowRight size={15} />
+            </button>
+            <p id="daily-option-description" className="context-note">
+              Understand the gains and losses in the portfolio's selected daily snapshot. The current snapshot is synthetic, not live market data.
+            </p>
+          </div>
+          <div>
+            <button className="secondary" disabled={busy || pending || !calc}
+              aria-describedby="stress-option-description"
+              onClick={() => void ask(scenarioQuestion, "scenario")}>
+              Explain Current Stress Scenario
+            </button>
+            <p id="stress-option-description" className="context-note">
+              Understand how the portfolio responds to the currently selected stress assumptions.
+            </p>
+          </div>
+          <div>
+            <button className="secondary" onClick={goScenario}
+              aria-describedby="what-if-option-description">
+              Explore What-If Scenarios
+            </button>
+            <p id="what-if-option-description" className="context-note">
+              Change market assumptions and see how they affect portfolio P&L.
+            </p>
+          </div>
         </section>
         {busy && (
           <div className="notice" role="status">
@@ -1179,7 +1203,7 @@ function ReasoningPage({
               </option>)}
             </select>
             <InvestigationScope answer={target} label="Follow-up scope" />
-          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Start new daily investigation.</p>}
+          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Explain Daily P&L.</p>}
           <label className="sr-only" htmlFor="question">
             Ask Metis a portfolio question
           </label>

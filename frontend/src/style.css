@@ -1511,6 +1511,13 @@ footer > span:last-child {
 .reasoning-actions .secondary {
   margin: 0;
 }
+.reasoning-actions > div {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.reasoning-actions .context-note {
+  margin: 8px 0 0;
+}
 .captured-evidence {
   margin: 20px 0;
   border: 1px solid #2d4754;

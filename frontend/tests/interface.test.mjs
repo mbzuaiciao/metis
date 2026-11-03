@@ -106,13 +106,13 @@ test("research tab exposes six sourced studies and unresolved boundaries", () =>
   assert.match(html, /RESEARCH_LOG\.md/);
   assert.match(html, /Numerical claim checks do not validate entire/);
 });
-test("research page is the seventh sidebar item and renders without backend data", () => {
+test("research page is the eighth sidebar item and renders without backend data", () => {
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
-  const ai = app.indexOf('name: "Metis AI Reasoning"');
+  const ai = app.indexOf('name: "Meta AI Reasoning"');
   const research = app.indexOf('name: "Research & Limitations"');
   assert.ok(ai > 0 && research > ai);
-  assert.match(app, /page === 6 \? \(\s*<ResearchLimitations \/>/);
-  assert.match(app, /page === 6\s*\? "Documented studies"/);
+  assert.match(app, /page === 7 \? \(\s*<ResearchLimitations \/>/);
+  assert.match(app, /page === 7\s*\? "Documented studies"/);
 });
 
 test("accepted causal hypotheses show backend P&L side by side, never before calculation", () => {

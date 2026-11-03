@@ -1,0 +1,201 @@
+{
+  "retrieved_at": "2026-11-03T19:50:31.901003+00:00",
+  "retrieval_time_basis": "Local download completion time",
+  "download_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2,DGS5,DGS10,DEXUSEU&cosd=2022-09-12&coed=2026-10-30",
+  "provider": "Federal Reserve Board H.15/H.10 via FRED",
+  "timing": "DGS yields are daily constant-maturity indications, not bond or swap quotes; DEXUSEU is the New York noon buying rate, not an ETF closing clock. Retrieved vintage, original publication timestamps unavailable.",
+  "observations": [
+    {
+      "series": "DGS2",
+      "date": "2022-09-12",
+      "value": 3.58,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2022-09-12",
+      "value": 3.47,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2022-09-12",
+      "value": 3.37,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2022-09-12",
+      "value": 1.0129,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    },
+    {
+      "series": "DGS2",
+      "date": "2022-09-13",
+      "value": 3.75,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2022-09-13",
+      "value": 3.58,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2022-09-13",
+      "value": 3.42,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2022-09-13",
+      "value": 0.9997,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    },
+    {
+      "series": "DGS2",
+      "date": "2025-03-07",
+      "value": 3.99,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2025-03-07",
+      "value": 4.09,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2025-03-07",
+      "value": 4.32,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2025-03-07",
+      "value": 1.0859,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    },
+    {
+      "series": "DGS2",
+      "date": "2025-03-10",
+      "value": 3.89,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2025-03-10",
+      "value": 3.98,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2025-03-10",
+      "value": 4.22,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2025-03-10",
+      "value": 1.0837,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    },
+    {
+      "series": "DGS2",
+      "date": "2026-10-29",
+      "value": 4.61,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2026-10-29",
+      "value": 4.78,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2026-10-29",
+      "value": 4.98,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2026-10-29",
+      "value": 1.1165,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    },
+    {
+      "series": "DGS2",
+      "date": "2026-10-30",
+      "value": 4.56,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS2"
+    },
+    {
+      "series": "DGS5",
+      "date": "2026-10-30",
+      "value": 4.71,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS5"
+    },
+    {
+      "series": "DGS10",
+      "date": "2026-10-30",
+      "value": 4.94,
+      "unit": "percent per annum",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "series": "DEXUSEU",
+      "date": "2026-10-30",
+      "value": 1.1163,
+      "unit": "USD per EUR",
+      "status": "Observed",
+      "source_url": "https://fred.stlouisfed.org/series/DEXUSEU"
+    }
+  ]
+}

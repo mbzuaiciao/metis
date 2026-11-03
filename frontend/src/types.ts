@@ -48,6 +48,7 @@ export type Scenario = {
   shocks: Shocks;
 };
 export type Workstation = {
+  event_snapshots: EventSnapshot[];
   etf_portfolio: EtfPortfolio;
   etf_history: EtfHistory[];
   investigation: {
@@ -85,7 +86,7 @@ export type Workstation = {
   scenarios: Scenario[];
   history: Episode[];
 };
-export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode" | "etf_portfolio" | "etf_history">;
+export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode" | "etf_portfolio" | "etf_history" | "event_snapshots">;
 export type Reasoning = {
   investigation_id: string;
   investigation_scope: "daily" | "scenario" | "historical";
@@ -143,7 +144,7 @@ export type Reasoning = {
   context_operations: { operation: string; source: string }[];
 };
 
-export type CausalRequest = { hypothesis: string; alternative: string; common_rates_bp: number };
+export type CausalRequest = { hypothesis: string; alternative: string; common_rates_bp: number; event_snapshot_id?: string };
 export type CausalMechanism = {
   title: string;
   economic_mechanism: string;
@@ -161,7 +162,7 @@ export type CausalResult = {
   model: string | null;
   usage: Record<string, number> | null;
   exploration: { mechanisms: CausalMechanism[] };
-  context: Pick<Reasoning["context"], "portfolio" | "market" | "daily" | "evidence">;
+  context: Pick<Reasoning["context"], "portfolio" | "market" | "daily" | "evidence"> & { event_reference?: EventSnapshot };
 };
 
 export type FinancialClaim = {
@@ -227,4 +228,18 @@ export type InstrumentValuation = {
       reference_rows: { date: string; end_of_day_reference: string }[];
     }[];
   };
+};
+
+export type EventSnapshot = {
+  id: string; title: string; start: string; end: string;
+  start_nav_usd: number; end_nav_usd: number | null;
+  estimated_pnl_usd: number | null; covered_pnl_usd: number; coverage_count: number;
+  disclosure: string; causal_use: string; march_etf_retrieved_at: string;
+  market_provenance: { provider: string; retrieved_at: string; timing: string };
+  positions: {
+    id: string; label: string; status: 'Estimated' | 'Unavailable';
+    start_value_usd: number; end_value_usd: number | null; pnl_usd: number | null;
+    method: string; assumptions: string[]; terms: Record<string, string | number>;
+    inputs: { label: string; value: number; unit: string; status: string; source_url?: string | null }[];
+  }[];
 };

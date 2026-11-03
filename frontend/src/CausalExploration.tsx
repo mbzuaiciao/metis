@@ -68,6 +68,14 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
     </div>
     <div className="notice"><span><b>Explore possible causes, not the true cause.</b> Correlation does not establish causation. Two hypotheses share an initial hypothetical yield move; their other factor assumptions may differ.</span></div>
     <p className="context-note">Supplied facts: {data.positions.length} synthetic positions · dated market snapshot {data.market.as_of}. No live market-data feed.</p>
+    {data.event_snapshots && <label>Event snapshot reference (optional)
+      <select value={state.eventSnapshotId ?? ''} disabled={locked}
+        onChange={e => setState(s => ({ ...s, eventSnapshotId: e.target.value || undefined }))}>
+        <option value="">Archived scenario only</option>
+        {data.event_snapshots.map(s => <option key={s.id} value={s.id}>{s.start} → {s.end} · {s.title}</option>)}
+      </select>
+      <p className="context-note">Reference only: reconstructed values and assumed shocks do not establish historical causes. Accepted scenario calculations below still use archived synthetic basket holdings; they do not revalue the event snapshot.</p>
+    </label>}
     <div className="causal-inputs">
       {(["hypothesis", "alternative"] as const).map((key, index) => <label key={key}>
         {index === 0 ? "Economic hypothesis A" : "Competing hypothesis B"}
@@ -92,6 +100,7 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
         <p className="context-note">Causal narratives are Not checked by the bounded financial claim verifier. Accepted shock consequences are calculated separately below.</p>
         <span className={result.mode === "demo" ? "badge amber" : "badge"}>{result.mode === "demo" ? "DETERMINISTIC DEMO" : `LIVE META · ${result.model}`}</span>
         <p><b>Captured comparison:</b> {result.request.hypothesis} versus {result.request.alternative} · shared government yields {result.request.common_rates_bp}bp.</p>
+        {result.context?.event_reference && <p>Captured event reference: {result.context.event_reference.start} → {result.context.event_reference.end}. {result.context.event_reference.causal_use}</p>}
       </div>
       {state.calculations.length === 2 && <section className="causal-comparison" id="causal-comparison" aria-label="Accepted scenario comparison">
         <span className="eyebrow">ACCEPTED ASSUMPTIONS · CALCULATED BY METIS</span>

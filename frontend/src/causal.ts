@@ -3,6 +3,7 @@ import type { Calculation, CausalRequest, CausalResult, Shocks } from "./types";
 export const demoHypotheses = ["Recession fears", "Inflation relief", "Liquidity and funding stress"];
 
 export type CausalState = {
+  eventSnapshotId?: string;
   hypothesis: string;
   alternative: string;
   commonRates: number;
@@ -31,5 +32,6 @@ export function causalRequest(state: CausalState, mode?: string): CausalRequest 
   if (!state.hypothesis.trim() || !state.alternative.trim()) throw new Error("Describe both economic hypotheses.");
   if (state.hypothesis.trim().toLowerCase() === state.alternative.trim().toLowerCase()) throw new Error("Choose two different hypotheses.");
   if (!Number.isFinite(state.commonRates) || Math.abs(state.commonRates) > 300) throw new Error("The shared yield assumption must be between −300 and +300bp.");
-  return { hypothesis: state.hypothesis.trim(), alternative: state.alternative.trim(), common_rates_bp: state.commonRates };
+  return { hypothesis: state.hypothesis.trim(), alternative: state.alternative.trim(), common_rates_bp: state.commonRates,
+    ...(state.eventSnapshotId ? { event_snapshot_id: state.eventSnapshotId } : {}) };
 }

@@ -383,3 +383,44 @@ test("both comparison tables use valuation types and dates; cash and OTC rows ne
     assert.match(html, /Live on comparison dates/);
   }
 });
+
+test("three illustrative snapshots render qualified estimates and inspectable inputs without replacing observations", async () => {
+  const { EventSnapshots } = await import('../src/EventSnapshots.tsx');
+  const snapshots = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    'import json; from metis.analytics.events import event_snapshots; print(json.dumps(event_snapshots()))'],
+    {cwd: new URL('..', import.meta.url), encoding: 'utf8'}));
+  const full = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots, onExplore() {}}));
+  assert.equal((full.match(/<option/g) || []).length, 3);
+  assert.match(full, /Use this snapshot as a causal reference/);
+  for (const s of snapshots) {
+    const html = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots: [s]}));
+    assert.equal((html.match(/data-event-position=/g) || []).length, 12);
+    assert.match(html, /Observed input/);
+    assert.match(html, /Estimated/);
+    assert.match(html, /Hypothetical assumption/);
+    assert.match(html, /Approximate input/);
+    assert.match(html, /not actual historical holdings/);
+    assert.match(html, /12\/12 rows/);
+    assert.match(html, /fred.stlouisfed.org/);
+    assert.match(html, /query1.finance.yahoo.com/);
+    assert.match(html, /fixed strike/);
+    assert.match(html, /not a par new swap/);
+    assert.match(html, /No TreasuryDirect special-security prices used/);
+    assert.match(html, /not total return/);
+    assert.match(html, /zero-interest\/zero-flow/);
+    assert.match(html, /cannot identify or validate event causes/);
+    for (const date of [s.start, s.end]) assert.ok(html.includes(date));
+    if (s.id !== 'october-2026') assert.match(html, /Not an ETF price or actual pre-inception holding/);
+  }
+  const missing = {...snapshots[0], estimated_pnl_usd: null, end_nav_usd: null, coverage_count: 11};
+  const html = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots:[missing]}));
+  assert.match(html, /Estimated portfolio P&amp;L: Unavailable/);
+  assert.match(html, /Missing rows are excluded, never assumed zero/);
+  const causal = renderToStaticMarkup(React.createElement(CausalExploration, {
+    state: {...initialCausalState, eventSnapshotId:'cpi-2022'}, setState() {},
+    data:{causal_mode:'demo',positions:[],market:{as_of:'2026-10-30'},event_snapshots:snapshots},
+    generate() {}, calculate() {}, useShocks() {},
+  }));
+  assert.match(causal, /option value="cpi-2022" selected/);
+  assert.match(causal, /they do not revalue the event snapshot/);
+});

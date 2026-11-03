@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from metis.analytics.engine import Shocks
+from metis.analytics.events import event_snapshot
 from metis.reasoning.harness import (
     HTTPProvider, ProviderError, ReasoningRequest, assemble_context, output_error,
 )
@@ -18,6 +19,7 @@ class CausalRequest(BaseModel):
     hypothesis: str = Field(min_length=1, max_length=600, pattern=r"\S")
     alternative: str = Field(min_length=1, max_length=600, pattern=r"\S")
     common_rates_bp: float = Field(default=-50, ge=-300, le=300)
+    event_snapshot_id: Literal['cpi-2022', 'march-2025', 'october-2026'] | None = None
 
     @model_validator(mode="after")
     def distinct_hypotheses(self):
@@ -115,6 +117,17 @@ def explore(request: CausalRequest) -> dict:
     context = {key: base[key] for key in ["portfolio", "market", "daily", "historical_context", "conventions"]}
     context["evidence"] = [e for e in base["evidence"] if e["id"] not in {"scenario", "alternatives"}]
     context["common_rates_bp"] = request.common_rates_bp
+    system = CAUSAL_SYSTEM
+    if request.event_snapshot_id:
+        context['event_reference'] = event_snapshot(request.event_snapshot_id)
+        context['evidence'].append({'id': 'event-reference', 'description': context['event_reference']['disclosure']})
+        system += (' The optional event_reference is a separate fixed reconstruction: its sourced inputs are Observed, '
+                   'Treasury-to-swap mappings are Approximate inputs, and durations/contracts/euro shocks/cash behavior '
+                   'are Hypothetical assumptions. All dollar valuations/P&L are Estimated, not observed holdings/NAV '
+                   'or validated causes. Use it only to motivate conditional competing explanations and identify missing '
+                   'evidence; never calibrate or validate mechanisms from imposed shocks. The common yield anchor '
+                   'remains the user assumption. Accepted shock calculations use the archived portfolio, not this ETF '
+                   'reference; do not mix their P&L or claim the scenario engine revalues the reference.')
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()
     if mode == "demo":
         result = demo_exploration(request)
@@ -122,7 +135,7 @@ def explore(request: CausalRequest) -> dict:
     elif mode == "meta":
         provider = HTTPProvider("meta")
         question = f"Explore these hypotheses in order: 1. {request.hypothesis} 2. {request.alternative}"
-        result = provider.structured(ReasoningRequest(question=question), context, CausalExploration, CAUSAL_SYSTEM, "causal_exploration")
+        result = provider.structured(ReasoningRequest(question=question), context, CausalExploration, system, "causal_exploration")
         model, usage = provider.model, provider.last_usage
     else:
         raise ProviderError("Causal Exploration requires METIS_PROVIDER=meta or demo. No provider substitution was used.")

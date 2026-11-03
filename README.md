@@ -62,6 +62,14 @@ Cash shows the **illustrative $4m reference balance dated October 30, 2026** sep
 
 TreasuryDirect auction evidence verifies four research candidates across the two comparison periods. Retrieved FedInvest rows explicitly apply to **market-based special securities**; they are shown only as qualified research references, never as observed marketable Treasury closes or inputs to portfolio P&L. Candidate lifecycle checks exclude pre-issue/matured dates. Adequate marketable-bond price/settlement/accrual evidence remains unavailable, so no representative holding replacement or bond valuation is claimed. See the [dated coverage report and stopping decision](research/instrument-valuation-coverage-20261103.md).
 
+### Three illustrative event reconstructions (Issue #12)
+
+Portfolio now opens with three fixed **estimated 12-position** comparisons: September 12–13, 2022; March 7–10, 2025; and October 29–30, 2026. Each starts with the same signed $100m illustrative allocation. Estimated P&L is **−$1,620,071.41 / −$482,623.35 / −$332,957.96**, respectively. These are hypothetical reconstructions, not actual holdings, observed NAV, total returns or replacements for archived results. The strict observed-price coverage audit and October synthetic demonstration remain expandable below.
+
+The compact table distinguishes observed inputs, approximate mappings, hypothetical assumptions, derived estimates and unavailable rows. Inspect each row for formulas, dated sources, fictional OTC terms and assumptions. Treasury duration estimates use published FRED DGS2/DGS10 yields, not CUSIP prices or TreasuryDirect special-security references. Swaps use fictional off-market strikes and frozen annuities, with Treasury yields explicitly approximating swap-par inputs. EUR forwards use observed FRED spot plus assumed zero points/equal currency discount factors; cash stays $4m with zero flows/interest. Ineligible EUIG/EUHY periods use explicitly assumed current-mandate euro-credit exposures, never fabricated ETF closes. March adds four sourced ETF pairs in a separate cache; prior ETF data is unchanged.
+
+**Use this snapshot as a causal reference** opens Causal Exploration with an optional fixed reference. Captured references retain their provenance; estimates/assumed shocks do not identify event causes. Accepted scenario calculations still use the archived basket engine and are labeled accordingly. No inference is automatically invoked. Only these three windows are implemented; no runtime retrieval or general pricing system. See [exact sources, assumptions, arithmetic and limitations](research/illustrative-event-snapshots-20261103.md).
+
 ## v0.4 investigation walkthrough
 
 Keep the backend and frontend running using the commands above. The four-stage strip navigates within the existing six pages:
@@ -115,7 +123,7 @@ See the [bounded verification scope and manual review](research/financial-claim-
 ## Workstation pages
 
 - **Overview:** closing NAV, daily P&L, allocation by signed net marked value, factor attribution, exposures and a market brief.
-- **Portfolio:** identified ETF allocation, two sourced historical price comparisons, unavailable-data disclosures and a six-instrument valuation audit; the original synthetic position grid remains in the archived demo expander.
+- **Portfolio:** three illustrative event reconstructions with all 12 positions; preserved observed-price coverage and instrument audit; original synthetic grid in the archived demo expander.
 - **Market Monitor:** dated illustrative yield levels and curve movement, IG/HY spreads, equity and FX changes, economic commentary and three sourced historical descriptions.
 - **Risk Analytics:** signed DV01, CS01, equity/FX delta, position and factor attribution, and conventions.
 - **Scenario Analysis:** four predefined scenarios; adjustable rates, IG/HY spreads, equity and EUR/USD shocks; live backend calculation and position/factor attribution. Controls persist across navigation; pending results are hidden to prevent displaying stale calculations.

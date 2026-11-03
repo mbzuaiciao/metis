@@ -4,12 +4,33 @@ import type { EventSnapshot } from './types';
 const money = (v: number | null) => v === null ? 'Unavailable' : new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0}).format(Math.round(v / 1000) * 1000);
 const pnlTone = (v: number | null) => (v === null || v === 0 ? '' : v < 0 ? 'negative' : 'positive');
 
-export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnapshot[]; onExplore?: (id: string) => void }) {
-  const [selected, setSelected] = useState(0);
-  const snapshot = snapshots[selected];
-  return <section className="etf-portfolio">
-    <h2>Illustrative event valuations</h2>
-    <label>Event window <select value={selected} onChange={e => setSelected(Number(e.target.value))}>
+export function EventSnapshots({
+  snapshots,
+  onExplore,
+  selectedId,
+  onSelect,
+}: {
+  snapshots: EventSnapshot[];
+  onExplore?: (id: string) => void;
+  selectedId?: string;
+  onSelect?: (id: string) => void;
+}) {
+  const [localSelected, setLocalSelected] = useState(0);
+  const selectedIndex = selectedId
+    ? Math.max(0, snapshots.findIndex((s) => s.id === selectedId))
+    : localSelected;
+  const snapshot = snapshots[selectedIndex] ?? snapshots[0];
+
+  const handleSelect = (idx: number) => {
+    setLocalSelected(idx);
+    if (snapshots[idx]) {
+      onSelect?.(snapshots[idx].id);
+    }
+  };
+
+  return <section className="etf-portfolio" aria-label="Historical event replay">
+    <h2>Historical event replay</h2>
+    <label>Event window <select value={selectedIndex} onChange={e => handleSelect(Number(e.target.value))}>
       {snapshots.map((s, i) => <option value={i} key={s.id}>{s.start} → {s.end} · {s.title}</option>)}
     </select></label>
     <p><b>Estimated portfolio P&amp;L: {snapshot.estimated_pnl_usd === null ? 'Unavailable' : <span className={pnlTone(snapshot.estimated_pnl_usd)}>{money(snapshot.estimated_pnl_usd)}</span>}</b><br />
@@ -46,7 +67,10 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
         <td className={pnlTone(p.pnl_usd) || undefined}>{money(p.pnl_usd)}</td>
       </tr>)}</tbody>
     </table></div>
-    {onExplore && <button onClick={() => onExplore(snapshot.id)}>Use this snapshot as a causal reference</button>}
+    {onExplore && <button onClick={() => {
+      onSelect?.(snapshot.id);
+      onExplore(snapshot.id);
+    }}>Use this snapshot as a causal reference</button>}
     <details><summary>Methodology &amp; Assumptions</summary>
       <p>{snapshot.disclosure}</p>
       <p><span className="badge">Observed input</span> Dated sourced market input · <span className="badge amber">Estimated</span> Derived value with approximate inputs or hypothetical assumptions · <span className="badge">Unavailable</span> Missing required evidence.</p>

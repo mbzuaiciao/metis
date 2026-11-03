@@ -39,6 +39,8 @@ import type { Data, Layout } from "plotly.js";
 import type {
   Calculation,
   Episode,
+  EventSnapshot,
+  EtfPortfolio as EtfPortfolioType,
   Position,
   Reasoning,
   Shocks,
@@ -626,13 +628,10 @@ function PositionGrid({
     </>
   );
 }
-function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: string) => void }) {
+export function Portfolio({ data }: { data: Workstation }) {
   return (
     <div className="portfolio-tab">
-      <EventSnapshots snapshots={data.event_snapshots} onExplore={onExplore} />
-      <details><summary>Observed-price coverage and instrument audit · preserved evidence</summary>
-        <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
-      </details>
+      <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
       <details><summary>Archived October 30 fictional demonstration · original baskets and sensitivities</summary>
       <div className="metrics three">
         <Metric
@@ -667,16 +666,166 @@ function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: str
     </div>
   );
 }
-export function Market({ data }: { data: Workstation }) {
+function getObservedEtfRows(snapshot?: EventSnapshot, portfolio?: EtfPortfolioType) {
+  if (!snapshot) return [];
+  const tickers = ["SPY", "HEFA"] as const;
+  return tickers.map((ticker) => {
+    const pos = snapshot.positions.find((p) => p.id === ticker);
+    const fund = portfolio?.positions.find((p) => p.id === ticker);
+    const startClose = pos?.inputs[0]?.value ?? null;
+    const endClose = pos?.inputs[1]?.value ?? null;
+    const changePct =
+      startClose !== null && endClose !== null && startClose > 0
+        ? (endClose / startClose - 1) * 100
+        : null;
+    const label = pos?.label ?? (ticker === "SPY" ? "US large-cap equities" : "EAFE · USD hedged");
+    const name =
+      fund?.name ??
+      (ticker === "SPY"
+        ? "State Street SPDR S&P 500 ETF Trust"
+        : "iShares Currency Hedged MSCI EAFE ETF");
+    const note =
+      fund?.note ??
+      (ticker === "SPY"
+        ? "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate."
+        : "MSCI EAFE developed equities, hedged to USD; excludes US and Canada. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.");
+    return {
+      ticker,
+      label,
+      name,
+      note,
+      startClose,
+      endClose,
+      changePct,
+    };
+  });
+}
+
+export function Market({
+  data,
+  selectedEventId,
+  onSelectEvent,
+}: {
+  data: Workstation;
+  selectedEventId?: string;
+  onSelectEvent?: (id: string) => void;
+}) {
+  const [localEventId, setLocalEventId] = useState(selectedEventId ?? "october-2026");
+  const activeEventId = selectedEventId ?? localEventId;
+  const snapshots = data.event_snapshots ?? [];
+  const activeSnapshot =
+    snapshots.find((s) => s.id === activeEventId) ??
+    snapshots.find((s) => s.id === "october-2026") ??
+    snapshots[0];
+
+  const etfRows = getObservedEtfRows(activeSnapshot, data.etf_portfolio);
+
+  const handleSelectEvent = (id: string) => {
+    setLocalEventId(id);
+    onSelectEvent?.(id);
+  };
+
   return (
     <>
       <div className="notice">
         <FlaskConical size={17} />
         <span>
-          {data.market.label}. Comparison date: {data.market.previous_date}.
-          Historical sources below are separate from these illustrative levels.
+          Market Monitor: observed secondary-market equity ETF closing prices and archived synthetic multi-asset benchmarks.
+          Benchmark comparison date: {data.market.previous_date}. Historical sources below are separate from illustrative benchmark levels.
         </span>
       </div>
+
+      {activeSnapshot && etfRows.length > 0 && (
+        <Panel
+          title="Observed equity ETF market prices"
+          note={`${activeSnapshot.start} → ${activeSnapshot.end} · Sourced closing prices`}
+        >
+          {snapshots.length > 0 && (
+            <div className="table-toolbar">
+              <label>
+                Historical comparison:
+                <select
+                  value={activeSnapshot.id}
+                  onChange={(e) => handleSelectEvent(e.target.value)}
+                >
+                  {snapshots.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.id === "october-2026"
+                        ? "October 2026 reference (Default)"
+                        : s.id === "march-2025"
+                          ? "March 2025 comparison"
+                          : s.id === "cpi-2022"
+                            ? "September 2022 CPI shock"
+                            : s.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span>Sourced secondary-market data · Yahoo Finance</span>
+            </div>
+          )}
+          <div className="etf-table-wrap">
+            <table className="etf-table">
+              <thead>
+                <tr>
+                  <th>Instrument</th>
+                  <th>
+                    Starting close
+                    <br />
+                    {activeSnapshot.start}
+                  </th>
+                  <th>
+                    Ending close
+                    <br />
+                    {activeSnapshot.end}
+                  </th>
+                  <th>Price return</th>
+                  <th>Mandate &amp; Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {etfRows.map((row) => (
+                  <tr key={row.ticker}>
+                    <td>
+                      <b>{row.ticker}</b> · {row.label}
+                      <br />
+                      <small>{row.name}</small>
+                    </td>
+                    <td>{row.startClose !== null ? `$${row.startClose.toFixed(2)}` : "Unavailable"}</td>
+                    <td>{row.endClose !== null ? `$${row.endClose.toFixed(2)}` : "Unavailable"}</td>
+                    <td>
+                      {row.changePct !== null ? (
+                        <em
+                          className={
+                            row.changePct < 0
+                              ? "negative"
+                              : row.changePct > 0
+                                ? "positive"
+                                : ""
+                          }
+                          style={{ fontStyle: "normal", fontWeight: 600 }}
+                        >
+                          {signed(row.changePct, "%")}
+                        </em>
+                      ) : (
+                        "Unavailable"
+                      )}
+                    </td>
+                    <td>
+                      <small>{row.note}</small>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="context-note">
+            Unadjusted closing prices; distributions excluded, price return only, not total return. Real-time feed unavailable.
+            HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.
+          </p>
+        </Panel>
+      )}
+
       <div className="grid-main">
         <Panel title="US Treasury yield curve" note="Yield · %">
           <Chart
@@ -710,7 +859,10 @@ export function Market({ data }: { data: Workstation }) {
             }}
           />
         </Panel>
-        <Panel title="Market observations" note="Illustrative daily changes">
+        <Panel
+          title="Archived synthetic market benchmarks"
+          note={`Fictional demonstration · As of ${data.market.as_of}`}
+        >
           <div className="market-table">
             {data.market.yields.map((y) => (
               <div key={y.tenor}>
@@ -726,13 +878,6 @@ export function Market({ data }: { data: Workstation }) {
                 <em className="negative">+{c.change_bp}bp</em>
               </div>
             ))}
-            {data.market.equities.map((e) => (
-              <div key={e.name}>
-                <span>{e.name}</span>
-                <b>Daily return</b>
-                <em className="negative">{signed(e.change_pct, "%")}</em>
-              </div>
-            ))}
             {data.market.fx.map((f) => (
               <div key={f.name}>
                 <span>{f.name}</span>
@@ -741,6 +886,9 @@ export function Market({ data }: { data: Workstation }) {
               </div>
             ))}
           </div>
+          <p className="context-note" style={{ marginTop: "12px", padding: "0 19px" }}>
+            Synthetic multi-asset benchmarks from archived October 30 demonstration. Modeled rates, credit spreads, and FX levels are not observed quotes.
+          </p>
         </Panel>
       </div>
       <Panel title="Economic context" note="Assumed regime">
@@ -1344,6 +1492,7 @@ export function MarketTicker({ data }: { data: Workstation }) {
 export default function App() {
   const [page, setPage] = useState(0);
   const [causalState, setCausalState] = useState(initialCausalState);
+  const [historicalEventId, setHistoricalEventId] = useState<string>("october-2026");
   const [data, setData] = useState<Workstation | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const selectedDaily = data ? dailySnapshot(data, selectedDate || data.investigation.default_date) : null;
@@ -1592,10 +1741,17 @@ export default function App() {
                   busy={reasoningBusy}
                 />
               )}
-              {page === 1 && <Portfolio data={data} onExplore={id => {
-                setCausalState(s => ({ ...s, eventSnapshotId: id })); navigate(5);
-              }} />}{" "}
-              {page === 2 && <Market data={data} />}{" "}
+              {page === 1 && <Portfolio data={data} />}{" "}
+              {page === 2 && (
+                <Market
+                  data={data}
+                  selectedEventId={historicalEventId}
+                  onSelectEvent={(id) => {
+                    setHistoricalEventId(id);
+                    setCausalState((s) => ({ ...s, eventSnapshotId: id }));
+                  }}
+                />
+              )}{" "}
               {page === 3 && <Risk data={data} />}{" "}
               {page === 4 && (
                 <Scenarios
@@ -1610,10 +1766,22 @@ export default function App() {
                 />
               )}
               {page === 5 && (
-                <CausalExploration state={causalState} setState={setCausalState} data={data}
-                  generate={request => api("causal-exploration", request)}
-                  calculate={accepted => api("scenario", accepted)}
-                  useShocks={accepted => { changeShocks(accepted); navigate(4); }} />
+                <CausalExploration
+                  state={causalState}
+                  setState={setCausalState}
+                  data={data}
+                  generate={(request) => api("causal-exploration", request)}
+                  calculate={(accepted) => api("scenario", accepted)}
+                  useShocks={(accepted) => {
+                    changeShocks(accepted);
+                    navigate(4);
+                  }}
+                  selectedEventId={historicalEventId}
+                  onSelectEvent={(id) => {
+                    setHistoricalEventId(id);
+                    setCausalState((s) => ({ ...s, eventSnapshotId: id }));
+                  }}
+                />
               )}
               {page === 6 && (
                 <ReasoningPage

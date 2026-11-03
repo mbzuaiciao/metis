@@ -4,6 +4,7 @@ import type { EtfPortfolio as Portfolio, EtfHistory } from './types';
 const usd = (v: number | null) => v === null ? 'Unavailable' : new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', maximumFractionDigits: 2,
 }).format(v);
+const pnlTone = (v: number | null) => (v === null || v === 0 ? '' : v < 0 ? 'negative' : 'positive');
 const valuationName = {
   observed_security_close: 'Observed security close',
   treasury_issue_price: 'Treasury issue price',
@@ -11,20 +12,28 @@ const valuationName = {
   cash_balance: 'Cash balance',
 };
 
-export function EtfPortfolio({ portfolio, history }: { portfolio: Portfolio; history: EtfHistory[] }) {
+export function EtfPortfolio({ portfolio, history, showSelector = false }: {
+  portfolio: Portfolio;
+  history: EtfHistory[];
+  showSelector?: boolean;
+}) {
   const [period, setPeriod] = useState(0);
-  const comparison = history[period];
+  const comparison = history[period] ?? history[0];
   return <section className="etf-portfolio">
-    <h2>Identified ETF allocation &amp; instrument audit</h2>
+    <h2>Portfolio snapshot · As of {comparison.end}</h2>
+    <p className="context-note">Dated illustrative allocation snapshot · Daily price comparison: {comparison.start} → {comparison.end}. Not a live account or today's prices.</p>
     <p>{portfolio.basis}</p>
     <p><b>Illustrative allocation: {usd(portfolio.allocation_nav_usd)}.</b> Observed NAV: Unavailable. Units: Unavailable.</p>
     <p>{portfolio.risk_basis}</p>
-    <label>Observed ETF comparison: <select value={period} onChange={e => setPeriod(Number(e.target.value))}>
-      {history.map((h, i) => <option value={i} key={h.end}>{h.start} → {h.end}</option>)}
-    </select></label>
+    {showSelector && history.length > 1 && (
+      <label>Observed ETF comparison: <select value={period} onChange={e => setPeriod(Number(e.target.value))}>
+        {history.map((h, i) => <option value={i} key={h.end}>{h.start} → {h.end}</option>)}
+      </select></label>
+    )}
     <p>{comparison.method}</p>
-    <p><b>Covered price P&amp;L: {usd(comparison.covered_price_pnl_usd)}</b> on {usd(comparison.covered_allocation_usd)} of starting allocations.
-      {' '}Complete portfolio P&amp;L: Unavailable. Total return: Unavailable.</p>
+    <p><b>Covered price P&amp;L: <span className={pnlTone(comparison.covered_price_pnl_usd)}>{usd(comparison.covered_price_pnl_usd)}</span></b> on {usd(comparison.covered_allocation_usd)} of starting allocations.
+      {' '}Complete portfolio P&amp;L: Unavailable. Total return: Unavailable. MTD P&amp;L: Unavailable.</p>
+    <p className="context-note">MTD P&amp;L is unavailable: source price data do not cover the beginning of the month through the as-of date (intervening daily bars are not retrieved; extrapolation from two daily closes is not defensible). Valuation coverage: {comparison.positions.filter(p => p.valuation.status === 'available').length} of {comparison.positions.length} holdings covered by observed security closes.</p>
     <div className="etf-table-wrap"><table className="etf-table">
       <thead><tr><th>Holding</th><th>Initial allocation / NAV weight</th><th>Valuation type / status</th><th>Starting valuation<br />{comparison.start}</th><th>Ending valuation<br />{comparison.end}</th><th>Historical contribution</th></tr></thead>
       <tbody>{comparison.positions.map(p => <tr key={p.id} data-position-id={p.id}>
@@ -41,7 +50,7 @@ export function EtfPortfolio({ portfolio, history }: { portfolio: Portfolio; his
         </td>
         <td>{usd(p.valuation.start_value)}{p.valuation.type === 'cash_balance' && <><br />Historical balance</>}</td>
         <td>{usd(p.valuation.end_value)}{p.valuation.type === 'cash_balance' && <><br />Historical balance</>}</td>
-        <td>{p.instrument === 'ETF' ? <>{p.price_return_pct === null ? 'Price return: Unavailable' : `${p.price_return_pct.toFixed(3)}% price return`}<br />Price P&amp;L: {usd(p.price_pnl_usd)}</> : 'P&L: Unavailable'}</td>
+        <td>{p.instrument === 'ETF' ? <>{p.price_return_pct === null ? 'Price return: Unavailable' : `${p.price_return_pct.toFixed(3)}% price return`}<br />Price P&amp;L: <span className={pnlTone(p.price_pnl_usd)}>{usd(p.price_pnl_usd)}</span></> : 'P&L: Unavailable'}</td>
       </tr>)}</tbody>
     </table></div>
     <p>{comparison.provider} · retrieved {comparison.retrieved_at}. {comparison.distribution_treatment} {comparison.split_treatment}</p>

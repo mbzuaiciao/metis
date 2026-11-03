@@ -74,32 +74,74 @@
     {
       "id": "UST10",
       "minimum_data": "CUSIP/ISIN, coupon, maturity, face amount, settlement date, clean price source and accrued interest/day-count.",
-      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows."
+      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows.",
+      "valuation_type": "treasury_issue_price",
+      "valuation_unit": "USD per $100 face",
+      "basis": "Issue-level marketable Treasury price unavailable. Generic 2Y/10Y yields are not bond prices.",
+      "next_step": "Confirm an actual holding CUSIP and face amount, or explicitly adopt a representative issue; obtain date-matched clean prices with settlement/day-count and coupon cash-flow evidence before dirty-value comparison.",
+      "source_urls": [
+        "https://www.treasurydirect.gov/GA-FI/FedInvest/selectSecurityPriceDate",
+        "https://tfx.treasury.gov/government-investments"
+      ]
     },
     {
       "id": "UST2",
       "minimum_data": "CUSIP/ISIN, coupon, maturity, face amount, settlement date, clean price source and accrued interest/day-count.",
-      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows."
+      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows.",
+      "valuation_type": "treasury_issue_price",
+      "valuation_unit": "USD per $100 face",
+      "basis": "Issue-level marketable Treasury price unavailable. Generic 2Y/10Y yields are not bond prices.",
+      "next_step": "Confirm an actual holding CUSIP and face amount, or explicitly adopt a representative issue; obtain date-matched clean prices with settlement/day-count and coupon cash-flow evidence before dirty-value comparison.",
+      "source_urls": [
+        "https://www.treasurydirect.gov/GA-FI/FedInvest/selectSecurityPriceDate",
+        "https://tfx.treasury.gov/government-investments"
+      ]
     },
     {
       "id": "IRS-R",
       "minimum_data": "Trade confirmation, notional, fixed rate, effective/maturity dates, payment schedules, day-count, floating index/reset history, collateral terms and dated discount/forward curves.",
-      "recommendation": "Retain receive-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves."
+      "recommendation": "Retain receive-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves.",
+      "valuation_type": "modeled_otc_mark",
+      "valuation_unit": "USD contractual NPV",
+      "basis": "Modeled OTC mark unavailable: no complete contract or consistent dated valuation inputs. Archived synthetic marks and directional sensitivities are not revaluations.",
+      "next_step": "Obtain one actual swap confirmation, including collateral terms; then source matching schedules, resets and forward/discount curves for both dates.",
+      "source_urls": [
+        "https://www.cmegroup.com/trading/interest-rates/files/cme-sofr-discounting-and-pa-transition-whitepaper.pdf"
+      ]
     },
     {
       "id": "IRS-P",
       "minimum_data": "Trade confirmation, notional, fixed rate, effective/maturity dates, payment schedules, day-count, floating index/reset history, collateral terms and dated discount/forward curves.",
-      "recommendation": "Retain pay-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves."
+      "recommendation": "Retain pay-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves.",
+      "valuation_type": "modeled_otc_mark",
+      "valuation_unit": "USD contractual NPV",
+      "basis": "Modeled OTC mark unavailable: no complete contract or consistent dated valuation inputs. Archived synthetic marks and directional sensitivities are not revaluations.",
+      "next_step": "Obtain one actual swap confirmation, including collateral terms; then source matching schedules, resets and forward/discount curves for both dates.",
+      "source_urls": [
+        "https://www.cmegroup.com/trading/interest-rates/files/cme-sofr-discounting-and-pa-transition-whitepaper.pdf"
+      ]
     },
     {
       "id": "FX-EUR",
       "minimum_data": "Bought/sold currencies and amounts, strike, trade/settlement/maturity dates, dated spot/forward points, discount curves and collateral terms.",
-      "recommendation": "Retain OTC FX forward; price remaining cash flows with maturity-matched forwards, not spot return times mark."
+      "recommendation": "Retain OTC FX forward; price remaining cash flows with maturity-matched forwards, not spot return times mark.",
+      "valuation_type": "modeled_otc_mark",
+      "valuation_unit": "USD contractual NPV",
+      "basis": "Modeled OTC mark unavailable: no complete contract or consistent dated valuation inputs. Archived synthetic marks and directional sensitivities are not revaluations.",
+      "next_step": "Obtain the actual currency-leg amounts, strike and maturity; then source maturity-matched forward and discount inputs for both dates.",
+      "source_urls": [
+        "https://www.elibrary.imf.org/display/book/9781513579191/ch05.xml"
+      ]
     },
     {
       "id": "CASH",
       "minimum_data": "Dated account/collateral statements, currency, available/restricted balances, interest accruals and cash flows.",
-      "recommendation": "Reconcile illustrative USD balance to statements; do not infer liquidity adequacy or historical interest income."
+      "recommendation": "Reconcile illustrative USD balance to statements; do not infer liquidity adequacy or historical interest income.",
+      "valuation_type": "cash_balance",
+      "valuation_unit": "USD balance",
+      "basis": "Illustrative $4m balance at the October 30 reference date; not evidence of historical account balances. No market quote applies.",
+      "next_step": "Obtain statements for both comparison dates plus intervening cash flows and interest accruals; reconcile the actual balance before calculating P&L.",
+      "source_urls": []
     }
   ]
 }

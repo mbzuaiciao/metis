@@ -1,0 +1,130 @@
+{
+  "checked_on": "2026-11-03",
+  "reference_source_url": "https://www.treasurydirect.gov/GA-FI/FedInvest/selectSecurityPriceDate",
+  "request_method": "POST",
+  "date_parameter": "priceDate (ISO date); submit=Show Prices; session CSRF token required",
+  "source_qualification": "These prices apply only to market-based Treasury special securities.",
+  "decision": "Research candidates only, not assigned holdings. Published reference rows are not adopted as observed marketable-bond closes: special-security scope, clean/dirty price and settlement basis not established. Accrued interest, coupon cash flows and holding face amounts are not valued. No Treasury P&L calculated.",
+  "candidates": [
+    {
+      "position_id": "UST10",
+      "start": "2022-09-12",
+      "end": "2022-09-13",
+      "cusip": "91282CFF3",
+      "coupon_pct": 2.75,
+      "original_term": "10-Year",
+      "issue_date": "2022-08-15",
+      "maturity_date": "2032-08-15",
+      "interest_frequency": "Semi-Annual",
+      "terms_source_url": "https://www.treasurydirect.gov/TA_WS/securities/search?cusip=91282CFF3&format=json",
+      "reference_rows": [
+        {
+          "date": "2022-09-12",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "2.750%",
+          "maturity": "08/15/2032",
+          "end_of_day_reference": "94.781250",
+          "response_sha256": "4fb8f6815549c760b5d3387f4570dcdc2527ad81b99328d702f3c99dd688567b"
+        },
+        {
+          "date": "2022-09-13",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "2.750%",
+          "maturity": "08/15/2032",
+          "end_of_day_reference": "94.406250",
+          "response_sha256": "81e44f151b6b1d93352b27fa8eee7025b49690f167943ce2549a6501b3714203"
+        }
+      ]
+    },
+    {
+      "position_id": "UST2",
+      "start": "2022-09-12",
+      "end": "2022-09-13",
+      "cusip": "91282CFA4",
+      "coupon_pct": 3.0,
+      "original_term": "2-Year",
+      "issue_date": "2022-08-01",
+      "maturity_date": "2024-07-31",
+      "interest_frequency": "Semi-Annual",
+      "terms_source_url": "https://www.treasurydirect.gov/TA_WS/securities/search?cusip=91282CFA4&format=json",
+      "reference_rows": [
+        {
+          "date": "2022-09-12",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "3.000%",
+          "maturity": "07/31/2024",
+          "end_of_day_reference": "98.906250",
+          "response_sha256": "4fb8f6815549c760b5d3387f4570dcdc2527ad81b99328d702f3c99dd688567b"
+        },
+        {
+          "date": "2022-09-13",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "3.000%",
+          "maturity": "07/31/2024",
+          "end_of_day_reference": "98.593750",
+          "response_sha256": "81e44f151b6b1d93352b27fa8eee7025b49690f167943ce2549a6501b3714203"
+        }
+      ]
+    },
+    {
+      "position_id": "UST10",
+      "start": "2026-10-29",
+      "end": "2026-10-30",
+      "cusip": "91282CRF0",
+      "coupon_pct": 4.625,
+      "original_term": "10-Year",
+      "issue_date": "2026-08-17",
+      "maturity_date": "2036-08-15",
+      "interest_frequency": "Semi-Annual",
+      "terms_source_url": "https://www.treasurydirect.gov/TA_WS/securities/search?cusip=91282CRF0&format=json",
+      "reference_rows": [
+        {
+          "date": "2026-10-29",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "4.625%",
+          "maturity": "08/15/2036",
+          "end_of_day_reference": "97.281250",
+          "response_sha256": "429fd406bead5cfcd05edcb62cb3ea4bd344cca2f94aadf96e4ec376ec48262f"
+        },
+        {
+          "date": "2026-10-30",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "4.625%",
+          "maturity": "08/15/2036",
+          "end_of_day_reference": "97.656250",
+          "response_sha256": "0b6426b6a3cf3441ada5a690060b5538ea52739adad7b79362eb415ad25961d5"
+        }
+      ]
+    },
+    {
+      "position_id": "UST2",
+      "start": "2026-10-29",
+      "end": "2026-10-30",
+      "cusip": "91282CRH6",
+      "coupon_pct": 4.125,
+      "original_term": "2-Year",
+      "issue_date": "2026-08-31",
+      "maturity_date": "2028-08-31",
+      "interest_frequency": "Semi-Annual",
+      "terms_source_url": "https://www.treasurydirect.gov/TA_WS/securities/search?cusip=91282CRH6&format=json",
+      "reference_rows": [
+        {
+          "date": "2026-10-29",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "4.125%",
+          "maturity": "08/31/2028",
+          "end_of_day_reference": "99.093750",
+          "response_sha256": "429fd406bead5cfcd05edcb62cb3ea4bd344cca2f94aadf96e4ec376ec48262f"
+        },
+        {
+          "date": "2026-10-30",
+          "security_type": "MARKET BASED NOTE",
+          "coupon_pct": "4.125%",
+          "maturity": "08/31/2028",
+          "end_of_day_reference": "99.218750",
+          "response_sha256": "0b6426b6a3cf3441ada5a690060b5538ea52739adad7b79362eb415ad25961d5"
+        }
+      ]
+    }
+  ]
+}

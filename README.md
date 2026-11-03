@@ -54,6 +54,14 @@ Only the two retrieved pairs are supported. Quotes are static, unadjusted USD cl
 
 The October fictional demo remains expandable in Portfolio. Overview, Market, Risk, scenarios, causal exploration and AI investigations continue to use their original archived basket fixtures and are explicitly labeled accordingly. The September historical investigation and prior research/captured follow-ups retain their original holdings and results. This implementation does **not** extend live AI/scenario attribution to measured ETF risk. See the [source verification, reconciliation and valuation audit](research/etf-instrument-audit-20261103.md) for evidence, limitations and validation.
 
+### Type-aware valuation coverage (Issue #10)
+
+The Portfolio comparison table now labels every row by valuation type/status and unit, with requested dates and inspectable basis/source evidence. ETF observations remain security closes in USD/share. Treasuries require an issue price per $100 face; swaps/FX forwards require a modeled contractual USD NPV; cash is an account balance. Unknown values and P&L remain unavailable.
+
+Cash shows the **illustrative $4m reference balance dated October 30, 2026** separately from unknown historical balances, interest and flows. No $1 currency numeraire is presented as a quote. OTC rows identify the missing confirmation/terms and dated valuation inputs, with a concrete next step; no pricer or hypothetical contract is added.
+
+TreasuryDirect auction evidence verifies four research candidates across the two comparison periods. Retrieved FedInvest rows explicitly apply to **market-based special securities**; they are shown only as qualified research references, never as observed marketable Treasury closes or inputs to portfolio P&L. Candidate lifecycle checks exclude pre-issue/matured dates. Adequate marketable-bond price/settlement/accrual evidence remains unavailable, so no representative holding replacement or bond valuation is claimed. See the [dated coverage report and stopping decision](research/instrument-valuation-coverage-20261103.md).
+
 ## v0.4 investigation walkthrough
 
 Keep the backend and frontend running using the commands above. The four-stage strip navigates within the existing six pages:

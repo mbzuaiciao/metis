@@ -307,7 +307,7 @@ export function Overview({
 }) {
   const drivers = principalDrivers(data.daily);
   return (
-    <>
+    <div className="overview-tab">
       <div className="metrics four">
         <Metric
           label="Portfolio NAV"
@@ -518,7 +518,7 @@ export function Overview({
       <Panel title="Market brief" note={`${data.market.as_of} · illustrative`}>
         <p className="brief">{data.market.commentary}</p>
       </Panel>
-    </>
+    </div>
   );
 }
 const gridTheme = themeQuartz.withParams({

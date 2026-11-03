@@ -417,7 +417,7 @@ test("three illustrative snapshots render qualified estimates and inspectable in
     assert.equal((table.match(/<details class="holding-details">/g) || []).length, 12);
     assert.equal((table.match(/class="holding-chevron"/g) || []).length, 12);
     for (const row of table.matchAll(/<tr data-event-position="[^"]+">([\s\S]*?)<\/tr>/g)) {
-      assert.equal((row[1].match(/<td>/g) || []).length, 4);
+      assert.equal((row[1].match(/<td\b[^>]*>/g) || []).length, 4);
     }
     assert.equal((html.match(/data-event-position=/g) || []).length, 12);
     assert.match(html, /Observed input/);
@@ -451,4 +451,53 @@ test("three illustrative snapshots render qualified estimates and inspectable in
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(app, /EXAMPLE DATA/);
   assert.match(app, /className="portfolio-tab"/);
+  assert.match(app, /className="overview-tab"/);
+});
+
+test("event snapshots apply consistent sign colors to P&L and summary while keeping zero neutral and valuations uncolored", async () => {
+  const { EventSnapshots } = await import('../src/EventSnapshots.tsx');
+  const snapshots = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    'import json; from metis.analytics.events import event_snapshots; print(json.dumps(event_snapshots()))'],
+    {cwd: new URL('..', import.meta.url), encoding: 'utf8'}));
+
+  for (const s of snapshots) {
+    const html = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots: [s]}));
+    assert.match(html, /Estimated portfolio P&amp;L: <span class="negative">-\$[\d,]+<\/span>/);
+
+    for (const p of s.positions) {
+      const rowMatch = html.match(new RegExp(`<tr data-event-position="${p.id}">([\\s\\S]*?)</tr>`));
+      assert.ok(rowMatch, `Row for ${p.id} should exist`);
+      const cells = [...rowMatch[1].matchAll(/<td\b([^>]*)>([\s\S]*?)<\/td>/g)];
+      assert.equal(cells.length, 4);
+
+      const [, startValCell, endValCell, pnlCell] = cells;
+
+      // Starting and ending valuations must NOT have sign coloring even if signed
+      assert.doesNotMatch(startValCell[1], /class="[^"]*(?:negative|positive)[^"]*"/);
+      assert.doesNotMatch(endValCell[1], /class="[^"]*(?:negative|positive)[^"]*"/);
+
+      // P&L column color semantics
+      if (p.pnl_usd === 0) {
+        assert.doesNotMatch(pnlCell[1], /class="[^"]*(?:negative|positive)[^"]*"/);
+        assert.match(pnlCell[2], /\$0/);
+      } else if (p.pnl_usd < 0) {
+        assert.match(pnlCell[1], /class="[^"]*negative[^"]*"/);
+        assert.match(pnlCell[2], /-\$[\d,]+/);
+      } else {
+        assert.match(pnlCell[1], /class="[^"]*positive[^"]*"/);
+        assert.match(pnlCell[2], /\$[\d,]+/);
+      }
+    }
+  }
+
+  // Synthetic snapshot with positive aggregate P&L
+  const positiveSnapshot = {
+    ...snapshots[0],
+    id: "synthetic-gain",
+    estimated_pnl_usd: 500000,
+    positions: [{ id: "WINNER", label: "Gain", method: "M", inputs: [], terms: {}, assumptions: [], start_value_usd: 1000000, end_value_usd: 1500000, pnl_usd: 500000 }]
+  };
+  const positiveHtml = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots: [positiveSnapshot]}));
+  assert.match(positiveHtml, /Estimated portfolio P&amp;L: <span class="positive">\$500,000<\/span>/);
+  assert.match(positiveHtml, /<td class="positive">\$500,000<\/td>/);
 });

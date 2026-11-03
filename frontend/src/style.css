@@ -1800,3 +1800,178 @@ footer > span:last-child {
 .holding-basis p:first-child { margin-top: 0; }
 .holding-basis p:last-child { margin-bottom: 0; }
 .holding-basis a { color: #79d7c0; display: inline-block; margin-top: 2px; }
+
+/* Overview tab typography adjustments for demo screen recording */
+.overview-tab .panel-heading {
+  padding: 16px 20px;
+}
+.overview-tab .panel-heading h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e4edf8;
+  letter-spacing: -0.2px;
+}
+.overview-tab .panel-heading > span {
+  font-size: 12px;
+  color: #8b9db5;
+}
+
+/* Daily factor contributions card */
+.overview-tab .factor-evidence {
+  padding: 10px 20px 16px;
+}
+.overview-tab .factor-evidence > div {
+  padding: 13px 0;
+  border-bottom: 1px solid #233247;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.overview-tab .factor-evidence > div span {
+  font-size: 16px;
+  font-weight: 500;
+  color: #c0d1e5;
+}
+.overview-tab .factor-evidence strong {
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.overview-tab .factor-evidence .evidence-net {
+  padding: 15px 0 6px;
+  margin-top: 4px;
+  border-top: 1px solid #3d5066;
+  border-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.overview-tab .factor-evidence .evidence-net span {
+  font-size: 17px;
+  font-weight: 600;
+  color: #e8f0fa;
+}
+.overview-tab .factor-evidence .evidence-net strong {
+  font-size: 22px;
+  font-weight: 700;
+}
+.overview-tab .factor-evidence p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #8ed6c7;
+  margin-top: 10px;
+}
+
+/* Principal position drivers card */
+.overview-tab .driver-list {
+  padding: 4px 20px;
+}
+.overview-tab .driver-list > div {
+  padding: 14px 0;
+  border-bottom: 1px solid #263448;
+}
+.overview-tab .driver-list span {
+  font-size: 15px;
+  font-weight: 500;
+  color: #c0d1e5;
+}
+.overview-tab .driver-list small {
+  font-size: 12px;
+  color: #8398b0;
+  margin-top: 4px;
+}
+.overview-tab .driver-list strong {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+/* Overview top metrics */
+.overview-tab .metric .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  color: #8ca0b8;
+  font-weight: 550;
+}
+.overview-tab .metric small {
+  font-size: 12px;
+  color: #8598af;
+  line-height: 1.45;
+}
+
+/* Overview investigation start banner */
+.overview-tab .investigation-start {
+  padding: 22px 24px;
+}
+.overview-tab .investigation-start .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+}
+.overview-tab .investigation-start h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.overview-tab .investigation-start p {
+  font-size: 13px;
+  color: #9bb0c7;
+  line-height: 1.6;
+}
+
+/* Daily P&L attribution footer */
+.overview-tab .panel-footer {
+  padding: 14px 20px;
+}
+.overview-tab .panel-footer span {
+  font-size: 14px;
+  color: #9bb0c7;
+}
+.overview-tab .panel-footer b {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Allocation legend */
+.overview-tab .legend {
+  font-size: 13px;
+  gap: 14px;
+}
+.overview-tab .legend > div {
+  font-size: 13px;
+}
+.overview-tab .legend b {
+  font-size: 13px;
+}
+
+/* Major risk exposures list */
+.overview-tab .exposure-list {
+  padding: 0 20px;
+}
+.overview-tab .exposure-list > div {
+  padding: 14px 0;
+  font-size: 14px;
+}
+.overview-tab .exposure-list small {
+  font-size: 11px;
+  color: #7d92ab;
+  margin-top: 4px;
+}
+.overview-tab .exposure-list strong {
+  font-size: 16px;
+  font-weight: 550;
+}
+
+@media (max-width: 650px) {
+  .overview-tab .factor-evidence > div span {
+    font-size: 14.5px;
+  }
+  .overview-tab .factor-evidence strong {
+    font-size: 17px;
+  }
+  .overview-tab .factor-evidence .evidence-net span {
+    font-size: 15px;
+  }
+  .overview-tab .factor-evidence .evidence-net strong {
+    font-size: 19px;
+  }
+}

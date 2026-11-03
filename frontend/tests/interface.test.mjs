@@ -10,6 +10,9 @@ import { initialCausalState } from "../src/causal.ts";
 // Render the actual TSX components using the existing TypeScript dependency.
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (["react-plotly.js/factory", "plotly.js-basic-dist-min"].includes(specifier)) {
+      return {url: `test-stub:${specifier}`, shortCircuit: true};
+    }
     if (specifier.startsWith(".") && context.parentURL) {
       for (const extension of [".ts", ".tsx"]) {
         const url = new URL(specifier + extension, context.parentURL);
@@ -19,6 +22,14 @@ registerHooks({
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
+    // Chart pixels are browser-tested; server rendering checks dashboard text/data.
+    if (url === "test-stub:react-plotly.js/factory") return {
+      format: "module", shortCircuit: true,
+      source: "export default () => props => { (globalThis.metisTestPlots ??= []).push(props); return null; };",
+    };
+    if (url === "test-stub:plotly.js-basic-dist-min") return {
+      format: "module", shortCircuit: true, source: "export default {};",
+    };
     if (/\.tsx?$/.test(url)) return {
       format: "module", shortCircuit: true,
       source: ts.transpileModule(readFileSync(new URL(url), "utf8"), {
@@ -266,4 +277,39 @@ test("daily selector offers distinct synthetic dates and discloses fictional dat
     assert.match(html, /do not establish hackathon development provenance/);
     assert.doesNotMatch(html, /Data unavailable/);
   }
+});
+
+test("Overview and shared ticker render October fixture values rather than legacy March metrics", async () => {
+  const { Overview, MarketTicker } = await import("../src/App.tsx");
+  const market = JSON.parse(readFileSync(new URL("../../backend/metis/data/market-20261030.json", import.meta.url), "utf8"));
+  const data = {
+    market, nav_usd: 100000000, daily_return_pct: -282200 / 100282200 * 100,
+    positions: Array(12).fill({}), allocation: [],
+    exposures: {dv01_usd_per_bp: 50100, ig_cs01_usd_per_bp: 12600, hy_cs01_usd_per_bp: 5200, equity_delta_usd: 26000000},
+    daily: {total_pnl_usd: -282200,
+      by_factor: {rates_pnl: 501000, credit_pnl: -333200, equity_pnl: -390000, fx_pnl: -60000},
+      positions: [{id: "IRS-R", name: "Synthetic receive-fixed swap", pnl_usd: 245000},
+        {id: "EQ-US", name: "Synthetic equities", pnl_usd: -255000}]},
+  };
+  const overview = renderToStaticMarkup(React.createElement(Overview, {data, goAI() {}, goRisk() {}, goCausal() {}, busy: false}));
+  const ticker = renderToStaticMarkup(React.createElement(MarketTicker, {data}));
+  assert.match(overview, /2026-10-30/);
+  for (const amount of ["282,200", "501,000", "333,200", "390,000"]) assert.ok(overview.includes(amount));
+  assert.match(ticker, /2026-10-30/);
+  assert.match(ticker, /3\.90/);
+  assert.match(ticker, /1\.1000/);
+  assert.doesNotMatch(overview + ticker, /2025-03-10|560,770|412,480|407,250|506,000/);
+});
+
+test("market curve uses October traces with automatic bounds including the lower yields", async () => {
+  const { Market } = await import("../src/App.tsx");
+  const market = JSON.parse(readFileSync(new URL("../../backend/metis/data/market-20261030.json", import.meta.url), "utf8"));
+  globalThis.metisTestPlots = [];
+  const html = renderToStaticMarkup(React.createElement(Market, {data: {market, history: []}}));
+  const curve = globalThis.metisTestPlots.find(plot => plot.data[0].type === "scatter");
+  assert.deepEqual(curve.data.map(trace => trace.name), ["2026-10-29", "2026-10-30"]);
+  assert.deepEqual(curve.data[1].y, [3.6, 3.75, 3.9, 4.15]);
+  assert.equal(curve.layout.yaxis.range, undefined);
+  assert.match(html, /2026-10-29/);
+  assert.doesNotMatch(html, /2025-03-10|2025-03-07/);
 });

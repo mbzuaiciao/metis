@@ -78,7 +78,7 @@ def prepare():
         equity_pct=observations["sp500"]["reported_return_pct"],
         fx_pct=observations["eurusd"]["reported_return_pct"],
     )
-    frame = load_positions()
+    frame = load_positions('2025-03-10')
     financial = {
         "portfolio": {"kind": "synthetic current holdings held fixed; not historical holdings",
                       "reference_nav_usd": float(frame.market_value_usd.sum()),

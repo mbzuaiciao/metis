@@ -13,7 +13,7 @@ from metis.verification.claims import FinancialClaim, claim, demonstration_claim
 
 @pytest.fixture
 def context():
-    return assemble_context(Shocks(rates_bp=-50,ig_bp=75,hy_bp=250,equity_pct=-15,fx_pct=-5))
+    return assemble_context(Shocks(rates_bp=-50,ig_bp=75,hy_bp=250,equity_pct=-15,fx_pct=-5), investigation_date='2025-03-10')
 
 
 def test_three_reproducible_examples_and_attached_evidence(context):
@@ -119,7 +119,7 @@ def test_no_untrusted_truth_and_claims_are_optional_coverage(monkeypatch):
         demo=client.get('/api/verification-demo').json()
         assert [r['verdict'] for r in demo['results']]==['Contradicted','Verified','Not established']
         assert client.post('/api/verify-claims',json={'claims':[],'context':{'truth':1}}).status_code==422
-        c=claim('Selected scenario P&L','number','total_pnl_usd','equals',-2300000,period='scenario')
+        c=claim('Selected scenario P&L','number','total_pnl_usd','equals',-2600000,period='scenario')
         result=client.post('/api/verify-claims',json={'claims':[c.model_dump()],'shocks':{'equity_pct':-10}})
         assert result.json()['results'][0]['verdict']=='Verified'
     result=reason(ReasoningRequest(question='Explain the loss'))
@@ -162,7 +162,7 @@ def test_valid_evidence_ids_do_not_prove_an_incorrect_amount(context):
     (Shocks(), 0, 0),
 ])
 def test_rising_and_zero_yields_preserve_documented_verification_scope(shocks, rates, total):
-    context = assemble_context(shocks)
+    context = assemble_context(shocks, investigation_date='2025-03-10')
     for metric, value in [("rates_pnl", rates), ("total_pnl_usd", total)]:
         c = claim("Mapped scenario amount", "number", metric, "equals", value, period="scenario")
         assert verify_claim(c, context)["verdict"] == "Verified"

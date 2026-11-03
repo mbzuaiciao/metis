@@ -27,7 +27,7 @@ def test_demo_receives_actual_selected_scenario(monkeypatch):
     assert result == reason(ReasoningRequest(question="Why are rates not protecting the portfolio?", shocks=Shocks(rates_bp=-50)))
     assert result["mode"] == "demo"
     assert result["model"] is None
-    assert result["context"]["scenario"]["total_pnl_usd"] == 2_578_000
+    assert result["context"]["scenario"]["total_pnl_usd"] == 2_505_000
     assert result["context"]["portfolio"]["nav_usd"] == 100_000_000
     assert len(result["context_operations"]) == 4
     assert set(result["interpretation"]["evidence_references"]) <= {e["id"] for e in result["context"]["evidence"]}
@@ -48,7 +48,7 @@ def test_live_provider_contract(monkeypatch, provider):
         assert body["model"] == "test-model"
         content = json.loads(body["messages"][-1]["content"])
         assert content["question"] == request.question
-        assert content["context"]["scenario"]["total_pnl_usd"] == -2_300_000
+        assert content["context"]["scenario"]["total_pnl_usd"] == -2_600_000
         if provider == "meta":
             assert req.url.path == "/v1/chat/completions"
             assert req.headers["authorization"] == "Bearer test-only"
@@ -114,7 +114,7 @@ def test_api_end_to_end():
         data = client.get("/api/workstation").json()
         preset = data["scenarios"][3]
         result = client.post("/api/scenario", json=preset["shocks"]).json()
-        assert result["total_pnl_usd"] == -3_347_000
+        assert result["total_pnl_usd"] == -4_240_000
         response = client.post("/api/reasoning", json={"question":"How does a recession differ from inflation?", "shocks":preset["shocks"]})
         assert response.status_code == 200
         assert response.json()["context"]["scenario"] == result
@@ -162,10 +162,10 @@ def test_meta_workflow_with_broad_risk_off(monkeypatch, configured_meta):
         assert payload["question"] == DEMONSTRATION_QUESTION
         context = payload["context"]
         assert context["scenario"] == expected_scenario
-        assert context["scenario"]["by_factor"] == {"rates_pnl": 2_578_000, "credit_pnl": -1_975_000, "equity_pnl": -3_450_000, "fx_pnl": -500_000}
+        assert context["scenario"]["by_factor"] == {"rates_pnl": 2_505_000, "credit_pnl": -2_245_000, "equity_pnl": -3_900_000, "fx_pnl": -600_000}
         assert len(context["portfolio"]["positions"]) == 12
-        assert context["portfolio"]["exposures"]["dv01_usd_per_bp"] == 51_560
-        assert context["market"] == load_json("market")
+        assert context["portfolio"]["exposures"]["dv01_usd_per_bp"] == 50_100
+        assert context["market"] == load_json("market-20261030")
         assert context["historical_context"] == load_json("history")
         for alternative in context["alternative_scenarios"]:
             expected = calculate(load_positions(), Shocks(**alternative["shocks"]))
@@ -318,8 +318,8 @@ def test_meta_structured_output_diagnostics(monkeypatch, configured_meta, failur
 
 
 @pytest.mark.parametrize("question, expected", [
-    ("Explain the illustrative daily portfolio loss. Identify vulnerabilities.", ("+$412,480", "-$560,770")),
-    ("Interpret the selected hypothetical stress scenario. Identify vulnerabilities.", ("+$2,578,000", "-$3,347,000")),
+    ("Explain the illustrative daily portfolio loss. Identify vulnerabilities.", ("+$501,000", "-$282,200")),
+    ("Interpret the selected hypothetical stress scenario. Identify vulnerabilities.", ("+$2,505,000", "-$4,240,000")),
 ])
 def test_contextual_demo_summary_uses_requested_calculation(question, expected):
     shocks = Shocks(**next(s for s in load_json("scenarios") if s["id"] == "risk-off")["shocks"])

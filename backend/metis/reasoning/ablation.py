@@ -45,7 +45,7 @@ def run_comparison(output_dir: Path, *, reverse_order: bool = False) -> dict:
     output_dir.mkdir(parents=True, exist_ok=False, mode=0o700)
     preset = next(s for s in load_json("scenarios") if s["id"] == "risk-off")
     shocks = Shocks(**preset["shocks"])
-    full = assemble_context(shocks)
+    full = assemble_context(shocks, investigation_date='2025-03-10')
     contexts = {"full": full, "evidence_only": evidence_only_context(full)}
     assert numeric_inputs(full) == numeric_inputs(contexts["evidence_only"])
     assert full["evidence"] == contexts["evidence_only"]["evidence"]

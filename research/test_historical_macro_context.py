@@ -20,7 +20,7 @@ def test_frozen_pair_and_no_event_leakage():
     # The completed experiment fingerprints its then-current production sources.
     # Verify that provenance in Git, rather than freezing future product code.
     comparable = deepcopy(prepared)
-    for source in ('backend/metis/reasoning/harness.py', 'backend/metis/analytics/engine.py'):
+    for source in ('backend/metis/reasoning/harness.py', 'backend/metis/analytics/engine.py', 'research/historical_macro_context.py'):
         historical = subprocess.check_output(['git', 'show', f'2b75a7c:{source}'], cwd=HERE.parent)
         assert hashlib.sha256(historical).hexdigest() == frozen['source_sha256'][source]
         comparable['source_sha256'][source] = frozen['source_sha256'][source]
@@ -58,10 +58,10 @@ def test_source_units_omissions_and_hypothetical_pnl():
 
 def test_original_daily_and_scenarios_unchanged():
     from metis.analytics.engine import Shocks, calculate, load_json, load_positions, workstation
-    before = workstation()
+    before = workstation('2025-03-10')
     study.prepare()
-    assert workstation() == before
+    assert workstation('2025-03-10') == before
     assert before["market"]["as_of"] == "2025-03-10"
     assert before["daily"]["total_pnl_usd"] == -560770
     preset = next(s for s in load_json("scenarios") if s["id"] == "risk-off")
-    assert calculate(load_positions(), Shocks(**preset["shocks"]))["total_pnl_usd"] == -3347000
+    assert calculate(load_positions('2025-03-10'), Shocks(**preset["shocks"]))["total_pnl_usd"] == -3347000

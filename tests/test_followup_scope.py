@@ -75,7 +75,7 @@ def test_daily_scenario_daily_transitions_preserve_previous_calculations_and_ids
         assert len({a['investigation_id'] for a in [daily, scenario, daily_again]}) == 3
         assert daily['context']['scenario'] == daily['context']['daily']
         assert daily_again['context'] == daily['context']
-        assert scenario['context']['scenario']['total_pnl_usd'] == -3347000
+        assert scenario['context']['scenario']['total_pnl_usd'] == -4240000
         for original in [daily, scenario, daily_again]:
             continued = follow(client, original).json()
             assert continued['context'] == original['context']
@@ -159,7 +159,7 @@ def test_hypotheses_follow_captured_scope_without_changing_calculations(scope):
     from metis.analytics.engine import workstation, calculate, load_positions, Shocks
     with TestClient(api.app) as client:
         answer = start(client, scope, rates_bp=50, ig_bp=-10, hy_bp=-20, equity_pct=3)
-        expected = workstation()['daily'] if scope == 'daily' else calculate(
+        expected = workstation('2025-03-10')['daily'] if scope == 'daily' else calculate(
             load_positions(), Shocks(rates_bp=50, ig_bp=-10, hy_bp=-20, equity_pct=3))
         assert answer['context']['daily' if scope == 'daily' else 'scenario'] == expected
         hypotheses = answer['interpretation']['hypotheses']

@@ -290,7 +290,7 @@ function EpisodeCards({ episodes }: { episodes: Episode[] }) {
     </div>
   );
 }
-function Overview({
+export function Overview({
   data,
   goAI,
   goRisk,
@@ -652,14 +652,14 @@ function Portfolio({ data }: { data: Workstation }) {
         <CircleHelp size={16} />
         <span>
           Marks, notionals and sensitivities are different measures. Swap P&L
-          uses supplied DV01; FX forward P&L uses $10m directional exposure, not
-          its $2m mark. All values are USD.
+          uses supplied DV01; FX forward P&L uses its directional USD delta.
+          Signed marks contribute separately to NAV. All values are USD.
         </span>
       </div>
     </>
   );
 }
-function Market({ data }: { data: Workstation }) {
+export function Market({ data }: { data: Workstation }) {
   return (
     <>
       <div className="notice">
@@ -698,7 +698,6 @@ function Market({ data }: { data: Workstation }) {
               yaxis: {
                 gridcolor: "#232e3e",
                 ticksuffix: "%",
-                range: [3.8, 4.8],
               },
             }}
           />
@@ -1260,7 +1259,7 @@ function ReasoningPage({
           </div>
           <h3>Current hypothetical scenario</h3>
           <p className="context-note">
-            Uses the separate {data.market.as_of} synthetic holdings only when starting a new stress investigation. Existing answers and follow-ups use their captured evidence.
+            Uses the app-wide {data.market.as_of} synthetic holdings when starting a new stress investigation, independently of the daily selector. Existing answers and follow-ups use their captured evidence.
           </p>
           {calc && !pending ? (
             <>
@@ -1296,7 +1295,7 @@ function ReasoningPage({
     </div>
   );
 }
-function MarketTicker({ data }: { data: Workstation }) {
+export function MarketTicker({ data }: { data: Workstation }) {
   const y = data.market.yields.find((y) => y.tenor === "10Y")!;
   const movement = (y.current_pct - y.previous_pct) * 100;
   return (
@@ -1520,6 +1519,7 @@ export default function App() {
                   : "Connecting to backend"}
             </div>
           </div>
+          {data && page !== 7 && <p className="context-note">{data.investigation.disclosure}</p>}
           {page === 7 ? (
             <ResearchLimitations />
           ) : error ? (

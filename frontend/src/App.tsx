@@ -302,14 +302,14 @@ export function Overview({
         <Metric
           label="Daily P&L"
           value={money(data.daily.total_pnl_usd)}
-          detail={`${signed(data.daily_return_pct, "%")} vs opening NAV`}
+          detail="USD · daily movement"
           className={tone(data.daily.total_pnl_usd)}
         />
         <Metric
-          label="Rate contribution"
-          value={money(data.daily.by_factor.rates_pnl)}
-          detail={`Government yields ${((data.market.yields[0].current_pct - data.market.yields[0].previous_pct) * 100).toFixed(0)}bp · parallel`}
-          className="positive"
+          label="Daily Return"
+          value={signed(data.daily_return_pct, "%")}
+          detail="Versus opening NAV"
+          className={tone(data.daily_return_pct)}
         />
         <Metric
           label="Positions"
@@ -323,7 +323,7 @@ export function Overview({
             1 · WHAT HAPPENED? · SYNTHETIC {data.market.as_of}
           </span>
           <h2>
-            A positive rate contribution did not prevent a portfolio loss.
+            What drove the portfolio loss?
           </h2>
           <p>
             Inspect the daily calculation, then ask Metis to interpret the

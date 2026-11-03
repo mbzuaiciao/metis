@@ -30,6 +30,7 @@ import {
   money as eventMoney,
   pnlTone as eventPnlTone,
 } from "./EventSnapshots";
+import { getMarketSnapshotRows, treasuryCurve } from "./market";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -43,7 +44,6 @@ import Plotly from "plotly.js-basic-dist-min";
 import type { Data, Layout } from "plotly.js";
 import type {
   Calculation,
-  EventSnapshot,
   Position,
   Reasoning,
   Shocks,
@@ -718,31 +718,6 @@ export function Portfolio({ data }: { data: Workstation }) {
     </div>
   );
 }
-// Benchmarks describe inputs to the fixed snapshots, never additional holdings.
-export function getMarketSnapshotRows(snapshot?: EventSnapshot) {
-  if (!snapshot) return [];
-  return [
-    { id: "DGS2", holding: "UST2", instrument: "US Treasury 2Y yield", unit: "%" },
-    { id: "DGS5", holding: "IRS-P", instrument: "US Treasury 5Y yield", unit: "%" },
-    { id: "DGS10", holding: "UST10", instrument: "US Treasury 10Y yield", unit: "%" },
-    { id: "DEXUSEU", holding: "FX-EUR", instrument: "EUR/USD spot", unit: "USD/EUR" },
-  ].map(row => {
-    const inputs = snapshot.positions.find(p => p.id === row.holding)?.inputs;
-    const start = inputs?.[0]?.value ?? null;
-    const end = inputs?.[1]?.value ?? null;
-    const change = start === null || end === null ? null
-      : row.unit === "%" ? (end - start) * 100 : (end / start - 1) * 100;
-    return {
-      ...row,
-      startFormatted: start === null ? "Unavailable" : `${start.toFixed(row.unit === "%" ? 2 : 4)} ${row.unit}`,
-      endFormatted: end === null ? "Unavailable" : `${end.toFixed(row.unit === "%" ? 2 : 4)} ${row.unit}`,
-      changeFormatted: change === null ? "Unavailable"
-        : `${change > 0 ? "+" : ""}${row.unit === "%" ? Math.round(change) : change.toFixed(2)}${row.unit === "%" ? "bp" : "%"}`,
-      sourceUrl: inputs?.[0]?.source_url,
-    };
-  });
-}
-
 export function Market({
   data,
   selectedEventId,
@@ -760,7 +735,9 @@ export function Market({
     snapshots.find((s) => s.id === "october-2026") ??
     snapshots[0];
 
-  const marketRows = getMarketSnapshotRows(activeSnapshot);
+  const marketRows = getMarketSnapshotRows(activeSnapshot, data.etf_portfolio);
+  const curve = treasuryCurve(marketRows);
+  const driverMoves = (ids: string[]) => ids.map(id => marketRows.find(r => r.id === id)).filter(r => r !== undefined);
 
   const handleSelectEvent = (id: string) => {
     setLocalEventId(id);
@@ -771,8 +748,8 @@ export function Market({
     <div className="market-tab">
       {activeSnapshot && marketRows.length > 0 && (
         <Panel
-          title={`Market snapshot · ${activeSnapshot.start} → ${activeSnapshot.end}`}
-          note="12 illustrative holdings · Estimated USD position values"
+          title={`Market Prices & Rates · ${activeSnapshot.start} → ${activeSnapshot.end}`}
+          note="Market measures for 12 illustrative holdings"
         >
           {snapshots.length > 0 && (
             <div className="table-toolbar">
@@ -801,104 +778,66 @@ export function Market({
             </div>
           )}
 
-          <p className="context-note">Illustrative snapshot — market inputs where available, modeled valuations otherwise.</p>
-          <EventTable snapshot={activeSnapshot} market />
-          <details className="market-provenance-details">
-            <summary>Methodology, sources &amp; assumptions</summary>
-            <p>{activeSnapshot.disclosure}</p>
-            <p>All table values are illustrative USD position marks; ETF closes are observed USD/share inputs in each holding's expandable basis. Swaps and the FX forward show hypothetical USD NPVs, not market prices. Cash is an assumed balance. Earlier EUIG/EUHY periods represent hypothetical current-mandate euro-credit exposures.</p>
-            <p>Dollar displays are rounded to the nearest $1,000. Price changes exclude distributions; rounded rows may not sum exactly.</p>
-            <p>Market inputs: {activeSnapshot.market_provenance.provider}, downloaded {activeSnapshot.market_provenance.retrieved_at}. {activeSnapshot.market_provenance.timing}</p>
-          </details>
-          <details className="market-provenance-details">
-            <summary>Market drivers / benchmarks</summary>
-            <p className="context-note">Input benchmarks, not additional holdings. DGS5 is a Treasury-yield proxy for the 5Y pay-fixed swap (IRS-P), not an observed swap quote or a held 5Y Treasury. DGS10 also approximates the receive-fixed swap input. Treasury yields are constant-maturity indications, not bond prices; EUR/USD is a noon buying rate, asynchronous with ETF closes.</p>
-            <div className="etf-table-wrap">
-              <table className="etf-table">
-                <thead><tr><th>Benchmark</th><th>{activeSnapshot.start}</th><th>{activeSnapshot.end}</th><th>Change</th></tr></thead>
-                <tbody>{marketRows.map(row => <tr key={row.id} data-market-benchmark={row.id}>
-                  <td><b>{row.id}</b> · {row.instrument} {row.sourceUrl && <a href={row.sourceUrl} target="_blank" rel="noreferrer">Source</a>}</td>
-                  <td>{row.startFormatted}</td><td>{row.endFormatted}</td><td>{row.changeFormatted}</td>
-                </tr>)}</tbody>
-              </table>
-            </div>
-          </details>
+          <p className="context-note market-measures-note">Cached market observations · Proxies labeled below. Position valuations remain in Portfolio.</p>
+          <div className="etf-table-wrap">
+            <table className="etf-table market-prices-table">
+              <thead><tr>
+                <th>Instrument</th><th>Market measure</th>
+                <th>Starting<br />{activeSnapshot.start}</th>
+                <th>Ending<br />{activeSnapshot.end}</th><th>Change</th>
+              </tr></thead>
+              <tbody>{marketRows.map(row => <tr key={row.id} data-market-position={row.id}>
+                <td><b>{row.id}</b><span className="holding-label">{row.label}</span></td>
+                <td><details className="market-measure-basis">
+                  <summary>{row.measure}<span className="holding-label">{row.unit}</span></summary>
+                  <p>{row.note}</p>
+                  {row.sources.map((url, i) => <a key={url} href={url} target="_blank" rel="noreferrer">Source {row.sources.length > 1 ? i + 1 : ''} ↗ </a>)}
+                </details></td>
+                <td>{row.startFormatted}</td><td>{row.endFormatted}</td>
+                <td className={row.tone || undefined}>{row.changeFormatted}</td>
+              </tr>)}</tbody>
+            </table>
+          </div>
+          <p className="context-note market-measures-note">Treasury yields proxy bond/swap market rates; swaps have no observed par quotes here. ETF changes are price returns. EUR/USD spot proxies the forward. Cash denotes a constant USD, not an account balance.</p>
         </Panel>
       )}
-
-      <details className="archived-market-details">
-        <summary>Archived October 30 fictional demonstration · synthetic benchmarks</summary>
-        <div className="archived-market-content">
-          <p className="context-note" style={{ marginBottom: "16px" }}>
-            The chart and benchmark table below contain synthetic multi-asset demonstration fixtures from the archived October 30 portfolio model (synthetic benchmark comparison date: {data.market.previous_date}). Modeled rates, credit spreads, and FX levels are not observed quotes.
-          </p>
-          <div className="grid-main">
-            <Panel title="US Treasury yield curve (Archived synthetic demonstration)" note="Yield · %">
-              <Chart
-                data={[
-                  {
-                    type: "scatter",
-                    mode: "lines+markers",
-                    name: data.market.previous_date,
-                    x: data.market.yields.map((y) => y.tenor),
-                    y: data.market.yields.map((y) => y.previous_pct),
-                    line: { color: "#5d7189", dash: "dot", width: 2 },
-                    hovertemplate: "%{x}: %{y:.2f}%<extra>Previous</extra>",
-                  },
-                  {
-                    type: "scatter",
-                    mode: "lines+markers",
-                    name: data.market.as_of,
-                    x: data.market.yields.map((y) => y.tenor),
-                    y: data.market.yields.map((y) => y.current_pct),
-                    line: { color: "#52d6bb", width: 3 },
-                    hovertemplate: "%{x}: %{y:.2f}%<extra>Selected date</extra>",
-                  },
-                ]}
-                layout={{
-                  showlegend: true,
-                  legend: { orientation: "h", x: 0, y: 1.2 },
-                  yaxis: {
-                    gridcolor: "#232e3e",
-                    ticksuffix: "%",
-                  },
-                }}
-              />
-            </Panel>
-            <Panel
-              title="Archived synthetic market benchmarks"
-              note={`Fictional demonstration · As of ${data.market.as_of}`}
-            >
-              <div className="market-table">
-                {data.market.yields.map((y) => (
-                  <div key={y.tenor}>
-                    <span>Treasury {y.tenor}</span>
-                    <b>{y.current_pct.toFixed(2)}%</b>
-                    <em>{((y.current_pct - y.previous_pct) * 100).toFixed(0)}bp</em>
-                  </div>
-                ))}
-                {data.market.credit.map((c) => (
-                  <div key={c.name}>
-                    <span>{c.name} spread</span>
-                    <b>{c.level_bp}bp</b>
-                    <em className="negative">+{c.change_bp}bp</em>
-                  </div>
-                ))}
-                {data.market.fx.map((f) => (
-                  <div key={f.name}>
-                    <span>{f.name}</span>
-                    <b>{f.level.toFixed(4)}</b>
-                    <em className="negative">{signed(f.change_pct, "%")}</em>
-                  </div>
-                ))}
-              </div>
-            </Panel>
+      {activeSnapshot && <div className="grid-main market-context-grid">
+        <Panel title="Treasury yield curve" note={`${activeSnapshot.start} → ${activeSnapshot.end} · FRED constant-maturity yields`}>
+          <Chart data={[
+            { type: "scatter", mode: "lines+markers", name: activeSnapshot.start,
+              x: curve.map(p => p.tenor), y: curve.map(p => p.start), connectgaps: false,
+              line: { color: "#94a3b8", dash: "dot", width: 2 },
+              hovertemplate: "%{x}: %{y:.2f}%<extra></extra>" },
+            { type: "scatter", mode: "lines+markers", name: activeSnapshot.end,
+              x: curve.map(p => p.tenor), y: curve.map(p => p.end), connectgaps: false,
+              line: { color: "#52d6bb", width: 3 },
+              hovertemplate: "%{x}: %{y:.2f}%<extra></extra>" },
+          ]} layout={{ showlegend: true, legend: { orientation: "h", x: 0, y: 1.18 },
+            yaxis: { gridcolor: "#232e3e", ticksuffix: "%", title: { text: "Yield (%)" } },
+          }} />
+          <p className="context-note market-measures-note">DGS2 / DGS5 / DGS10 · Yield benchmarks, not bond prices. DGS5 proxies IRS-P; DGS10 also proxies IRS-R.</p>
+        </Panel>
+        <Panel title="Market drivers" note={`${activeSnapshot.start} → ${activeSnapshot.end}`}>
+          <div className="market-drivers">
+            <article><h3>Treasury yields</h3><p>{curve.map((p, i) => <span key={p.tenor}>{i > 0 && ' · '}{p.tenor} <b>{driverMoves(['UST2', 'IRS-P', 'UST10'])[i]?.changeFormatted}</b></span>)}</p></article>
+            {[
+              {title: 'Equity ETF prices', ids: ['SPY', 'HEFA']},
+              {title: 'Credit ETF prices', ids: ['LQD', 'EUIG', 'HYG', 'EUHY']},
+              {title: 'EUR/USD spot', ids: ['FX-EUR']},
+            ].map(group => <article key={group.title}><h3>{group.title}</h3>
+              <p>{driverMoves(group.ids).filter(r => r.change !== null).map((r, i) => <span key={r.id}>{i > 0 && ' · '}{r.id === 'FX-EUR' ? 'Spot' : r.id} <b className={r.tone}>{r.changeFormatted}</b></span>)}</p>
+              {driverMoves(group.ids).some(r => r.change === null) && <small>{driverMoves(group.ids).filter(r => r.change === null).map(r => r.id).join(' / ')} quotes unavailable for this window.</small>}
+            </article>)}
+            <small>Credit ETF price returns include multiple market effects; they are not observed credit-spread changes. Movements do not identify their causes.</small>
           </div>
-          <Panel title="Economic context" note="Assumed regime">
-            <p className="brief">{data.market.commentary}</p>
-          </Panel>
-        </div>
-      </details>
+        </Panel>
+      </div>}
+      {activeSnapshot && <details className="market-provenance-details">
+        <summary>Sources &amp; measure definitions</summary>
+        <p>{activeSnapshot.market_provenance.provider}, downloaded {activeSnapshot.market_provenance.retrieved_at}. {activeSnapshot.market_provenance.timing}</p>
+        <p>ETF closes: cached Yahoo Finance unadjusted USD/share observations; distributions excluded. March cache retrieved {activeSnapshot.march_etf_retrieved_at}; September/October use the existing cached records. Row details retain dated source links and eligibility notes.</p>
+        <p>EUIG/EUHY quotes before their eligible listing/mandate are unavailable; hypothetical spread shocks used in Portfolio reconstructions are not market quotes. Measures correspond to illustrative holdings, not actual historical ownership. No live feed or observed forward/par-swap quotes.</p>
+      </details>}
 
     </div>
   );

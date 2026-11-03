@@ -2137,3 +2137,28 @@ footer > span:last-child {
   margin-top: 12px;
 }
 
+
+/* Market measures are prices/rates, distinct from the Portfolio's dollar marks. */
+.market-prices-table { min-width: 760px; }
+.market-prices-table th:nth-child(1) { width: 26%; }
+.market-prices-table th:nth-child(2) { width: 30%; }
+.market-prices-table th:nth-child(n+3) { width: 15%; }
+.market-prices-table td { padding: 10px 14px; vertical-align: middle; }
+.market-prices-table td:nth-child(n+3) {
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.market-prices-table .holding-label { display: block; margin-top: 3px; font-size: 12px; }
+.market-measure-basis { font-size: 13px; }
+.market-measure-basis summary { cursor: pointer; }
+.market-measure-basis summary .holding-label { display: inline; margin-left: 6px; }
+.market-measure-basis p { line-height: 1.5; color: #94a3b8; }
+.market-measures-note { margin: 14px 20px; }
+.market-context-grid { margin-top: 20px; }
+.market-drivers { padding: 0 20px 18px; }
+.market-drivers article { padding: 12px 0; border-bottom: 1px solid #233247; }
+.market-drivers h3 { margin: 0 0 6px; font-size: 12px; color: #94a3b8; }
+.market-drivers p { margin: 0; font-size: 16px; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.market-drivers small { display: block; margin-top: 10px; color: #94a3b8; line-height: 1.5; }

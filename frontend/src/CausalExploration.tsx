@@ -18,13 +18,24 @@ const factors: [keyof Shocks, string, string, number, number][] = [
   ["fx_pct", "EUR/USD", "%", -30, 30],
 ];
 
-export function CausalExploration({ state, setState, data, generate, calculate, useShocks }: {
+export function CausalExploration({
+  state,
+  setState,
+  data,
+  generate,
+  calculate,
+  useShocks,
+  selectedEventId,
+  onSelectEvent,
+}: {
   state: CausalState;
   setState: Dispatch<SetStateAction<CausalState>>;
   data: Workstation;
   generate: (request: CausalRequest) => Promise<CausalResult>;
   calculate: (shocks: Shocks) => Promise<Calculation>;
   useShocks: (shocks: Shocks) => void;
+  selectedEventId?: string;
+  onSelectEvent?: (id: string) => void;
 }) {
   const inFlight = useRef(false);
   const result = state.result;
@@ -74,7 +85,10 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
         </div>
         <EventSnapshots
           snapshots={data.event_snapshots}
+          selectedId={selectedEventId}
+          onSelect={onSelectEvent}
           onExplore={(id) => {
+            onSelectEvent?.(id);
             setState((s) => ({ ...s, eventSnapshotId: id }));
             document.getElementById("hypothetical-causal-scenarios")?.scrollIntoView({ behavior: "smooth" });
           }}
@@ -91,7 +105,11 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
     <p className="context-note">Supplied facts: {data.positions.length} synthetic positions · dated market snapshot {data.market.as_of}. No live market-data feed.</p>
     {data.event_snapshots && <label>Event snapshot reference (optional)
       <select value={state.eventSnapshotId ?? ''} disabled={locked}
-        onChange={e => setState(s => ({ ...s, eventSnapshotId: e.target.value || undefined }))}>
+        onChange={e => {
+          const val = e.target.value || undefined;
+          setState(s => ({ ...s, eventSnapshotId: val }));
+          if (val) onSelectEvent?.(val);
+        }}>
         <option value="">Archived scenario only</option>
         {data.event_snapshots.map(s => <option key={s.id} value={s.id}>{s.start} → {s.end} · {s.title}</option>)}
       </select>

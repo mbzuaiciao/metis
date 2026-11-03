@@ -572,10 +572,13 @@ test("Historical event replay in Causal Scenario Exploration retains 3 event win
 
 test("Market Monitor displays dated ETF closes for SPY and HEFA and removes Daily return placeholder", async () => {
   const { Market } = await import("../src/App.tsx");
-  const market = JSON.parse(readFileSync(new URL("../../backend/metis/data/market-20261030.json", import.meta.url), "utf8"));
-  const html = renderToStaticMarkup(React.createElement(Market, { data: { market, history: [] } }));
+  const output = execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio()}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const data = JSON.parse(output);
+  const html = renderToStaticMarkup(React.createElement(Market, { data }));
 
-  // Shows SPY and HEFA observed closes
+  // Shows SPY and HEFA observed closes from cached event snapshots
   assert.match(html, /Observed equity ETF market prices/);
   assert.match(html, /SPY/);
   assert.match(html, /HEFA/);
@@ -595,4 +598,41 @@ test("Market Monitor displays dated ETF closes for SPY and HEFA and removes Dail
   assert.match(html, /Archived synthetic market benchmarks/);
   assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
   assert.match(html, /Yahoo Finance/);
+
+  // Verify selecting a different event window (e.g. CPI 2022) displays its cached closes
+  const cpiHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "cpi-2022" }));
+  assert.match(cpiHtml, /\$410\.97/);
+  assert.match(cpiHtml, /\$393\.10/);
+  assert.match(cpiHtml, /-4\.35%/);
+  assert.match(cpiHtml, /\$32\.56/);
+  assert.match(cpiHtml, /\$31\.86/);
+  assert.match(cpiHtml, /-2\.15%/);
+});
+
+test("Market Monitor and Causal Scenario Exploration share historical event selection consistently", async () => {
+  const { Market } = await import("../src/App.tsx");
+  const { CausalExploration } = await import("../src/CausalExploration.tsx");
+  const output = execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio()}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const data = JSON.parse(output);
+
+  for (const eventId of ["october-2026", "cpi-2022", "march-2025"]) {
+    const marketHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: eventId }));
+    const causalHtml = renderToStaticMarkup(React.createElement(CausalExploration, {
+      state: initialCausalState,
+      setState() {},
+      data,
+      generate() {},
+      calculate() {},
+      useShocks() {},
+      selectedEventId: eventId,
+    }));
+
+    const snapshot = data.event_snapshots.find(s => s.id === eventId);
+    assert.match(marketHtml, new RegExp(snapshot.start));
+    assert.match(marketHtml, new RegExp(snapshot.end));
+    assert.match(causalHtml, new RegExp(snapshot.start));
+    assert.match(causalHtml, new RegExp(snapshot.end));
+  }
 });

@@ -17,13 +17,13 @@ spec.loader.exec_module(study)
 def test_frozen_pair_and_no_event_leakage():
     prepared = study.prepare()
     frozen = json.loads(study.PUBLIC.read_text())
-    # The completed experiment fingerprints its then-current production harness.
+    # The completed experiment fingerprints its then-current production sources.
     # Verify that provenance in Git, rather than freezing future product code.
-    source = 'backend/metis/reasoning/harness.py'
-    historical = subprocess.check_output(['git', 'show', f'2b75a7c:{source}'], cwd=HERE.parent)
-    assert hashlib.sha256(historical).hexdigest() == frozen['source_sha256'][source]
     comparable = deepcopy(prepared)
-    comparable['source_sha256'][source] = frozen['source_sha256'][source]
+    for source in ('backend/metis/reasoning/harness.py', 'backend/metis/analytics/engine.py'):
+        historical = subprocess.check_output(['git', 'show', f'2b75a7c:{source}'], cwd=HERE.parent)
+        assert hashlib.sha256(historical).hexdigest() == frozen['source_sha256'][source]
+        comparable['source_sha256'][source] = frozen['source_sha256'][source]
     assert comparable == frozen
     a, b = prepared["contexts"]["A"], deepcopy(prepared["contexts"]["B"])
     macro = b.pop("macro_context")

@@ -48,6 +48,11 @@ export type Scenario = {
   shocks: Shocks;
 };
 export type Workstation = {
+  investigation: {
+    default_date: string;
+    disclosure: string;
+    snapshots: DailySnapshot[];
+  };
   causal_mode: string;
   portfolio_name: string;
   data_kind: string;
@@ -78,6 +83,7 @@ export type Workstation = {
   scenarios: Scenario[];
   history: Episode[];
 };
+export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode">;
 export type Reasoning = {
   investigation_id: string;
   investigation_scope: "daily" | "scenario" | "historical";

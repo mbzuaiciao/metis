@@ -21,7 +21,7 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
   return <div className="investigation-results">
     <p className="context-note"><b>{historical ? `Historical investigation · ${answer.context.market.as_of} · US inflation surprise` : daily
-      ? `Daily investigation · synthetic observed snapshot · ${answer.context.market.as_of}`
+      ? `Daily investigation · fictional synthetic snapshot · ${answer.context.market.as_of}`
       : "Hypothetical stress investigation · simulated assumptions, not historical observations or a forecast"}</b></p>
     <section className="investigation-step">
       <h2>1 · What happened?</h2>

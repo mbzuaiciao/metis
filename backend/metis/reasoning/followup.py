@@ -4,6 +4,7 @@ Clients may reference backend-owned evidence, never supply replacement truth.
 Restart/eviction expires the reference explicitly; no current-context fallback.
 """
 from collections import OrderedDict
+from datetime import date
 from copy import deepcopy
 from secrets import token_urlsafe
 from threading import Lock
@@ -18,6 +19,7 @@ from metis.verification.claims import verify_claims
 
 class InvestigationRequest(ReasoningRequest):
     investigation_scope: Literal['daily', 'scenario', 'historical'] = 'scenario'
+    investigation_date: date | None = None
 
 
 class FollowupRequest(BaseModel):

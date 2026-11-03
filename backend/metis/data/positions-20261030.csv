@@ -1,0 +1,13 @@
+id,name,asset_class,instrument,market_value_usd,notional_usd,dv01_usd_per_bp,cs01_usd_per_bp,spread_bucket,equity_delta_usd,fx_delta_usd
+UST10,US Treasury 10Y,Government bonds,Cash bond,18000000,18000000,14400,0,none,0,0
+UST2,US Treasury 2Y,Government bonds,Cash bond,10000000,10000000,1800,0,none,0,0
+IRS-R,USD 10Y receive-fixed swap,Rate derivatives,Receive fixed swap,3000000,35000000,24500,0,none,0,0
+IRS-P,USD 5Y pay-fixed swap,Rate derivatives,Pay fixed swap,-500000,25000000,-10000,0,none,0,0
+IG-US,US investment-grade credit,Investment-grade credit,Cash bond basket,15000000,15000000,7500,6750,ig,0,0
+IG-EU,European IG credit (FX hedged),Investment-grade credit,Cash bond basket,9000000,9000000,6300,5850,ig,0,0
+HY-US,US high-yield credit,High-yield credit,Cash bond basket,8000000,8000000,3200,2800,hy,0,0
+HY-EU,European HY credit (FX hedged),High-yield credit,Cash bond basket,6000000,6000000,2400,2400,hy,0,0
+EQ-US,US large-cap equities,Equities,Equity basket,17000000,17000000,0,0,none,17000000,0
+EQ-DM,Developed ex-US equities (FX hedged),Equities,Equity basket,9000000,9000000,0,0,none,9000000,0
+FX-EUR,Long EUR / short USD forward,FX,FX forward,1500000,12000000,0,0,none,0,12000000
+CASH,USD cash and collateral,Cash,Cash,4000000,4000000,0,0,none,0,0

@@ -1,0 +1,8 @@
+{
+  "default_date": "2026-10-30",
+  "disclosure": "Fictional demonstration: all dated levels, moves, position marks, notionals, sensitivities and calculated P&L are synthetic. These are not sourced market observations or real portfolio valuations. Scenario dates do not establish hackathon development provenance.",
+  "snapshots": {
+    "2026-10-30": {"market": "market-20261030", "positions": "positions-20261030.csv"},
+    "2025-03-10": {"market": "market", "positions": "positions.csv"}
+  }
+}

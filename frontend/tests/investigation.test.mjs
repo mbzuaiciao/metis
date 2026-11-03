@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  dailySnapshot,
   executivePreview,
   followupTarget,
   scopeLabel,
@@ -211,4 +212,32 @@ test("historical start is independent of stress controls and follow-up retains h
   original.context.market.as_of = "2022-09-13";
   assert.match(scopeLabel(original), /Historical CPI investigation.*2022-09-13.*partial-factor/);
   assert.equal(investigationRequest("question", "Distinguish them", daily, null, [original]).investigation_id, "historical-a");
+});
+
+test("explicit daily date is sent; follow-ups retain their captured date", () => {
+  const request = investigationRequest("daily", "Explain", daily, stress, [], null, "2025-03-10");
+  assert.equal(request.investigation_date, "2025-03-10");
+  const follow = investigationRequest("question", "More", daily, stress, [captured("saved")], null, "2026-10-30");
+  assert.equal(follow.investigation_date, undefined);
+  assert.equal(follow.investigation_id, "saved");
+  const scenario = investigationRequest("scenario", "Stress", daily, stress, [], null, "2025-03-10");
+  assert.equal(scenario.investigation_date, undefined);
+});
+
+test("default and selected daily dates select corresponding calculations without mixing scopes", () => {
+  const october = {market: {as_of: "2026-10-30"}, daily: {shocks: {rates_bp: -10, ig_bp: 12, hy_bp: 35, equity_pct: -1.5, fx_pct: -0.5}}};
+  const march = {market: {as_of: "2025-03-10"}, daily};
+  const data = {investigation: {default_date: "2026-10-30", snapshots: [october, march]}};
+  assert.equal(dailySnapshot(data), october);
+  assert.equal(dailySnapshot(data, "2025-03-10"), march);
+  for (const snapshot of [october, march]) {
+    const selected = dailySnapshot(data, snapshot.market.as_of);
+    const request = investigationRequest("daily", "Explain", selected.daily, stress, [], null, selected.market.as_of);
+    assert.equal(request.investigation_date, snapshot.market.as_of);
+    assert.deepEqual(request.shocks, snapshot.daily.shocks);
+    const resumed = investigationRequest("question", "More", selected.daily, stress, [captured("previous")], null, snapshot.market.as_of);
+    assert.equal(resumed.investigation_date, undefined);
+    assert.equal(resumed.shocks, undefined);
+  }
+  assert.throws(() => dailySnapshot(data, "2026-10-29"), /no data was substituted/);
 });

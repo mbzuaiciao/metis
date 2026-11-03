@@ -22,8 +22,16 @@ def load_json(name: str):
     return json.loads((DATA / f"{name}.json").read_text())
 
 
-def load_positions() -> pd.DataFrame:
-    frame = pd.read_csv(DATA / "positions.csv", keep_default_na=False)
+def snapshot_files(investigation_date: str) -> dict:
+    snapshots = load_json('investigation')['snapshots']
+    if investigation_date not in snapshots:
+        raise ValueError(f'Investigation data unavailable for {investigation_date}; no data was substituted.')
+    return snapshots[investigation_date]
+
+
+def load_positions(investigation_date: str | None = None) -> pd.DataFrame:
+    filename = snapshot_files(investigation_date)['positions'] if investigation_date else 'positions.csv'
+    frame = pd.read_csv(DATA / filename, keep_default_na=False)
     numeric = ["market_value_usd", "notional_usd", "dv01_usd_per_bp", "cs01_usd_per_bp", "equity_delta_usd", "fx_delta_usd"]
     if frame.empty or frame.id.duplicated().any() or not np.isfinite(frame[numeric].to_numpy(dtype=float)).all():
         raise ValueError("Invalid portfolio data")
@@ -61,9 +69,9 @@ def calculate(frame: pd.DataFrame, shocks: Shocks) -> dict:
             "positions": result.to_dict(orient="records"), "method": "First-order linear approximation; no carry, convexity, defaults, liquidity or funding costs."}
 
 
-def workstation() -> dict:
-    frame = load_positions()
-    market = load_json("market")
+def workstation(investigation_date: str | None = None) -> dict:
+    frame = load_positions(investigation_date)
+    market = load_json(snapshot_files(investigation_date)['market'] if investigation_date else 'market')
     daily = calculate(frame, Shocks(**market["daily_shocks"]))
     nav = float(frame.market_value_usd.sum())
     # End-of-day NAV consists of the displayed marks. Daily P&L reconciles to opening NAV.

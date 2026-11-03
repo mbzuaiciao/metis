@@ -1,4 +1,10 @@
-import type { Calculation, Reasoning } from "./types";
+import type { Calculation, Reasoning, Workstation } from "./types";
+
+export function dailySnapshot(data: Workstation, date = data.investigation.default_date) {
+  const snapshot = data.investigation.snapshots.find(item => item.market.as_of === date);
+  if (!snapshot) throw new Error(`No synthetic daily snapshot for ${date}; no data was substituted.`);
+  return snapshot;
+}
 
 export type InvestigationFocus = "daily" | "scenario" | "historical" | "question";
 export const dailyQuestion =
@@ -24,6 +30,7 @@ export function investigationRequest(
   scenario: Calculation | null,
   messages: Reasoning[],
   investigationId?: string | null,
+  investigationDate?: string,
 ) {
   if (focus === "question" && messages.length) {
     const target = followupTarget(messages, investigationId);
@@ -46,6 +53,7 @@ export function investigationRequest(
   return {
     question: question.trim(),
     investigation_scope: focus === "daily" ? "daily" : "scenario",
+    ...(focus === "daily" && investigationDate ? { investigation_date: investigationDate } : {}),
     shocks: { ...calculation.shocks },
     history: [],
   };

@@ -182,7 +182,7 @@ test("three-question results retain scoped backend values and collapse supportin
     const details = html.indexOf('<details');
     assert.ok(first < second && second < third && third < details);
     assert.match(html, scope === "daily" ? /lost \$123/ : /gained \$456/);
-    assert.match(html, scope === "daily" ? /synthetic observed snapshot/ : /simulated assumptions, not historical observations/);
+    assert.match(html, scope === "daily" ? /fictional synthetic snapshot/ : /simulated assumptions, not historical observations/);
     assert.match(html, /Hypothesis A/);
     assert.match(html, /Hypothesis B/);
     assert.match(html, /cannot distinguish these mechanisms/);
@@ -248,4 +248,22 @@ test("historical credit correction shows all modeled factors while older capture
   const scope = renderToStaticMarkup(React.createElement(InvestigationScope, {answer, label: "Follow-up scope"}));
   assert.match(scope, /estimated hypothetical P&amp;L/);
   assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
+});
+
+test("daily selector offers distinct synthetic dates and discloses fictional data", async () => {
+  const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
+  const config = JSON.parse(readFileSync(new URL("../../backend/metis/data/investigation.json", import.meta.url), "utf8"));
+  const investigation = {...config, snapshots: Object.keys(config.snapshots).map(date => ({market: {as_of: date}}))};
+  for (const selectedDate of Object.keys(config.snapshots)) {
+    const html = renderToStaticMarkup(React.createElement(DefaultInvestigationDate, {
+      investigation, selectedDate, disabled: false, onSelect() {},
+    }));
+    assert.ok(html.includes(`value="${selectedDate}" selected=""`));
+    assert.match(html, /2026-10-30.*fictional synthetic snapshot.*default/);
+    assert.match(html, /2025-03-10.*fictional synthetic snapshot/);
+    assert.match(html, /all dated levels, moves, position marks, notionals, sensitivities and calculated P&amp;L are synthetic/);
+    assert.match(html, /not sourced market observations or real portfolio valuations/);
+    assert.match(html, /do not establish hackathon development provenance/);
+    assert.doesNotMatch(html, /Data unavailable/);
+  }
 });

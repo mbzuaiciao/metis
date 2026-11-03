@@ -21,7 +21,8 @@ def demo_and_fresh_store(monkeypatch):
 
 def start(client, scope='scenario', **shocks):
     response = client.post('/api/reasoning', json={'question': 'Explain this calculation.',
-        'investigation_scope': scope, 'shocks': shocks})
+        'investigation_scope': scope, 'shocks': shocks,
+        **({'investigation_date': '2025-03-10'} if scope == 'daily' else {})})
     assert response.status_code == 200, response.text
     return response.json()
 

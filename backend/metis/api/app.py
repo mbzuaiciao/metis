@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 
 from metis.analytics.engine import Shocks, calculate, load_json, load_positions, workstation
 from metis.analytics.etf import portfolio as etf_portfolio, historical_prices
+from metis.analytics.events import event_snapshots
 from metis.reasoning.causal import CausalRequest, explore
 from metis.reasoning.followup import EvidenceSnapshots, FollowupRequest, InvestigationRequest, SnapshotUnavailable
 from metis.reasoning.harness import ProviderError, assemble_context, reason
@@ -25,7 +26,7 @@ def health():
 @app.get("/api/workstation")
 def get_workstation():
     config = load_json('investigation')
-    return {**workstation(), "etf_portfolio": etf_portfolio(),
+    return {**workstation(), "event_snapshots": event_snapshots(), "etf_portfolio": etf_portfolio(),
             "etf_history": [historical_prices('2026-10-29', '2026-10-30'),
                             historical_prices('2022-09-12', '2022-09-13')],
             "investigation": {**config,

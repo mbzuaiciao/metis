@@ -39,3 +39,10 @@ test("demo rejects custom hypotheses before generation while Meta preserves free
     assert.equal(causalRequest({...initialCausalState, hypothesis, alternative}, "demo").hypothesis, hypothesis);
   }
 });
+
+test("event reference is optional and captured without changing the yield assumption", () => {
+  const request = causalRequest({...initialCausalState, eventSnapshotId: 'cpi-2022'});
+  assert.equal(request.event_snapshot_id, 'cpi-2022');
+  assert.equal(request.common_rates_bp, -50);
+  assert.equal(causalRequest(initialCausalState).event_snapshot_id, undefined);
+});

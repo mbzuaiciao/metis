@@ -1,0 +1,94 @@
+{
+  "retrieved_at": "2026-11-03T19:50:44.442086+00:00",
+  "provider": "Yahoo Finance chart API",
+  "observations": [
+    {
+      "ticker": "LQD",
+      "date": "2025-03-07",
+      "close": 108.31999969482422,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-07T14:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "LQD",
+      "date": "2025-03-10",
+      "close": 108.69000244140625,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-10T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2025-03-07",
+      "close": 79.44999694824219,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-07T14:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2025-03-10",
+      "close": 79.1500015258789,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-10T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2025-03-07",
+      "close": 575.9199829101562,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-07T14:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2025-03-10",
+      "close": 560.5800170898438,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-10T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2025-03-07",
+      "close": 37.27000045776367,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-07T14:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2025-03-10",
+      "close": 36.41999816894531,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1741305600&period2=1741651200&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2025-03-10T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    }
+  ]
+}

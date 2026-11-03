@@ -24,6 +24,7 @@ import { DefaultInvestigationDate } from "./DefaultInvestigationDate";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
 import { EtfPortfolio } from "./EtfPortfolio";
+import { EventSnapshots } from "./EventSnapshots";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -625,10 +626,13 @@ function PositionGrid({
     </>
   );
 }
-function Portfolio({ data }: { data: Workstation }) {
+function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: string) => void }) {
   return (
     <>
-      <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
+      <EventSnapshots snapshots={data.event_snapshots} onExplore={onExplore} />
+      <details><summary>Observed-price coverage and instrument audit · preserved evidence</summary>
+        <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
+      </details>
       <details><summary>Archived October 30 fictional demonstration · original baskets and sensitivities</summary>
       <div className="metrics three">
         <Metric
@@ -1591,7 +1595,9 @@ export default function App() {
                   busy={reasoningBusy}
                 />
               )}
-              {page === 1 && <Portfolio data={data} />}{" "}
+              {page === 1 && <Portfolio data={data} onExplore={id => {
+                setCausalState(s => ({ ...s, eventSnapshotId: id })); navigate(5);
+              }} />}{" "}
               {page === 2 && <Market data={data} />}{" "}
               {page === 3 && <Risk data={data} />}{" "}
               {page === 4 && (

@@ -10,16 +10,14 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
     <label>Event window <select value={selected} onChange={e => setSelected(Number(e.target.value))}>
       {snapshots.map((s, i) => <option value={i} key={s.id}>{s.start} → {s.end} · {s.title}</option>)}
     </select></label>
-    <p>{snapshot.disclosure}</p>
-    <p><span className="badge">Observed input</span> Dated sourced market input · <span className="badge amber">Estimated</span> Derived value with approximate inputs or hypothetical assumptions · <span className="badge">Unavailable</span> Missing required evidence.</p>
-    <p><b>Estimated portfolio P&amp;L: {money(snapshot.estimated_pnl_usd)}</b> · starting illustrative value {money(snapshot.start_nav_usd)} → {money(snapshot.end_nav_usd)} · {snapshot.coverage_count}/12 rows.</p>
+    <p><b>Estimated portfolio P&amp;L: {money(snapshot.estimated_pnl_usd)}</b><br />
+      Starting illustrative value {money(snapshot.start_nav_usd)} → ending illustrative value {money(snapshot.end_nav_usd)} · {snapshot.coverage_count}/12 rows.<br />
+      <small className="context-note">Illustrative estimate — not actual portfolio returns.</small></p>
     {snapshot.estimated_pnl_usd === null && <p>Covered subtotal only: {money(snapshot.covered_pnl_usd)}. Missing rows are excluded, never assumed zero.</p>}
-    <p>Dollar display rounded to the nearest $1,000; expandable inputs retain calculation precision. Rounded rows may not sum exactly. Zero cash P&amp;L is an explicit assumption. These reconstructions do not replace archived results.</p>
     <div className="etf-table-wrap"><table className="etf-table">
-      <thead><tr><th>Holding</th><th>Status / provenance</th><th>Starting USD value<br />{snapshot.start}</th><th>Ending USD value<br />{snapshot.end}</th><th>Estimated P&amp;L</th><th>Method / inputs</th></tr></thead>
+      <thead><tr><th>Holding</th><th>Starting USD value<br />{snapshot.start}</th><th>Ending USD value<br />{snapshot.end}</th><th>Estimated P&amp;L</th><th>Method / inputs</th></tr></thead>
       <tbody>{snapshot.positions.map(p => <tr key={p.id} data-event-position={p.id}>
         <td><b>{p.id}</b><br />{p.label}</td>
-        <td><span className="badge amber">{p.status}</span><br />{[...new Set(p.inputs.map(i => i.status))].join(' · ')}</td>
         <td>{money(p.start_value_usd)}</td><td>{money(p.end_value_usd)}</td><td>{money(p.pnl_usd)}</td>
         <td><details><summary>Inspect basis</summary><p>{p.method}</p>
           {p.inputs.map((i, n) => <p key={n}><b>{i.status}</b> · {i.label}: {i.value} {i.unit} {i.source_url && <a href={i.source_url} target="_blank" rel="noreferrer">Source</a>}</p>)}
@@ -28,9 +26,14 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
         </details></td>
       </tr>)}</tbody>
     </table></div>
-    <p>Market inputs: {snapshot.market_provenance.provider}, downloaded {snapshot.market_provenance.retrieved_at}. {snapshot.market_provenance.timing}</p>
-    <p>March ETF observations retrieved {snapshot.march_etf_retrieved_at}; September/October use the unchanged cached source records in the coverage audit.</p>
-    <p>{snapshot.causal_use}</p>
     {onExplore && <button onClick={() => onExplore(snapshot.id)}>Use this snapshot as a causal reference</button>}
+    <details><summary>Methodology &amp; Assumptions</summary>
+      <p>{snapshot.disclosure}</p>
+      <p><span className="badge">Observed input</span> Dated sourced market input · <span className="badge amber">Estimated</span> Derived value with approximate inputs or hypothetical assumptions · <span className="badge">Unavailable</span> Missing required evidence.</p>
+      <p>Dollar display rounded to the nearest $1,000; expandable inputs retain calculation precision. Rounded rows may not sum exactly. Zero cash P&amp;L is an explicit assumption. These reconstructions do not replace archived results.</p>
+      <p>Market inputs: {snapshot.market_provenance.provider}, downloaded {snapshot.market_provenance.retrieved_at}. {snapshot.market_provenance.timing}</p>
+      <p>March ETF observations retrieved {snapshot.march_etf_retrieved_at}; September/October use the unchanged cached source records in the coverage audit.</p>
+      <p>{snapshot.causal_use}</p>
+    </details>
   </section>;
 }

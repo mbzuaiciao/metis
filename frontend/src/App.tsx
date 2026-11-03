@@ -20,6 +20,7 @@ import {
 import { VerificationDemo } from "./ClaimVerification";
 import { InvestigationResults } from "./InvestigationResults";
 import { InvestigationScope } from "./InvestigationScope";
+import { DefaultInvestigationDate } from "./DefaultInvestigationDate";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
 import { initialCausalState } from "./causal";
@@ -1075,6 +1076,7 @@ function ReasoningPage({
             </p>
           </div>
         </div>
+        <DefaultInvestigationDate investigation={data.investigation} />
         <section className="reasoning-actions">
           <div>
             <button className="primary" disabled={busy}
@@ -1093,10 +1095,10 @@ function ReasoningPage({
               disabled={busy}
               aria-describedby="daily-option-description"
             >
-              Explain Daily P&L <ArrowRight size={15} />
+              Explain {data.market.as_of} Synthetic P&L <ArrowRight size={15} />
             </button>
             <p id="daily-option-description" className="context-note">
-              Understand the gains and losses in the portfolio's selected daily snapshot. The current snapshot is synthetic, not live market data.
+              Explicitly investigate the {data.market.as_of} synthetic snapshot. Its holdings, market moves and calculated P&L are illustrative.
             </p>
           </div>
           <div>
@@ -1365,7 +1367,7 @@ export default function App() {
     try {
       const result = await api<Reasoning>(
         "reasoning",
-        investigationRequest(focus, q, data.daily, calc, messages, activeInvestigationId),
+        investigationRequest(focus, q, data.daily, calc, messages, activeInvestigationId, data.market.as_of),
       );
       setMessages((previous) => [
         ...previous,

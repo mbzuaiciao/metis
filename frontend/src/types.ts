@@ -48,6 +48,11 @@ export type Scenario = {
   shocks: Shocks;
 };
 export type Workstation = {
+  investigation: {
+    default_date: string;
+    status: "unavailable";
+    limitation: string;
+  };
   causal_mode: string;
   portfolio_name: string;
   data_kind: string;

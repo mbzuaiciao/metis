@@ -1,0 +1,5 @@
+{
+  "default_date": "2026-10-30",
+  "status": "unavailable",
+  "limitation": "No portfolio valuation or sourced market dataset for 2026-10-30 is configured. Select the dated synthetic snapshot or the prepared historical event; neither represents October 2026 observations."
+}

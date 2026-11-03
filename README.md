@@ -117,14 +117,20 @@ Snapshots are held only in memory in the existing local backend, with a maximum 
 
 `backend/metis/data/` contains the only position, market, historical and preset inputs. All pages load `/api/workstation`; custom scenarios and reasoning use the same analytics functions. The frontend does not calculate financial P&L.
 
+The requested default investigation date is **2026-10-30**, configured separately in `investigation.json`. No portfolio valuation or sourced market dataset for that date is configured, so AI Reasoning displays **Data unavailable** and produces no October P&L or explanation. The smallest supported alternative is to explicitly choose the unchanged **2025-03-10 synthetic snapshot** or the prepared **2022-09-13 historical event**. Overview, Market Monitor and the workstation ticker continue to display their actual March snapshot date. Supporting October results requires sourced current/prior observations, dated portfolio marks/exposures (or explicitly disclosed synthetic holdings/proxy mappings), units and coverage limitations; changing date labels alone is insufficient.
+
+For `POST /api/reasoning` with `investigation_scope: "daily"`, an omitted/null `investigation_date` now resolves to the requested October default and returns HTTP 422 because its data is unavailable. Send `investigation_date: "2025-03-10"` to explicitly investigate the synthetic daily snapshot; the frontend does this for its snapshot actions. Other unavailable dates also return 422 before inference, with no substitution. The historical event and stress scopes keep their existing inputs and reject this daily-only date field. Follow-ups continue to accept only their captured investigation ID and history, preserving the original dates and data.
+
 | File | Contents |
 | --- | --- |
 | `positions.csv` | 12 USD-valued positions across government bonds, swaps, IG/HY credit, equities, FX and cash |
+| `investigation.json` | Requested default date 2026-10-30 and explicit unavailable-data limitation; contains no market observations |
 | `market.json` | One **synthetic** close dated 2025-03-10 and comparison dated 2025-03-07; dates are example labels, not claims about actual closes |
+| `historical-20220913.json` | Sourced September 2022 observations and macro context, with disclosed proxies applied to fixed synthetic holdings |
 | `scenarios.json` | Four **illustrative**, uncalibrated stress assumptions |
 | `history.json` | Sourced qualitative historical facts, separate portfolio interpretations and limitations |
 
-No portfolio mark, exposure, yield, spread, equity move or FX level is live or an actual historical observation. The opening NAV is reconstructed from closing marks and modeled daily P&L; there is no independent historical valuation series.
+The daily snapshot's portfolio marks, exposures, yields, spreads, equity moves and FX levels are synthetic, with no live feed. The opening NAV is reconstructed from closing marks and modeled daily P&L; there is no independent historical valuation series. The separately prepared historical event uses sourced observations with disclosed proxy mappings, not actual historical portfolio holdings or valuations.
 
 The historical library references [Federal Reserve History on the Great Recession](https://www.federalreservehistory.org/essays/great-recession-of-200709), the [March 23, 2020 market-functioning statement](https://www.federalreserve.gov/newsevents/pressreleases/monetary20200323a.htm), and the [December 14, 2022 inflation and policy statement](https://www.federalreserve.gov/newsevents/pressreleases/monetary20221214a.htm). Historical facts are qualitative context. Portfolio analogies are economic interpretation. Scenarios do not replay these episodes.
 

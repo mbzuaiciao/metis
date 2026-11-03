@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
-from metis.analytics.engine import Shocks, calculate, load_positions, workstation
+from metis.analytics.engine import Shocks, calculate, load_json, load_positions, workstation
 from metis.reasoning.causal import CausalRequest, explore
 from metis.reasoning.followup import EvidenceSnapshots, FollowupRequest, InvestigationRequest, SnapshotUnavailable
 from metis.reasoning.harness import ProviderError, assemble_context, reason
@@ -22,7 +22,8 @@ def health():
 
 @app.get("/api/workstation")
 def get_workstation():
-    return {**workstation(), "causal_mode": os.getenv("METIS_PROVIDER", "demo").strip().lower()}
+    return {**workstation(), "investigation": load_json('investigation'),
+            "causal_mode": os.getenv("METIS_PROVIDER", "demo").strip().lower()}
 
 
 @app.post("/api/scenario")
@@ -36,7 +37,16 @@ def reasoning(request: InvestigationRequest | FollowupRequest):
         if isinstance(request, FollowupRequest):
             return evidence_snapshots.resume(request)
         if request.investigation_scope == 'daily':
-            request = request.model_copy(update={'shocks': Shocks(**workstation()['daily']['shocks'])})
+            data = workstation()
+            date = request.investigation_date.isoformat() if request.investigation_date else load_json('investigation')['default_date']
+            if date != data['market']['as_of']:
+                raise HTTPException(status_code=422, detail=(
+                    f'Investigation data unavailable for {date}. '
+                    f"The available daily snapshot is synthetic and dated {data['market']['as_of']}; "
+                    'no data was substituted.'))
+            request = request.model_copy(update={'shocks': Shocks(**data['daily']['shocks'])})
+        elif request.investigation_date is not None:
+            raise HTTPException(status_code=422, detail='investigation_date applies only to daily investigations; historical events and stress scenarios retain their own scope.')
         return evidence_snapshots.capture(reason(request), request.investigation_scope)
     except SnapshotUnavailable as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

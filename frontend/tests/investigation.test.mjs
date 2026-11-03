@@ -212,3 +212,13 @@ test("historical start is independent of stress controls and follow-up retains h
   assert.match(scopeLabel(original), /Historical CPI investigation.*2022-09-13.*partial-factor/);
   assert.equal(investigationRequest("question", "Distinguish them", daily, null, [original]).investigation_id, "historical-a");
 });
+
+test("explicit daily date is sent; follow-ups retain their captured date", () => {
+  const request = investigationRequest("daily", "Explain", daily, stress, [], null, "2025-03-10");
+  assert.equal(request.investigation_date, "2025-03-10");
+  const follow = investigationRequest("question", "More", daily, stress, [captured("saved")], null, "2026-10-30");
+  assert.equal(follow.investigation_date, undefined);
+  assert.equal(follow.investigation_id, "saved");
+  const scenario = investigationRequest("scenario", "Stress", daily, stress, [], null, "2025-03-10");
+  assert.equal(scenario.investigation_date, undefined);
+});

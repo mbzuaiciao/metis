@@ -249,3 +249,14 @@ test("historical credit correction shows all modeled factors while older capture
   assert.match(scope, /estimated hypothetical P&amp;L/);
   assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
 });
+
+test("default investigation date shows missing data without displaying synthetic P&L as October observations", async () => {
+  const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
+  const investigation = JSON.parse(readFileSync(new URL("../../backend/metis/data/investigation.json", import.meta.url), "utf8"));
+  const html = renderToStaticMarkup(React.createElement(DefaultInvestigationDate, {investigation}));
+  assert.match(html, /2026-10-30/);
+  assert.match(html, /Data unavailable/);
+  assert.match(html, /No P&amp;L or economic explanation is available/);
+  assert.match(html, /neither represents October 2026 observations/);
+  assert.doesNotMatch(html, /560,770|2025-03-10/);
+});

@@ -24,6 +24,7 @@ export function investigationRequest(
   scenario: Calculation | null,
   messages: Reasoning[],
   investigationId?: string | null,
+  investigationDate?: string,
 ) {
   if (focus === "question" && messages.length) {
     const target = followupTarget(messages, investigationId);
@@ -46,6 +47,7 @@ export function investigationRequest(
   return {
     question: question.trim(),
     investigation_scope: focus === "daily" ? "daily" : "scenario",
+    ...(focus === "daily" && investigationDate ? { investigation_date: investigationDate } : {}),
     shocks: { ...calculation.shocks },
     history: [],
   };

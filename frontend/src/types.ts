@@ -47,7 +47,15 @@ export type Scenario = {
   description: string;
   shocks: Shocks;
 };
+export type HistoricalStressPreset = Scenario & {
+  window: string;
+  start_date: string;
+  end_date: string;
+  basis: string;
+  source_url: string;
+};
 export type Workstation = {
+  historical_stress_presets: HistoricalStressPreset[];
   event_snapshots: EventSnapshot[];
   etf_portfolio: EtfPortfolio;
   etf_history: EtfHistory[];

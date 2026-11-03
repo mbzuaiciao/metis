@@ -953,7 +953,7 @@ const shockLabels: Record<
   },
   fx_pct: { label: "EUR/USD", unit: "%", min: -30, max: 30, step: 1 },
 };
-function Scenarios({
+export function Scenarios({
   data,
   shocks,
   setShocks,
@@ -969,11 +969,11 @@ function Scenarios({
   calc: Calculation | null;
   pending: boolean;
   error: string;
-  goAI: () => void;
+  goAI: (question: string) => void;
   busy: boolean;
 }) {
-  const selected = data.scenarios.find(
-    (s) => JSON.stringify(s.shocks) === JSON.stringify(shocks),
+  const selected = data.historical_stress_presets.find(
+    (s) => (Object.keys(s.shocks) as (keyof Shocks)[]).every((k) => s.shocks[k] === shocks[k]),
   );
   return (
     <>
@@ -985,8 +985,15 @@ function Scenarios({
           below are a separate hypothetical stress, not a forecast.
         </span>
       </div>
+      <h2>Historical-event-inspired illustrative stress tests</h2>
+      <p className="muted">
+        Apply five-factor shocks to the current {data.market.as_of} illustrative
+        portfolio ({data.positions.length} positions). Hypothetical P&L, not actual
+        historic portfolio returns or a forecast. The sensitivity engine uses
+        archived basket exposures, separately from the Portfolio ETF event estimates.
+      </p>
       <div className="scenario-presets">
-        {data.scenarios.map((s) => (
+        {data.historical_stress_presets.map((s) => (
           <button
             key={s.id}
             className={selected?.id === s.id ? "preset active" : "preset"}
@@ -994,10 +1001,21 @@ function Scenarios({
           >
             <Activity size={17} />
             <b>{s.name}</b>
+            <small>{s.window}</small>
             <small>{s.description}</small>
           </button>
         ))}
       </div>
+      {selected && (
+        <div className="notice">
+          <CircleHelp size={17} />
+          <span>
+            <b>{selected.name} · {selected.window}.</b> {selected.basis}{" "}
+            <a href={selected.source_url} target="_blank" rel="noreferrer">Event background</a>
+            {" "}(background only; not a source for assumed shocks).
+          </span>
+        </div>
+      )}
       <div className="scenario-layout">
         <Panel title="Shock assumptions" note={selected ? "Preset" : "Custom"}>
           <div className="shock-controls">
@@ -1057,7 +1075,7 @@ function Scenarios({
         <div>
           <div className="stress-result" aria-live="polite">
             <span className="eyebrow">
-              APPROXIMATE SCENARIO P&L · {selected?.name ?? "Custom shocks"}
+              HYPOTHETICAL PORTFOLIO P&L · {selected?.name ?? "Custom shocks"}
             </span>
             {error ? (
               <p role="alert" className="negative">
@@ -1081,7 +1099,7 @@ function Scenarios({
             <button
               className="text-button"
               disabled={pending || !!error || busy || !calc}
-              onClick={goAI}
+              onClick={() => goAI(selected ? `${scenarioQuestion} Historical-event-inspired illustrative stress: ${selected.name}, ${selected.window}. ${selected.basis} Applied to current illustrative holdings, not actual historic portfolio returns.` : scenarioQuestion)}
             >
               Interpret this scenario with Metis <ArrowRight size={15} />
             </button>
@@ -1501,7 +1519,7 @@ export default function App() {
       .then((d) => {
         setData(d);
         setSelectedDate(d.investigation.default_date);
-        setShocks(d.scenarios[3].shocks);
+        setShocks(d.historical_stress_presets[0].shocks);
       })
       .catch((e) => {
         if (e.name !== "AbortError") setError(e.message);
@@ -1621,6 +1639,8 @@ export default function App() {
           </div>
           {data && page !== 7 && page !== 2 && <p className="context-note">{page === 1
             ? 'ETF allocation uses illustrative October dollar weights with separately sourced price observations. Archived demonstrations retain synthetic basket risk and P&L.'
+            : page === 4
+            ? 'Current holdings, sensitivities and daily market ticker are synthetic. Event stress inputs are illustrative assumptions except the explicitly identified cached September benchmarks; modeled P&L is hypothetical.'
             : data.investigation.disclosure + ' Archived basket demonstration; ETF allocation and observed price returns are on Portfolio.'}</p>}
           {page === 7 ? (
             <ResearchLimitations />
@@ -1707,7 +1727,7 @@ export default function App() {
                   calc={calc}
                   pending={pending}
                   error={scenarioError}
-                  goAI={() => void ask(scenarioQuestion, "scenario")}
+                  goAI={(q) => void ask(q, "scenario")}
                   busy={reasoningBusy}
                 />
               )}

@@ -342,3 +342,18 @@ The three-question interface remains **What happened? / What might explain it? /
 See [implementation validation and live-call findings](research/historical-hypothesis-implementation-20261103.md) for examples, file inventory and limitations. Raw application responses remain local under ignored `research/runs/`.
 
 Credit correction: [verified sources, position mapping, CS01 reconciliation and validation](research/historical-credit-pnl-correction-20261103.md). Credit-spread P&L is −$80,100 and total estimated hypothetical P&L is −$1,496,577.20; the engine and non-credit legs are unchanged.
+
+## Historical-event-inspired illustrative stress tests · Issue #32
+
+Risk Sensitivity Analysis offers four dated five-factor presets, applied to the **current October 30, 2026 illustrative $100m, 12-position sensitivity portfolio**. These hypothetical P&Ls are neither historic holdings returns nor forecasts. The archived basket sensitivities remain distinct from Portfolio's ETF event estimates. Select a card, edit the five sliders, inspect factor/position contributions, then request AI interpretation. Causal Exploration's accepted custom shocks still transfer to these controls; follow-ups keep captured assumptions.
+
+| Event window (trading-date endpoints) | Rates bp | IG bp | HY bp | Equities % | EUR/USD % | Hypothetical P&L | % NAV |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| COVID-19 · March 2–23, 2020 | −50 | +200 | +650 | −25 | −3 | −$10,255,000 | −10.255% |
+| US inflation · September 12–13, 2022 | +5.37 | 0 | +18 | −4.32 | −1.46 | −$1,661,037 | −1.661037% |
+| Regional banking · March 10–13, 2023 | −15 | +15 | +40 | −1 | +0.8 | +$190,500 | +0.1905% |
+| Yen carry unwind · August 2–5, 2024 | −5 | +5 | +20 | −3 | +0.5 | −$636,500 | −0.6365% |
+
+September reuses the cached, asynchronous benchmark movements and documented proxy mappings in `backend/metis/data/historical-20220913.json`; its original research and March-portfolio results remain unchanged. All shocks for the other three events are **illustrative assumptions**, not observed prices or authenticated historical returns. August endpoints are Friday August 2 and Monday August 5 (August 3–4 is the weekend). Background sources in each card motivate the episode, not the assumed magnitudes. COVID assumes a net yield decline despite interim Treasury selling; banking stress can produce a portfolio gain because duration gains exceed credit/equity losses. Common parallel rates/global equities and US-to-Europe credit mappings omit curve/region differences; EUR/USD does not measure yen carry exposure. Linear risk excludes convexity, defaults, liquidity, funding, margin and carry, especially material in COVID-sized moves.
+
+Preset definitions live in `backend/metis/data/historical-stress-presets.json`; the workstation exposes them separately from `scenarios.json`, whose generic scenarios remain internal research/AI comparison fixtures. No new prices, provider, dependency or pricing engine is introduced.

@@ -24,7 +24,12 @@ import { DefaultInvestigationDate } from "./DefaultInvestigationDate";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
 import { EtfPortfolio } from "./EtfPortfolio";
-import { EventSnapshots } from "./EventSnapshots";
+import {
+  EventSnapshots,
+  EventTable,
+  money as eventMoney,
+  pnlTone as eventPnlTone,
+} from "./EventSnapshots";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -629,9 +634,78 @@ function PositionGrid({
   );
 }
 export function Portfolio({ data }: { data: Workstation }) {
+  const snapshots = data.event_snapshots ?? [];
+  const octoberSnapshot =
+    snapshots.find((s) => s.id === "october-2026") ??
+    snapshots[0];
+
   return (
     <div className="portfolio-tab">
-      <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
+      {octoberSnapshot ? (
+        <section className="etf-portfolio portfolio-snapshot" aria-label="Portfolio snapshot">
+          <h2>Portfolio snapshot · As of {octoberSnapshot.end}</h2>
+          <p>
+            <b>
+              Estimated portfolio P&amp;L:{" "}
+              {octoberSnapshot.estimated_pnl_usd === null ? (
+                "Unavailable"
+              ) : (
+                <span className={eventPnlTone(octoberSnapshot.estimated_pnl_usd)}>
+                  {eventMoney(octoberSnapshot.estimated_pnl_usd)}
+                </span>
+              )}
+            </b>
+            <br />
+            Starting illustrative value {eventMoney(octoberSnapshot.start_nav_usd)} → ending illustrative value{" "}
+            {eventMoney(octoberSnapshot.end_nav_usd)} · {octoberSnapshot.coverage_count}/12 rows.
+            <br />
+            <small className="context-note">
+              Illustrative modeled P&amp;L, not observed account returns · MTD: Not available
+            </small>
+          </p>
+          <EventTable snapshot={octoberSnapshot} />
+        </section>
+      ) : (
+        <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
+      )}
+
+      <details className="portfolio-methodology-details">
+        <summary>Methodology &amp; Assumptions · Preserved observed-price audit</summary>
+        <div className="portfolio-audit-content">
+          {octoberSnapshot && (
+            <>
+              <p>{octoberSnapshot.disclosure}</p>
+              <p>
+                <span className="badge">Observed input</span> Dated sourced market input ·{" "}
+                <span className="badge amber">Estimated</span> Derived value with approximate inputs or
+                hypothetical assumptions · <span className="badge">Unavailable</span> Missing required
+                evidence.
+              </p>
+              <p>
+                Dollar display rounded to the nearest $1,000; expandable inputs retain calculation precision.
+                Rounded rows may not sum exactly. Zero cash P&amp;L is an explicit assumption.
+              </p>
+              <p>
+                Market inputs: {octoberSnapshot.market_provenance?.provider}, downloaded{" "}
+                {octoberSnapshot.market_provenance?.retrieved_at}. {octoberSnapshot.market_provenance?.timing}
+              </p>
+            </>
+          )}
+          <p className="context-note">
+            <b>Observed-only ETF sleeve comparison:</b> On an observed-price-only basis (excluding
+            modeled derivatives, OTC swaps, and unquoted Treasuries), covered price P&amp;L is{" "}
+            <span className="negative">-$417,244.37</span> on $64,000,000.00 of starting allocations
+            across 6 covered ETFs. Complete portfolio P&amp;L on an observed-price-only basis is
+            Unavailable because non-ETF instruments lack daily secondary market quotes.
+          </p>
+          <EtfPortfolio
+            portfolio={data.etf_portfolio}
+            history={data.etf_history}
+            title="Observed-price coverage audit · preserved evidence"
+          />
+        </div>
+      </details>
+
       <details><summary>Archived October 30 fictional demonstration · original baskets and sensitivities</summary>
       <div className="metrics three">
         <Metric
@@ -1490,7 +1564,13 @@ export function MarketTicker({ data }: { data: Workstation }) {
   );
 }
 export default function App() {
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(() => {
+    if (typeof window !== "undefined" && window.location?.search) {
+      const p = new URLSearchParams(window.location.search).get("page");
+      if (p !== null && !isNaN(Number(p))) return Number(p);
+    }
+    return 0;
+  });
   const [causalState, setCausalState] = useState(initialCausalState);
   const [historicalEventId, setHistoricalEventId] = useState<string>("october-2026");
   const [data, setData] = useState<Workstation | null>(null);

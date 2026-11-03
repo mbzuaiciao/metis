@@ -12,15 +12,16 @@ const valuationName = {
   cash_balance: 'Cash balance',
 };
 
-export function EtfPortfolio({ portfolio, history, showSelector = false }: {
+export function EtfPortfolio({ portfolio, history, showSelector = false, title }: {
   portfolio: Portfolio;
   history: EtfHistory[];
   showSelector?: boolean;
+  title?: string;
 }) {
   const [period, setPeriod] = useState(0);
   const comparison = history[period] ?? history[0];
   return <section className="etf-portfolio">
-    <h2>Portfolio snapshot · As of {comparison.end}</h2>
+    <h2>{title ?? `Portfolio snapshot · As of ${comparison.end}`}</h2>
     <p className="context-note">Dated illustrative allocation snapshot · Daily price comparison: {comparison.start} → {comparison.end}. Not a live account or today's prices.</p>
     <p>{portfolio.basis}</p>
     <p><b>Illustrative allocation: {usd(portfolio.allocation_nav_usd)}.</b> Observed NAV: Unavailable. Units: Unavailable.</p>
@@ -32,7 +33,7 @@ export function EtfPortfolio({ portfolio, history, showSelector = false }: {
     )}
     <p>{comparison.method}</p>
     <p><b>Covered price P&amp;L: <span className={pnlTone(comparison.covered_price_pnl_usd)}>{usd(comparison.covered_price_pnl_usd)}</span></b> on {usd(comparison.covered_allocation_usd)} of starting allocations.
-      {' '}Complete portfolio P&amp;L: Unavailable. Total return: Unavailable. MTD P&amp;L: Unavailable.</p>
+      {' '}Complete portfolio P&amp;L: Unavailable (observed-price basis). Total return: Unavailable. MTD P&amp;L: Unavailable.</p>
     <p className="context-note">MTD P&amp;L is unavailable: source price data do not cover the beginning of the month through the as-of date (intervening daily bars are not retrieved; extrapolation from two daily closes is not defensible). Valuation coverage: {comparison.positions.filter(p => p.valuation.status === 'available').length} of {comparison.positions.length} holdings covered by observed security closes.</p>
     <div className="etf-table-wrap"><table className="etf-table">
       <thead><tr><th>Holding</th><th>Initial allocation / NAV weight</th><th>Valuation type / status</th><th>Starting valuation<br />{comparison.start}</th><th>Ending valuation<br />{comparison.end}</th><th>Historical contribution</th></tr></thead>

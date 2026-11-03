@@ -189,7 +189,7 @@ export type ClaimVerdict = {
 export type EtfPosition = {
   id: string; name: string; label: string; instrument: string;
   allocation_usd: number; weight_pct: number;
-  source_url?: string; event_source_url?: string; exchange?: string; currency?: string; note?: string;
+  source_url?: string; event_source_url?: string; exchange?: string; currency?: string; note?: string; eligible_from?: string;
   audit?: { minimum_data: string; recommendation: string; next_step: string };
 };
 export type EtfPortfolio = {

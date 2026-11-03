@@ -70,11 +70,11 @@ The compact table distinguishes observed inputs, approximate mappings, hypotheti
 
 **Use this snapshot as a causal reference** opens Causal Exploration with an optional fixed reference. Captured references retain their provenance; estimates/assumed shocks do not identify event causes. Accepted scenario calculations still use the archived basket engine and are labeled accordingly. No inference is automatically invoked. Only these three windows are implemented; no runtime retrieval or general pricing system. See [exact sources, assumptions, arithmetic and limitations](research/illustrative-event-snapshots-20261103.md).
 
-### Portfolio-aligned Market Monitor (Issue #26)
+### Instrument-level Market Monitor (Issue #28)
 
-Market Monitor reuses the same compact 12-position event table for all three synchronized windows. Primary values are estimated USD position marks and P&L, with observed USD/share ETF inputs, hypothetical euro-credit exposures, modeled OTC NPVs and assumed cash distinguished in expandable holding basis. Portfolio keeps its fixed October as-of presentation and unchanged values. DGS2/DGS5/DGS10 and EUR/USD remain under collapsed **Market drivers / benchmarks**; DGS5 is the 5Y pay-fixed swap proxy, not an additional holding. Archived synthetic benchmarks remain expandable. The shared synthetic ticker is omitted on Market Monitor to avoid mixing its fictional levels with selected-event inputs.
+Market Monitor shows **Market Prices & Rates** corresponding to the same 12 Portfolio IDs for all three synchronized event windows. Eligible ETFs display cached unadjusted USD/share closes and price returns. UST2/UST10 use FRED constant-maturity yields; IRS-P/IRS-R explicitly use DGS5/DGS10 Treasury-yield proxies, not observed par swap quotes. FX-EUR uses EUR/USD spot as a proxy for the forward; cash shows the assumed constant USD denomination, not its account balance. Early EUIG/EUHY quotes remain unavailable with listing/mandate eligibility details. Expand each measure for sources and definitions.
 
-The unchanged historical cards and source links are now in a collapsed **Historical reference library** after the replay and exploration sections of Causal Scenario Exploration. No data, calculations, valuation engine, dependencies or inference behavior changed.
+The visible 2Y/5Y/10Y Treasury curve and compact Market drivers summary update with the selected event. There is no fictional 30Y point, synthetic Economic Context narrative or duplicated position valuation table on Market Monitor. Portfolio retains its fixed October modeled USD valuations and P&L, and Causal Scenario Exploration retains replay, shared selection and the collapsed Historical reference library. Earlier presentation decisions remain recorded in the research log. No source data, financial calculations, valuation engine, dependencies or inference behavior changed.
 
 ## v0.4 investigation walkthrough
 

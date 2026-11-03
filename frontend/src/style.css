@@ -1731,3 +1731,16 @@ footer > span:last-child {
 .research-study p { font-size: 12px; line-height: 1.7; color: #aec0d2; }
 .research-study strong { color: #d5e4f1; }
 .research-study a { margin-top: auto; padding-top: 4px; align-self: flex-start; }
+
+/* AI investigation reading path; detailed evidence stays collapsed. */
+.investigation-step { padding: 20px 0; border-bottom: 1px solid #293746; }
+.investigation-step h2 { margin-bottom: 12px; font-size: 20px; }
+.investigation-step p { line-height: 1.65; }
+.economic-hypothesis, .investigation-plan { margin-top: 18px; padding: 18px; border: 1px solid #293746; border-radius: 8px; }
+.economic-hypothesis h3, .investigation-plan h3 { margin: 0 0 12px; }
+.hypothesis-section { border-left: 3px solid #52d6bb; padding-left: 20px; }
+.investigation-support { margin-top: 22px; }
+.verification-examples { margin: 24px 0; }
+.reasoning-layout > .conversation { min-width: 0; }
+.reasoning-layout .composer select { width: 100%; min-width: 0; }
+.investigation-results { overflow-wrap: anywhere; }

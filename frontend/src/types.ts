@@ -87,6 +87,14 @@ export type Reasoning = {
   mode: string;
   model: string | null;
   interpretation: {
+    hypotheses?: {
+      title: string;
+      mechanism: string;
+      consistent_evidence: string;
+      uncertainty: string;
+      available_checks: string;
+      additional_evidence: string;
+    }[];
     financial_claims?: FinancialClaim[];
     summary: string;
     principal_risk_observations: string[];

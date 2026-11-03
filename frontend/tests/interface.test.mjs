@@ -158,3 +158,44 @@ test("accepted causal hypotheses show backend P&L side by side, never before cal
   });
   assert.match(unequal, /Different yield assumptions\. Compare the outcomes/);
 });
+
+const { InvestigationResults } = await import("../src/InvestigationResults.tsx");
+test("three-question results retain scoped backend values and collapse supporting evidence", () => {
+  const makeCalculation = (total, rate, equity) => ({total_pnl_usd: total,
+    by_factor: {rates_pnl: rate, credit_pnl: 0, equity_pnl: equity, fx_pnl: 0},
+    positions: [], shocks: {rates_bp: -8, ig_bp: 18, hy_bp: 45, equity_pct: -2.2, fx_pct: -0.6}});
+  for (const scope of ["daily", "scenario"]) {
+    const answer = {investigation_scope: scope, mode: "demo", context_operations: [],
+      context: {market: {as_of: "2025-03-10"}, portfolio: {portfolio_name: "Captured", nav_usd: 100000000, exposures: {dv01_usd_per_bp: 0, cs01_usd_per_bp: 0}},
+        daily: makeCalculation(-123, 100, -223), scenario: makeCalculation(456, 500, -44), evidence: []},
+      interpretation: {summary: "Full original summary", economic_interpretation: "Original economic text",
+        principal_risk_observations: ["Original numerical claim"], historical_analogies: ["Historical analogy"],
+        potential_vulnerabilities: ["Funding concern"], assumptions_and_uncertainties: ["Linear model"], evidence_references: [],
+        hypotheses: ["Growth", "Liquidity"].map(title => ({title, mechanism: `${title} mechanism`,
+          consistent_evidence: "Captured moves", uncertainty: "Cause unknown", available_checks: "Inspect the captured signs",
+          additional_evidence: "Obtain new data"}))}};
+    const original = structuredClone(answer);
+    const html = renderToStaticMarkup(React.createElement(InvestigationResults, {answer}));
+    const first = html.indexOf("1 · What happened?");
+    const second = html.indexOf("2 · What might explain it?");
+    const third = html.indexOf("3 · How can we investigate?");
+    const details = html.indexOf('<details');
+    assert.ok(first < second && second < third && third < details);
+    assert.match(html, scope === "daily" ? /lost \$123/ : /gained \$456/);
+    assert.match(html, scope === "daily" ? /synthetic observed snapshot/ : /simulated assumptions, not historical observations/);
+    assert.match(html, /Hypothesis A/);
+    assert.match(html, /Hypothesis B/);
+    assert.match(html, /cannot distinguish these mechanisms/);
+    assert.match(html, /Available in Metis · proposed check/);
+    assert.match(html, /Requires additional data/);
+    assert.match(html, /Structured assertion verification · this investigation/);
+    for (const text of ["Full original summary", "Original economic text", "Original numerical claim", "Historical analogy", "Funding concern", "Linear model"]) assert.ok(html.includes(text));
+    assert.doesNotMatch(html, /<details[^>]*\bopen(?:=|>)/);
+    assert.deepEqual(answer, original);
+  }
+});
+test("verification demonstrations follow active answers and are labeled separately", () => {
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  assert.ok(app.indexOf("<InvestigationResults") < app.indexOf("<VerificationDemo"));
+  assert.match(app, /aria-label="Demonstration examples"/);
+});

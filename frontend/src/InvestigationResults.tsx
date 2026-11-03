@@ -1,0 +1,92 @@
+import type { Reasoning } from "./types";
+import { ClaimVerification } from "./ClaimVerification";
+import { FactorEvidence, PositionEvidence } from "./InvestigationEvidence";
+import { InvestigationScope } from "./InvestigationScope";
+
+const usd = (value: number) => new Intl.NumberFormat("en-US", {
+  style: "currency", currency: "USD", maximumFractionDigits: 0,
+}).format(value);
+const factorNames: Record<string, string> = {
+  rates_pnl: "government rates", credit_pnl: "credit spreads", equity_pnl: "equities", fx_pnl: "FX",
+};
+
+export function InvestigationResults({ answer, investigationId }: { answer: Reasoning; investigationId?: string }) {
+  const daily = answer.investigation_scope === "daily";
+  const calculation = daily ? answer.context.daily : answer.context.scenario;
+  const interpretation = answer.interpretation;
+  const hypotheses = interpretation.hypotheses ?? [];
+  const factors = Object.entries(calculation.by_factor).filter(([, value]) => value !== 0)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+  return <div className="investigation-results">
+    <p className="context-note"><b>{daily
+      ? `Daily investigation · synthetic observed snapshot · ${answer.context.market.as_of}`
+      : "Hypothetical stress investigation · simulated assumptions, not historical observations or a forecast"}</b></p>
+    <section className="investigation-step">
+      <h2>1 · What happened?</h2>
+      <p className="answer-summary">{daily ? "The synthetic daily portfolio" : "Under the captured hypothetical assumptions, the portfolio"}{" "}
+        {calculation.total_pnl_usd < 0 ? "lost" : calculation.total_pnl_usd > 0 ? "gained" : "had unchanged P&L of"}{" "}
+        {usd(Math.abs(calculation.total_pnl_usd))}.</p>
+      <p>Calculated contributions: {factors.length ? factors.map(([key, value]) =>
+        `${factorNames[key] ?? key} ${value > 0 ? "+" : ""}${usd(value)}`).join("; ") : "all factors were unchanged"}.</p>
+    </section>
+    <section className="investigation-step hypothesis-section">
+      <h2>2 · What might explain it?</h2>
+      <p className="context-note">Competing economic hypotheses · consistency with P&L does not verify an explanation.
+        The supplied {daily ? "synthetic observations" : "scenario assumptions"} alone cannot distinguish these mechanisms or identify a cause.</p>
+      {answer.mode === "demo" && <p className="context-note">Deterministic demonstration templates, not model-selected findings. Check their fit to this investigation.</p>}
+      {hypotheses.length === 0 && <p>No structured competing hypotheses were returned for this answer. The original economic interpretation remains in supporting evidence; start a new investigation for the three-question format.</p>}
+      {hypotheses.map((hypothesis, index) => <article className="economic-hypothesis" key={index}>
+        <h3>Hypothesis {String.fromCharCode(65 + index)} · {hypothesis.title}</h3>
+        <p>{hypothesis.mechanism}</p>
+        <p><b>{daily ? "Consistent observations" : "Consistency with hypothetical assumptions"}:</b> {hypothesis.consistent_evidence}</p>
+        <p><b>Uncertain or unexplained:</b> {hypothesis.uncertainty}</p>
+      </article>)}
+    </section>
+    <section className="investigation-step" id={investigationId}>
+      <h2>3 · How can we investigate?</h2>
+      <p className="context-note">Proposed checks, not completed analyses. Additional data listed below are not supplied by Metis.</p>
+      {hypotheses.length === 0 && <p>Inspect the captured inputs and original model uncertainties in supporting evidence to identify missing data.</p>}
+      {hypotheses.map((hypothesis, index) => <article className="investigation-plan" key={index}>
+        <h3>Investigate hypothesis {String.fromCharCode(65 + index)} · {hypothesis.title}</h3>
+        <p><b>Available in Metis · proposed check:</b> {hypothesis.available_checks}</p>
+        <p><b>Requires additional data:</b> {hypothesis.additional_evidence}</p>
+      </article>)}
+    </section>
+    <details className="answer-section investigation-support">
+      <summary>Supporting evidence and details · calculations, verification and model limitations</summary>
+      <InvestigationScope answer={answer} label="Answer scope" />
+      <details className="answer-section">
+        <summary>Detailed numerical claims and factor attribution</summary>
+        <FactorEvidence calculation={calculation} />
+        <ul>{interpretation.principal_risk_observations.map((text, i) => <li key={i}>{text}</li>)}</ul>
+      </details>
+      <PositionEvidence calculation={calculation} exposures={answer.context.portfolio.exposures} />
+      <details className="answer-section">
+        <summary>Structured assertion verification · this investigation · original prose Not checked</summary>
+        <ClaimVerification results={answer.verification} />
+      </details>
+      <details className="answer-section">
+        <summary>Original model summary and economic interpretation</summary>
+        <p>{interpretation.summary}</p><p>{interpretation.economic_interpretation}</p>
+      </details>
+      {([
+        ["Historical analogies · qualitative context", interpretation.historical_analogies],
+        ["Potential portfolio vulnerabilities", interpretation.potential_vulnerabilities],
+        ["Model assumptions and limitations", interpretation.assumptions_and_uncertainties],
+      ] as [string, string[]][]).map(([title, items]) => <details className="answer-section" key={title}>
+        <summary>{title}</summary><ul>{items.map((text, i) => <li key={i}>{text}</li>)}</ul>
+      </details>)}
+      <details className="answer-section">
+        <summary>Evidence references</summary>
+        <div className="evidence">{answer.context.evidence.filter(e => interpretation.evidence_references.includes(e.id)).map(e =>
+          e.url ? <a href={e.url} key={e.id} target="_blank" rel="noreferrer">[{e.id}] {e.description} ↗</a>
+            : <span key={e.id}>[{e.id}] {e.description}</span>)}</div>
+      </details>
+      <details className="answer-section">
+        <summary>Inspect context and backend operations</summary>
+        <p>Application assembled this context before invocation. No autonomous tool calls.</p>
+        <pre>{JSON.stringify({ operations: answer.context_operations, context: answer.context }, null, 2)}</pre>
+      </details>
+    </details>
+  </div>;
+}

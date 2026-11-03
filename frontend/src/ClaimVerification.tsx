@@ -33,8 +33,8 @@ export function VerificationDemo() {
     return () => controller.abort();
   }, []);
   return <details className="verification-demo">
-    <summary>Structured assertion checks · three reproducible examples</summary>
-    <p className="context-note">Fixed analyst-authored claims against the illustrative daily calculation. No live model is required. The challenge, correct distinction and unsupported funding assertion demonstrate the three verdicts.</p>
+    <summary>Demonstration · three reproducible verification examples</summary>
+    <p className="context-note">Separate from the active investigation. Fixed analyst-authored claims against the illustrative daily calculation. No live model is required. The challenge, correct distinction and unsupported funding assertion demonstrate the three verdicts.</p>
     {error ? <p role="alert" className="negative">{error}</p> : results.length ? <ClaimVerification results={results} /> : <p>Loading verification examples…</p>}
   </details>;
 }

@@ -1,0 +1,231 @@
+{
+  "retrieved_at": "2026-11-03T18:54:45.089230+00:00",
+  "provider": "Yahoo Finance chart API (secondary market data)",
+  "currency": "USD",
+  "price_basis": "unadjusted_close",
+  "distribution_treatment": "Excluded; price return only, not total return. Adjusted close is deliberately not used.",
+  "split_treatment": "Reject a comparison with a split event; no share counts inferred.",
+  "observations": [
+    {
+      "ticker": "LQD",
+      "date": "2022-09-12",
+      "close": 108.13999938964844,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-12T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "LQD",
+      "date": "2022-09-13",
+      "close": 107.36000061035156,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-13T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2022-09-12",
+      "close": 76.04000091552734,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-12T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2022-09-13",
+      "close": 74.30999755859375,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-13T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2022-09-12",
+      "close": 410.9700012207031,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-12T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2022-09-13",
+      "close": 393.1000061035156,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-13T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2022-09-12",
+      "close": 32.560001373291016,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-12T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2022-09-13",
+      "close": 31.860000610351562,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1662940800&period2=1663113600&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2022-09-13T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "LQD",
+      "date": "2026-10-29",
+      "close": 104.22000122070312,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "LQD",
+      "date": "2026-10-30",
+      "close": 104.2699966430664,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/LQD?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "EUIG",
+      "date": "2026-10-29",
+      "close": 49.150001525878906,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUIG?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "EUIG",
+      "date": "2026-10-30",
+      "close": 49.20500183105469,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUIG?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2026-10-29",
+      "close": 77.58000183105469,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HYG",
+      "date": "2026-10-30",
+      "close": 77.43000030517578,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HYG?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "EUHY",
+      "date": "2026-10-29",
+      "close": 51.83000183105469,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUHY?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "EUHY",
+      "date": "2026-10-30",
+      "close": 51.709999084472656,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUHY?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-29",
+      "close": 769.3599853515625,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "SPY",
+      "date": "2026-10-30",
+      "close": 755.719970703125,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2026-10-29",
+      "close": 46.84000015258789,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-29T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    },
+    {
+      "ticker": "HEFA",
+      "date": "2026-10-30",
+      "close": 46.29999923706055,
+      "currency": "USD",
+      "price_basis": "unadjusted_close",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/HEFA?period1=1793232000&period2=1793404800&interval=1d&events=div%2Csplits",
+      "bar_timestamp_utc": "2026-10-30T13:30:00+00:00",
+      "split_events": [],
+      "distribution_events": []
+    }
+  ],
+  "failures": []
+}

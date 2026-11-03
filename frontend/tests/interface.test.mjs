@@ -1,4 +1,5 @@
 import test from "node:test";
+import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { registerHooks } from "node:module";
@@ -39,6 +40,7 @@ registerHooks({
     return nextLoad(url, context);
   },
 });
+const etfComponents = await import("../src/EtfPortfolio.tsx");
 const { CausalExploration } = await import("../src/CausalExploration.tsx");
 const { ClaimVerification } = await import("../src/ClaimVerification.tsx");
 
@@ -312,4 +314,29 @@ test("market curve uses October traces with automatic bounds including the lower
   assert.equal(curve.layout.yaxis.range, undefined);
   assert.match(html, /2026-10-29/);
   assert.doesNotMatch(html, /2025-03-10|2025-03-07/);
+});
+
+test("ETF view renders sourced price returns, unavailable valuations, special mandates and six-row audit", () => {
+  const { EtfPortfolio } = etfComponents;
+  // Actual API payload from local deterministic code; no provider calls.
+  const output = execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.etf import portfolio,historical_prices; print(json.dumps({'portfolio':portfolio(),'history':[historical_prices('2022-09-12','2022-09-13')]}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const props = JSON.parse(output);
+  const html = renderToStaticMarkup(React.createElement(EtfPortfolio, props));
+  for (const ticker of ['LQD', 'EUIG', 'HYG', 'EUHY', 'SPY', 'HEFA']) assert.ok(html.includes(ticker));
+  assert.match(html, /\$100,000,000/);
+  assert.match(html, /-\$1,222,894.05/);
+  assert.match(html, /Complete portfolio P&amp;L: Unavailable/);
+  assert.match(html, /Total return: Unavailable/);
+  assert.match(html, /Nov 6, 2025/);
+  assert.match(html, /Nov 3, 2025/);
+  assert.match(html, /EAFE/);
+  assert.match(html, /bar 2022-09-13/);
+  assert.match(html, /query1.finance.yahoo.com/);
+  assert.match(html, /Cboe BZX/);
+  for (const id of ['UST10', 'UST2', 'IRS-R', 'IRS-P', 'FX-EUR', 'CASH']) assert.ok(html.includes(id));
+  for (const term of ['CUSIP', 'coupon', 'discount/forward curves', 'strike', 'statements']) assert.ok(html.includes(term));
+  assert.match(html, /old generic-basket sensitivities are retained only in archived demonstrations/);
+  assert.match(html, /Their sensitivities and P&amp;L do not describe this ETF allocation/);
 });

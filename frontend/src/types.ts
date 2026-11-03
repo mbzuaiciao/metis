@@ -48,6 +48,8 @@ export type Scenario = {
   shocks: Shocks;
 };
 export type Workstation = {
+  etf_portfolio: EtfPortfolio;
+  etf_history: EtfHistory[];
   investigation: {
     default_date: string;
     disclosure: string;
@@ -83,7 +85,7 @@ export type Workstation = {
   scenarios: Scenario[];
   history: Episode[];
 };
-export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode">;
+export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode" | "etf_portfolio" | "etf_history">;
 export type Reasoning = {
   investigation_id: string;
   investigation_scope: "daily" | "scenario" | "historical";
@@ -181,4 +183,30 @@ export type ClaimVerdict = {
   evidence: { path: string; value: number | string }[];
   limitations: string[];
   original_wording_status: "Not checked";
+};
+
+export type EtfPosition = {
+  id: string; name: string; label: string; instrument: string;
+  allocation_usd: number; weight_pct: number;
+  source_url?: string; event_source_url?: string; exchange?: string; currency?: string; note?: string;
+  audit?: { minimum_data: string; recommendation: string };
+};
+export type EtfPortfolio = {
+  reference_date: string; allocation_nav_usd: number; observed_nav_usd: null;
+  basis: string; risk_basis: string; verified_on: string; positions: EtfPosition[];
+};
+export type EtfObservation = {
+  date: string; close: number; currency: string; price_basis: string;
+  source_url: string; bar_timestamp_utc: string;
+  distribution_events: unknown[]; split_events: unknown[];
+};
+export type EtfHistory = {
+  start: string; end: string; covered_allocation_usd: number;
+  covered_price_pnl_usd: number | null; portfolio_pnl_usd: null;
+  provider: string; retrieved_at: string; method: string;
+  distribution_treatment: string; split_treatment: string;
+  positions: (EtfPosition & {
+    status: string; reason: string; price_return_pct: number | null; price_pnl_usd: number | null;
+    start_observation: EtfObservation | null; end_observation: EtfObservation | null;
+  })[];
 };

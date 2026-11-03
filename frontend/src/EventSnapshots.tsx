@@ -14,13 +14,13 @@ export const money = (v: number | null) =>
 export const pnlTone = (v: number | null) =>
   v === null || v === 0 ? '' : v < 0 ? 'negative' : 'positive';
 
-export function EventTable({ snapshot }: { snapshot: EventSnapshot }) {
+export function EventTable({ snapshot, market = false }: { snapshot: EventSnapshot; market?: boolean }) {
   return (
     <div className="etf-table-wrap">
       <table className="etf-table event-table">
         <thead>
           <tr>
-            <th>Holding</th>
+            <th>{market ? "Instrument" : "Holding"}</th>
             <th>
               Starting USD value
               <br />
@@ -31,7 +31,7 @@ export function EventTable({ snapshot }: { snapshot: EventSnapshot }) {
               <br />
               {snapshot.end}
             </th>
-            <th>Estimated P&amp;L</th>
+            <th>{market ? "Change · Estimated USD P&L" : "Estimated P&L"}</th>
           </tr>
         </thead>
         <tbody>
@@ -45,10 +45,20 @@ export function EventTable({ snapshot }: { snapshot: EventSnapshot }) {
                     </span>
                     <span className="holding-title">
                       <b>{p.id}</b>
-                      <span className="holding-label">{p.label}</span>
+                      <span className="holding-label">{p.label}{market && (
+                        p.id === 'CASH' ? ' · assumed balance'
+                        : ['IRS-R', 'IRS-P', 'FX-EUR'].includes(p.id) ? ' · modeled NPV'
+                        : p.method.startsWith('Hypothetical current-mandate') ? ' · hypothetical exposure'
+                        : ''
+                      )}</span>
                     </span>
                   </summary>
                   <div className="holding-basis">
+                    {market && <p><b>{p.id === 'CASH' ? 'Assumed USD cash balance'
+                      : ['IRS-R', 'IRS-P', 'FX-EUR'].includes(p.id) ? 'Hypothetical modeled USD NPV'
+                      : p.method.startsWith('Hypothetical current-mandate') ? 'Hypothetical euro-credit exposure · estimated USD value'
+                      : p.method.startsWith('Starting allocation') ? 'Estimated USD position value · observed ETF close inputs (USD/share)'
+                      : 'Hypothetical Treasury exposure · estimated USD value'}</b></p>}
                     <p>{p.method}</p>
                     {p.inputs.map((i, n) => (
                       <p key={n}>

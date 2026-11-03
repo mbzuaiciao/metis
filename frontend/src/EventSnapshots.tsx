@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import type { EventSnapshot } from './types';
 const money = (v: number | null) => v === null ? 'Unavailable' : new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0}).format(Math.round(v / 1000) * 1000);
+const pnlTone = (v: number | null) => (v === null || v === 0 ? '' : v < 0 ? 'negative' : 'positive');
 
 export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnapshot[]; onExplore?: (id: string) => void }) {
   const [selected, setSelected] = useState(0);
@@ -11,10 +12,10 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
     <label>Event window <select value={selected} onChange={e => setSelected(Number(e.target.value))}>
       {snapshots.map((s, i) => <option value={i} key={s.id}>{s.start} → {s.end} · {s.title}</option>)}
     </select></label>
-    <p><b>Estimated portfolio P&amp;L: {money(snapshot.estimated_pnl_usd)}</b><br />
+    <p><b>Estimated portfolio P&amp;L: {snapshot.estimated_pnl_usd === null ? 'Unavailable' : <span className={pnlTone(snapshot.estimated_pnl_usd)}>{money(snapshot.estimated_pnl_usd)}</span>}</b><br />
       Starting illustrative value {money(snapshot.start_nav_usd)} → ending illustrative value {money(snapshot.end_nav_usd)} · {snapshot.coverage_count}/12 rows.<br />
       <small className="context-note">Illustrative estimate — not actual portfolio returns.</small></p>
-    {snapshot.estimated_pnl_usd === null && <p>Covered subtotal only: {money(snapshot.covered_pnl_usd)}. Missing rows are excluded, never assumed zero.</p>}
+    {snapshot.estimated_pnl_usd === null && <p>Covered subtotal only: {snapshot.covered_pnl_usd === null ? 'Unavailable' : <span className={pnlTone(snapshot.covered_pnl_usd)}>{money(snapshot.covered_pnl_usd)}</span>}. Missing rows are excluded, never assumed zero.</p>}
     <div className="etf-table-wrap"><table className="etf-table event-table">
       <thead><tr>
         <th>Holding</th>
@@ -42,7 +43,7 @@ export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnaps
         </td>
         <td>{money(p.start_value_usd)}</td>
         <td>{money(p.end_value_usd)}</td>
-        <td>{money(p.pnl_usd)}</td>
+        <td className={pnlTone(p.pnl_usd) || undefined}>{money(p.pnl_usd)}</td>
       </tr>)}</tbody>
     </table></div>
     {onExplore && <button onClick={() => onExplore(snapshot.id)}>Use this snapshot as a causal reference</button>}

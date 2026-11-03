@@ -7,8 +7,8 @@ const pnlTone = (v: number | null) => (v === null || v === 0 ? '' : v < 0 ? 'neg
 export function EventSnapshots({ snapshots, onExplore }: { snapshots: EventSnapshot[]; onExplore?: (id: string) => void }) {
   const [selected, setSelected] = useState(0);
   const snapshot = snapshots[selected];
-  return <section className="etf-portfolio">
-    <h2>Illustrative event valuations</h2>
+  return <section className="etf-portfolio" aria-label="Historical event replay">
+    <h2>Historical event replay</h2>
     <label>Event window <select value={selected} onChange={e => setSelected(Number(e.target.value))}>
       {snapshots.map((s, i) => <option value={i} key={s.id}>{s.start} → {s.end} · {s.title}</option>)}
     </select></label>

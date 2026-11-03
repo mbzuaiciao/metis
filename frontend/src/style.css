@@ -1975,3 +1975,57 @@ footer > span:last-child {
     font-size: 19px;
   }
 }
+
+/* Historical replay subsection in Causal Scenario Exploration */
+.historical-replay-subsection {
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #233348;
+}
+.historical-replay-subsection .section-title {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.historical-replay-subsection .section-title h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #eaf1fa;
+  margin: 6px 0 8px;
+  letter-spacing: -0.3px;
+}
+.historical-replay-subsection .section-title .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7d9cb8;
+  letter-spacing: 0.8px;
+}
+
+/* Hypothetical scenarios section in Causal Scenario Exploration */
+.hypothetical-scenarios-section {
+  padding-top: 8px;
+}
+
+/* Market table font adjustments for video recording readability */
+.market-table > div {
+  font-size: 13px;
+  padding: 11px 0;
+}
+.market-table b {
+  font-size: 13.5px;
+}
+.market-table em {
+  font-size: 12px;
+}
+
+/* Portfolio tab font formatting */
+.portfolio-tab .etf-table td {
+  font-size: 14px;
+}
+.portfolio-tab .etf-table td:nth-child(4),
+.portfolio-tab .etf-table td:nth-child(5),
+.portfolio-tab .etf-table td:nth-child(6) {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+

@@ -501,3 +501,98 @@ test("event snapshots apply consistent sign colors to P&L and summary while keep
   assert.match(positiveHtml, /Estimated portfolio P&amp;L: <span class="positive">\$500,000<\/span>/);
   assert.match(positiveHtml, /<td class="positive">\$500,000<\/td>/);
 });
+
+test("Portfolio opens on dated portfolio snapshot with no event selector and no unsupported MTD claims", async () => {
+  const { Portfolio } = await import("../src/App.tsx");
+  const output = execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio, historical_prices; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio(), 'etf_history': [historical_prices('2026-10-29', '2026-10-30'), historical_prices('2022-09-12', '2022-09-13')]}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const data = JSON.parse(output);
+  const html = renderToStaticMarkup(React.createElement(Portfolio, { data }));
+
+  // Check dated snapshot
+  assert.match(html, /Portfolio snapshot · As of 2026-10-30/);
+  assert.match(html, /Daily price comparison: 2026-10-29 → 2026-10-30/);
+
+  // Check 12 positions and $100m illustrative allocation
+  assert.match(html, /\$100,000,000/);
+  for (const ticker of ['LQD', 'EUIG', 'HYG', 'EUHY', 'SPY', 'HEFA', 'UST10', 'UST2', 'IRS-R', 'IRS-P', 'FX-EUR', 'CASH']) {
+    assert.ok(html.includes(ticker), `Expected holding ${ticker} in Portfolio`);
+  }
+
+  // Check supported daily P&L and unavailable totals
+  assert.match(html, /Covered price P&amp;L: <span class="negative">-\$417,244\.37<\/span>/);
+  assert.match(html, /Complete portfolio P&amp;L: Unavailable/);
+  assert.match(html, /MTD P&amp;L: Unavailable/);
+  assert.match(html, /intervening daily bars are not retrieved; extrapolation from two daily closes is not defensible/);
+
+  // Confirm NO event selector in Portfolio
+  assert.doesNotMatch(html, /<select/);
+  assert.doesNotMatch(html, /Event window/);
+  assert.doesNotMatch(html, /Observed ETF comparison:/);
+});
+
+test("Historical event replay in Causal Scenario Exploration retains 3 event windows and causal reference", async () => {
+  const { CausalExploration } = await import("../src/CausalExploration.tsx");
+  const snapshots = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    'import json; from metis.analytics.events import event_snapshots; print(json.dumps(event_snapshots()))'],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+  const data = {
+    causal_mode: 'demo',
+    positions: [],
+    market: { as_of: '2026-10-30' },
+    event_snapshots: snapshots,
+  };
+  const html = renderToStaticMarkup(React.createElement(CausalExploration, {
+    state: initialCausalState,
+    setState() {},
+    data,
+    generate() {},
+    calculate() {},
+    useShocks() {},
+  }));
+
+  // Clearly labeled section
+  assert.match(html, /aria-label="Historical event replay"/);
+  assert.match(html, /Historical event replay/);
+  assert.match(html, /HISTORICAL REPLAY · RECONSTRUCTED/);
+  assert.match(html, /aria-label="Hypothetical stress scenarios"/);
+
+  // All 3 event windows present
+  for (const id of ['cpi-2022', 'march-2025', 'october-2026']) {
+    assert.ok(html.includes(`value="${id}"`), `Event window ${id} should be present`);
+  }
+  assert.match(html, /2022-09-12 → 2022-09-13 · US CPI shock/);
+  assert.match(html, /2025-03-07 → 2025-03-10 · March comparison/);
+  assert.match(html, /2026-10-29 → 2026-10-30 · October reference/);
+
+  // Causal reference button
+  assert.match(html, /Use this snapshot as a causal reference/);
+});
+
+test("Market Monitor displays dated ETF closes for SPY and HEFA and removes Daily return placeholder", async () => {
+  const { Market } = await import("../src/App.tsx");
+  const market = JSON.parse(readFileSync(new URL("../../backend/metis/data/market-20261030.json", import.meta.url), "utf8"));
+  const html = renderToStaticMarkup(React.createElement(Market, { data: { market, history: [] } }));
+
+  // Shows SPY and HEFA observed closes
+  assert.match(html, /Observed equity ETF market prices/);
+  assert.match(html, /SPY/);
+  assert.match(html, /HEFA/);
+  assert.match(html, /\$769\.36/);
+  assert.match(html, /\$755\.72/);
+  assert.match(html, /-1\.77%/);
+  assert.match(html, /\$46\.84/);
+  assert.match(html, /\$46\.30/);
+  assert.match(html, /-1\.15%/);
+  assert.match(html, /HEFA represents USD-hedged developed ex-US exposure, not an unhedged index/);
+
+  // Removes 'Daily return' placeholder level
+  assert.doesNotMatch(html, /<b>Daily return<\/b>/);
+  assert.doesNotMatch(html, /Daily return/);
+
+  // Explicitly separates synthetic benchmarks from observed ETF prices
+  assert.match(html, /Archived synthetic market benchmarks/);
+  assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
+  assert.match(html, /Yahoo Finance/);
+});

@@ -626,13 +626,10 @@ function PositionGrid({
     </>
   );
 }
-function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: string) => void }) {
+export function Portfolio({ data }: { data: Workstation }) {
   return (
     <div className="portfolio-tab">
-      <EventSnapshots snapshots={data.event_snapshots} onExplore={onExplore} />
-      <details><summary>Observed-price coverage and instrument audit · preserved evidence</summary>
-        <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
-      </details>
+      <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
       <details><summary>Archived October 30 fictional demonstration · original baskets and sensitivities</summary>
       <div className="metrics three">
         <Metric
@@ -667,16 +664,194 @@ function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: str
     </div>
   );
 }
-export function Market({ data }: { data: Workstation }) {
+export function Market({
+  data,
+  selectedEventId,
+  onSelectEvent,
+}: {
+  data: Workstation;
+  selectedEventId?: string;
+  onSelectEvent?: (id: string) => void;
+}) {
+  const [localEventId, setLocalEventId] = useState(selectedEventId ?? "october-2026");
+  const activeEventId = selectedEventId ?? localEventId;
+
+  const etfObservations: Record<
+    string,
+    {
+      start: string;
+      end: string;
+      rows: Array<{
+        ticker: string;
+        label: string;
+        name: string;
+        startClose: number;
+        endClose: number;
+        note: string;
+      }>;
+    }
+  > = {
+    "october-2026": {
+      start: "2026-10-29",
+      end: "2026-10-30",
+      rows: [
+        {
+          ticker: "SPY",
+          label: "US large-cap equities",
+          name: "State Street SPDR S&P 500 ETF Trust",
+          startClose: 769.3599853515625,
+          endClose: 755.719970703125,
+          note: "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate.",
+        },
+        {
+          ticker: "HEFA",
+          label: "EAFE · USD hedged",
+          name: "iShares Currency Hedged MSCI EAFE ETF",
+          startClose: 46.84000015258789,
+          endClose: 46.29999923706055,
+          note: "MSCI EAFE developed equities, hedged to USD; excludes US and Canada. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.",
+        },
+      ],
+    },
+    "march-2025": {
+      start: "2025-03-07",
+      end: "2025-03-10",
+      rows: [
+        {
+          ticker: "SPY",
+          label: "US large-cap equities",
+          name: "State Street SPDR S&P 500 ETF Trust",
+          startClose: 575.9199829101562,
+          endClose: 560.5800170898438,
+          note: "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate.",
+        },
+        {
+          ticker: "HEFA",
+          label: "EAFE · USD hedged",
+          name: "iShares Currency Hedged MSCI EAFE ETF",
+          startClose: 37.27000045776367,
+          endClose: 36.41999816894531,
+          note: "MSCI EAFE developed equities, hedged to USD; excludes US and Canada. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.",
+        },
+      ],
+    },
+    "cpi-2022": {
+      start: "2022-09-12",
+      end: "2022-09-13",
+      rows: [
+        {
+          ticker: "SPY",
+          label: "US large-cap equities",
+          name: "State Street SPDR S&P 500 ETF Trust",
+          startClose: 410.9700012207031,
+          endClose: 393.1000061035156,
+          note: "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate.",
+        },
+        {
+          ticker: "HEFA",
+          label: "EAFE · USD hedged",
+          name: "iShares Currency Hedged MSCI EAFE ETF",
+          startClose: 32.560001373291016,
+          endClose: 31.860000610351562,
+          note: "MSCI EAFE developed equities, hedged to USD; excludes US and Canada. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.",
+        },
+      ],
+    },
+  };
+
+  const currentEtfWindow = etfObservations[activeEventId] ?? etfObservations["october-2026"];
+
   return (
     <>
       <div className="notice">
         <FlaskConical size={17} />
         <span>
-          {data.market.label}. Comparison date: {data.market.previous_date}.
-          Historical sources below are separate from these illustrative levels.
+          Market Monitor: observed secondary-market equity ETF closing prices and archived synthetic multi-asset benchmarks.
+          Historical sources below are separate from illustrative benchmark levels.
         </span>
       </div>
+
+      <Panel
+        title="Observed equity ETF market prices"
+        note={`${currentEtfWindow.start} → ${currentEtfWindow.end} · Sourced closing prices`}
+      >
+        <div className="table-toolbar">
+          <label>
+            Historical comparison:
+            <select
+              value={activeEventId}
+              onChange={(e) => {
+                setLocalEventId(e.target.value);
+                onSelectEvent?.(e.target.value);
+              }}
+            >
+              <option value="october-2026">October 2026 reference (Default)</option>
+              <option value="march-2025">March 2025 comparison</option>
+              <option value="cpi-2022">September 2022 CPI shock</option>
+            </select>
+          </label>
+          <span>Sourced secondary-market data · Yahoo Finance</span>
+        </div>
+        <div className="etf-table-wrap">
+          <table className="etf-table">
+            <thead>
+              <tr>
+                <th>Instrument</th>
+                <th>
+                  Starting close
+                  <br />
+                  {currentEtfWindow.start}
+                </th>
+                <th>
+                  Ending close
+                  <br />
+                  {currentEtfWindow.end}
+                </th>
+                <th>Price return</th>
+                <th>Mandate &amp; Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentEtfWindow.rows.map((row) => {
+                const changePct = (row.endClose / row.startClose - 1) * 100;
+                return (
+                  <tr key={row.ticker}>
+                    <td>
+                      <b>{row.ticker}</b> · {row.label}
+                      <br />
+                      <small>{row.name}</small>
+                    </td>
+                    <td>${row.startClose.toFixed(2)}</td>
+                    <td>${row.endClose.toFixed(2)}</td>
+                    <td>
+                      <em
+                        className={
+                          changePct < 0
+                            ? "negative"
+                            : changePct > 0
+                              ? "positive"
+                              : ""
+                        }
+                        style={{ fontStyle: "normal", fontWeight: 600 }}
+                      >
+                        {signed(changePct, "%")}
+                      </em>
+                    </td>
+                    <td>
+                      <small>{row.note}</small>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="context-note">
+          Unadjusted closing prices; distributions excluded, price return only, not total return. Real-time feed unavailable.
+          HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.
+        </p>
+      </Panel>
+
       <div className="grid-main">
         <Panel title="US Treasury yield curve" note="Yield · %">
           <Chart
@@ -710,7 +885,10 @@ export function Market({ data }: { data: Workstation }) {
             }}
           />
         </Panel>
-        <Panel title="Market observations" note="Illustrative daily changes">
+        <Panel
+          title="Archived synthetic market benchmarks"
+          note={`Fictional demonstration · As of ${data.market.as_of}`}
+        >
           <div className="market-table">
             {data.market.yields.map((y) => (
               <div key={y.tenor}>
@@ -726,13 +904,6 @@ export function Market({ data }: { data: Workstation }) {
                 <em className="negative">+{c.change_bp}bp</em>
               </div>
             ))}
-            {data.market.equities.map((e) => (
-              <div key={e.name}>
-                <span>{e.name}</span>
-                <b>Daily return</b>
-                <em className="negative">{signed(e.change_pct, "%")}</em>
-              </div>
-            ))}
             {data.market.fx.map((f) => (
               <div key={f.name}>
                 <span>{f.name}</span>
@@ -741,6 +912,9 @@ export function Market({ data }: { data: Workstation }) {
               </div>
             ))}
           </div>
+          <p className="context-note" style={{ marginTop: "12px", padding: "0 19px" }}>
+            Synthetic multi-asset benchmarks from archived October 30 demonstration. Modeled rates, credit spreads, and FX levels are not observed quotes.
+          </p>
         </Panel>
       </div>
       <Panel title="Economic context" note="Assumed regime">
@@ -1592,10 +1766,16 @@ export default function App() {
                   busy={reasoningBusy}
                 />
               )}
-              {page === 1 && <Portfolio data={data} onExplore={id => {
-                setCausalState(s => ({ ...s, eventSnapshotId: id })); navigate(5);
-              }} />}{" "}
-              {page === 2 && <Market data={data} />}{" "}
+              {page === 1 && <Portfolio data={data} />}{" "}
+              {page === 2 && (
+                <Market
+                  data={data}
+                  selectedEventId={causalState.eventSnapshotId}
+                  onSelectEvent={(id) =>
+                    setCausalState((s) => ({ ...s, eventSnapshotId: id }))
+                  }
+                />
+              )}{" "}
               {page === 3 && <Risk data={data} />}{" "}
               {page === 4 && (
                 <Scenarios

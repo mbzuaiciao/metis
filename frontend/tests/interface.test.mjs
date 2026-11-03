@@ -43,6 +43,7 @@ test("Demo renders only named hypothesis selectors; Meta retains free-form input
   assert.equal((demo.match(/<select/g) || []).length, 2);
   assert.doesNotMatch(demo, /<datalist|type your own|<input list=/);
   assert.match(demo, /Custom hypotheses require live Meta mode/);
+  assert.match(demo, /DETERMINISTIC DEMO · TEMPLATE HYPOTHESES/);
   for (const hypothesis of ["Recession fears", "Inflation relief", "Liquidity and funding stress"]) {
     assert.ok(demo.includes(`value="${hypothesis}"`));
   }
@@ -51,6 +52,7 @@ test("Demo renders only named hypothesis selectors; Meta retains free-form input
   assert.equal((live.match(/<input list=/g) || []).length, 2);
   assert.match(live, /value="Supply normalization"/);
   assert.match(live, /type your own/);
+  assert.match(live, /META-POWERED ECONOMIC EXPLORATION/);
   assert.match(causalMarkup("demo", {...initialCausalState, hypothesis: "Supply normalization"}), /Choose a demo hypothesis/);
 });
 
@@ -111,4 +113,48 @@ test("research page is the seventh sidebar item and renders without backend data
   assert.ok(ai > 0 && research > ai);
   assert.match(app, /page === 6 \? \(\s*<ResearchLimitations \/>/);
   assert.match(app, /page === 6\s*\? "Documented studies"/);
+});
+
+test("accepted causal hypotheses show backend P&L side by side, never before calculation", () => {
+  const first = {rates_bp: -50, ig_bp: 75, hy_bp: 250, equity_pct: -15, fx_pct: -5};
+  const second = {rates_bp: -50, ig_bp: -20, hy_bp: -50, equity_pct: 8, fx_pct: 2};
+  const makeMechanism = (title, shocks) => ({
+    title, economic_mechanism: "An illustrative economic mechanism.",
+    proposed_shocks: shocks, assumption_note: "Uncalibrated assumptions, not a prediction.",
+    cross_asset: Object.fromEntries(Object.keys(shocks).map(key => [key, {direction: "ambiguous", rationale: "Conditional mechanism."}])),
+    alternative_explanations: [], discriminating_evidence: [], uncertainty: [], evidence_references: [],
+  });
+  const state = {
+    ...initialCausalState,
+    result: {
+      mode: "demo", model: null,
+      request: {hypothesis: "Recession fears", alternative: "Inflation relief", common_rates_bp: -50},
+      context: {market: {as_of: "2025-03-10"}, evidence: [], portfolio: {exposures: {dv01_usd_per_bp: 0, cs01_usd_per_bp: 0}}},
+      exploration: {mechanisms: [makeMechanism("Recession fears", first), makeMechanism("Inflation relief", second)]},
+    },
+    drafts: [first, second],
+  };
+  const calculation = (shocks, pnl, by_factor) => ({shocks, total_pnl_usd: pnl, by_factor, positions: []});
+  const completed = {
+    ...state,
+    calculations: [
+      calculation(first, -3347000, {rates_pnl: 2578000, credit_pnl: -1975000, equity_pnl: -3450000, fx_pnl: -500000}),
+      calculation(second, 5070500, {rates_pnl: 2578000, credit_pnl: 452500, equity_pnl: 1840000, fx_pnl: 200000}),
+    ],
+  };
+  const before = causalMarkup("demo", state);
+  assert.doesNotMatch(before, /id="causal-comparison"/);
+  const after = causalMarkup("demo", completed);
+  assert.match(after, /id="causal-comparison"/);
+  assert.match(after, /Same yield move\. Different portfolio outcomes/);
+  assert.match(after, /-\$3,347,000/);
+  assert.match(after, /\$5,070,500/);
+  assert.match(after, /Credit spreads contribution/);
+  assert.match(after, /DETERMINISTIC DEMO/);
+  assert.match(after, /not predictions or identified causes/);
+  const unequal = causalMarkup("demo", {
+    ...completed,
+    calculations: [completed.calculations[0], {...completed.calculations[1], shocks: {...second, rates_bp: -45}}],
+  });
+  assert.match(unequal, /Different yield assumptions\. Compare the outcomes/);
 });

@@ -67,7 +67,7 @@ def test_alternative_hypotheses_share_an_observation_not_a_true_cause(monkeypatc
     assert a["cross_asset"]["ig_bp"]["direction"] != b["cross_asset"]["ig_bp"]["direction"]
     assert all(m["alternative_explanations"] for m in (a, b))
     assert all("not estimates or predictions" in m["assumption_note"] for m in (a, b))
-    assert result["context"]["market"]["as_of"] == "2025-03-10"
+    assert result["context"]["market"]["as_of"] == "2026-10-30"
     assert "commentary" not in result["context"]["market"]
     assert all("interpretation" not in h and h["fact"] and h["source_url"] for h in result["context"]["historical_context"])
 
@@ -84,7 +84,7 @@ def test_numerical_integrity_of_reviewed_shocks(monkeypatch):
             assert response.json() == calculate(load_positions(), Shocks(**accepted))
         # Reproduces the existing Broad Risk-Off engine output exactly.
         accepted = proposals[0].proposed_shocks
-        assert calculate(load_positions(), accepted)["total_pnl_usd"] == -3_347_000
+        assert calculate(load_positions(), accepted)["total_pnl_usd"] == -4_240_000
 
 
 @pytest.mark.parametrize("failure", ["invalid_json", "direction", "reference", "anchor", "truncated", "missing_factor"])

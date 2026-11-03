@@ -69,8 +69,8 @@ def write_private(path, value):
 
 def case_context(case):
     """Whitelist factual sources. Never serialize case expectations into a model input."""
-    data = workstation()
-    frame = load_positions()
+    data = workstation('2025-03-10')
+    frame = load_positions('2025-03-10')
     market = load_json('market')
     context = {
         'portfolio': {**{k:data[k] for k in ['portfolio_name','nav_usd','exposures']}, 'positions':frame.to_dict(orient='records')},

@@ -19,7 +19,7 @@ HERE = Path(__file__).resolve().parent
 
 
 def inputs():
-    context = assemble_context(Shocks(rates_bp=-50, ig_bp=75, hy_bp=250, equity_pct=-15, fx_pct=-5))
+    context = assemble_context(Shocks(rates_bp=-50, ig_bp=75, hy_bp=250, equity_pct=-15, fx_pct=-5), investigation_date='2025-03-10')
     fixtures = json.loads((HERE/'evidence-grounded-cases.json').read_text())
     funding = fixtures[6]['supplemental_evidence']['funding']
     default = fixtures[7]['supplemental_evidence']['default']

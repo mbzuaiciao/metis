@@ -48,7 +48,7 @@ The production preview also proxies `/api` to the local backend. This is a local
 
 Keep the backend and frontend running using the commands above. The four-stage strip navigates within the existing six pages:
 
-1. **What happened?** Open Overview to see the **−$560,770** illustrative daily loss for **2025-03-10**, rates **+$412,480**, credit spreads **−$407,250**, equities **−$506,000** and FX **−$60,000**. The principal-position panel selects the largest net loss and gain from backend values. Expand **Inspect position contributions and signed DV01** to compare separate rate/spread/equity/FX legs, net position P&L, signed DV01/CS01, marks and reference notionals. Portfolio totals come from the backend; the frontend does not recalculate them.
+1. **What happened?** Open Overview to see the **−$282,200** fictional synthetic daily loss for **2026-10-30**, rates **+$501,000**, credit spreads **−$333,200**, equities **−$390,000** and FX **−$60,000**. The principal-position panel selects the largest net loss and gain from backend values. Expand **Inspect position contributions and signed DV01** to compare separate rate/spread/equity/FX legs, net position P&L, signed DV01/CS01, marks and reference notionals. Portfolio totals come from the backend; the frontend does not recalculate them.
 2. **Why did it happen?** Select **2 · Explain the daily loss**. This opens Metis AI Reasoning and immediately invokes the configured provider with the daily snapshot shocks. It leaves the separately selected stress scenario unchanged. The response shows its **LIVE META** or **DETERMINISTIC DEMO** label, original calculated evidence and a separate model interpretation. Expand economic explanations, principal observations and historical references as needed. Provider/validation errors remain visible and do not become demo answers.
 3. **What could happen next?** Select **3 · Explore a hypothetical scenario**, choose Broad Risk-Off or adjust the existing shocks, then select **Interpret this scenario with Metis**. Scenario P&L and its factor contributions are labeled hypothetical, separate from daily P&L. The question captures the selected calculated shocks. Newest answers appear first; each answer retains the exact returned evidence after later scenario edits. Request state survives navigation and duplicate clicks are blocked while inference is active.
 4. **What deserves investigation?** Select stage 4 or open the vulnerability section in an answer. Each model-identified vulnerability separates the model's text, available captured evidence and a topic-specific **analyst checklist** of missing information, with a link that opens the position calculations. The checklist uses simple headline keywords; it is neither a verified mapping of every model claim nor an estimate of liquidity, margin, default or correlation losses. Read the model's own assumptions/uncertainties alongside it.
@@ -117,11 +117,11 @@ Snapshots are held only in memory in the existing local backend, with a maximum 
 
 `backend/metis/data/` contains the only position, market, historical and preset inputs. All pages load `/api/workstation`; custom scenarios and reasoning use the same analytics functions. The frontend does not calculate financial P&L.
 
-AI Reasoning defaults to a **fictional synthetic daily scenario dated 2026-10-30**, compared with 2026-10-29. The date selector also offers the unchanged **2025-03-10/07 synthetic snapshot**. Each choice selects its own market fixture **and** portfolio marks/notionals/sensitivities; the same deterministic engine calculates daily attribution, NAV reconciliation and context alternatives from that selected portfolio. All dated levels, changes, marks, exposures and P&L are invented demonstration inputs/results, **not sourced October observations or real portfolio valuations**. October assumes a parallel −10bp rate move, IG +12bp, HY +35bp, equities −1.5%, and EUR/USD −0.5%. Its synthetic factor P&L is rates +$501,000, credit −$333,200, equities −$390,000 and FX −$60,000: **−$282,200** total. Closing reference NAV is $100m; implied opening NAV is $100,282,200. Prior position marks are implied by the linear calculation, not independently observed valuations.
+The entire workstation defaults to a **fictional synthetic daily scenario dated 2026-10-30**, compared with 2026-10-29. The date selector also offers the unchanged **2025-03-10/07 synthetic snapshot**. Each choice selects its own market fixture **and** portfolio marks/notionals/sensitivities; the same deterministic engine calculates daily attribution, NAV reconciliation and context alternatives from that selected portfolio. All dated levels, changes, marks, exposures and P&L are invented demonstration inputs/results, **not sourced October observations or real portfolio valuations**. October assumes a parallel −10bp rate move, IG +12bp, HY +35bp, equities −1.5%, and EUR/USD −0.5%. Its synthetic factor P&L is rates +$501,000, credit −$333,200, equities −$390,000 and FX −$60,000: **−$282,200** total. Closing reference NAV is $100m; implied opening NAV is $100,282,200. Prior position marks are implied by the linear calculation, not independently observed valuations.
 
-The selector, daily sidebar, market ticker and header on AI Reasoning use the selected synthetic snapshot. New daily questions and the daily investigation action use that date; existing answers/follow-ups keep their captured evidence even after selection changes. Overview, Market Monitor, Risk Analytics, Independent Shocks and Causal Exploration retain their March synthetic inputs and date labels. The Overview daily action explicitly investigates March. The AI Reasoning stress action/sidebar identifies the separate March holdings used by stress calculations. The sourced **2022-09-13 historical event** retains its existing inputs/proxy assumptions and three-hypothesis workflow.
+Overview, Portfolio, Market Monitor, Risk Analytics, Independent Shocks, Causal Exploration, and AI Reasoning share the October default holdings and dated market fixture. Their header/ticker/badge and calculated values agree; Overview's daily action investigates October. New stress and causal calculations always use the app-wide default holdings. AI Reasoning's date selector deliberately selects the legacy March daily case without changing the app-wide stress/causal inputs; its daily sidebar/header/ticker follow that selection. Existing answers and follow-ups keep their captured evidence. The sourced **2022-09-13 historical event** explicitly retains the original March synthetic holdings and reviewed proxy mapping, so its −$1,496,577.20 estimate and evidence are unchanged. Completed research harnesses likewise explicitly select their legacy inputs; archived reports/results remain unchanged.
 
-For `POST /api/reasoning` with `investigation_scope: "daily"`, an omitted/null `investigation_date` selects October. Explicit `"2026-10-30"` or `"2025-03-10"` selects the corresponding entire dataset, overriding caller shocks with that dataset's daily shocks. Unsupported dates return HTTP 422 before inference/capture, with no substitution. The historical event and stress scopes keep their existing inputs and reject this daily-only date field. Follow-ups continue to accept only their captured investigation ID and history. `/api/workstation` retains March at its top level and supplies both complete synthetic snapshots under `investigation.snapshots` for daily selection.
+For `POST /api/reasoning` with `investigation_scope: "daily"`, an omitted/null `investigation_date` selects October. Explicit `"2026-10-30"` or `"2025-03-10"` selects the corresponding entire dataset, overriding caller shocks with that dataset's daily shocks. Unsupported dates return HTTP 422 before inference/capture, with no substitution. The historical event and stress scopes keep their existing inputs and reject this daily-only date field. Follow-ups continue to accept only their captured investigation ID and history. `/api/workstation` returns October at its top level and supplies both complete synthetic snapshots under `investigation.snapshots` for daily selection.
 
 **Hackathon provenance is separate from scenario dates.** October 30 is a fictional economic scenario label, not evidence of when this project was built or proof of hackathon eligibility. Git history records the actual development sequence: `a9086e6` (November 3, 2026) integrated historical investigations, `e206cd9` (November 3) introduced the unavailable October placeholder, and this PR revision subsequently replaces it with the separately authored fictional fixtures. Earlier commits/research have their own recorded timestamps; no commit timestamps or prior experiment records were changed. Inspect `git log --format=fuller` and the PR history for development provenance rather than inferring it from fixture dates.
 
@@ -152,28 +152,30 @@ FX P&L     = FX USD delta × EUR/USD shock in % / 100
 
 - Positive DV01 / CS01 means a gain for a 1bp decline. Pay-fixed swap DV01 is negative; receive-fixed is positive. Credit bonds have both government-rate sensitivity and spread sensitivity, so the two components are added.
 - Swap marks are signed NAV contributions. Notional is reference size, not NAV or P&L sensitivity. Swaps use supplied DV01; no attempt is made to infer duration from their net marks.
-- Positive FX delta means long EUR / short USD. A 1% EUR/USD rise on the $10m FX delta produces $100,000. The forward's $2m signed mark contributes to NAV independently. Interest-rate sensitivity of the FX forward is omitted.
+- Positive FX delta means long EUR / short USD. A 1% EUR/USD rise on the default $12m FX delta produces $120,000. The forward's $1.5m signed mark contributes to NAV independently. Interest-rate sensitivity of the FX forward is omitted.
 - Hedged credit and equity baskets have zero residual FX exposure by assumption. All equities receive the same shock (unit beta). Government yields move in parallel, including the rate component of European credit; country/curve basis is omitted.
-- Closing NAV is the sum of signed marks: **$100,000,000**. Daily modeled P&L is **−$560,770**. Opening NAV is **$100,560,770**, so opening NAV + daily P&L = closing NAV. The daily return uses opening NAV; scenario percentages use current closing NAV.
-- Allocation charts use **net marked value**, not gross notional or risk allocation. The derivative asset class nets to $3m despite materially larger risk exposure.
+- Closing NAV is the sum of signed marks: **$100,000,000**. Daily modeled P&L is **−$282,200**. Opening NAV is **$100,282,200**, so opening NAV + daily P&L = closing NAV. The daily return uses opening NAV; scenario percentages use current closing NAV.
+- Allocation charts use **net marked value**, not gross notional or risk allocation. The default derivative asset class nets to $2.5m despite materially larger risk exposure.
 - Calculations round each position's factor contribution to cents before aggregation; the UI normally displays whole dollars. This is a reporting convention, not a claim of pricing accuracy.
 
 ### Reference calculations
 
+These calculations use the default fictional October holdings. The explicit March selection retains its original −$560,770 daily and −$3,347,000 Broad Risk-Off results.
+
 | Calculation | USD |
 | --- | ---: |
-| Aggregate DV01, per bp fall | 51,560 |
-| Aggregate CS01, per bp fall | 15,950 |
-| IG / HY CS01, per bp fall | 11,500 / 4,450 |
-| Equity / FX delta | 23,000,000 / 10,000,000 |
-| Daily rates contribution (−8bp) | +412,480 |
-| Daily credit contribution (+18bp IG, +45bp HY) | −407,250 |
-| Daily equities (−2.2%) | −506,000 |
-| Daily FX (−0.6%) | −60,000 |
-| Rate rally (−50bp, other shocks zero) | +2,578,000 |
-| Rate selloff (+50bp, other shocks zero) | −2,578,000 |
-| Credit widening (+50bp IG, +150bp HY) | −1,242,500 |
-| Broad risk-off (−50bp rates, +75bp IG, +250bp HY, −15% equities, −5% FX) | −3,347,000 |
+| Aggregate DV01, per bp fall | 50,100 |
+| Aggregate CS01, per bp fall | 17,800 |
+| IG / HY CS01, per bp fall | 12,600 / 5,200 |
+| Equity / FX delta | 26,000,000 / 12,000,000 |
+| Daily rates contribution (−10bp) | +501,000 |
+| Daily credit contribution (+12bp IG, +35bp HY) | −333,200 |
+| Daily equities (−1.5%) | −390,000 |
+| Daily FX (−0.5%) | −60,000 |
+| Rate rally (−50bp, other shocks zero) | +2,505,000 |
+| Rate selloff (+50bp, other shocks zero) | −2,505,000 |
+| Credit widening (+50bp IG, +150bp HY) | −1,410,000 |
+| Broad risk-off (−50bp rates, +75bp IG, +250bp HY, −15% equities, −5% FX) | −4,240,000 |
 
 No convexity, optionality, curve/key-rate risk, spread-rate basis, default jumps, carry, cash interest, transaction costs, margin requirements, hedge slippage or funding/liquidity losses are modeled. Sensitivities are fixed inputs, not recalibrated. Large stress results are particularly approximate. Input bounds only constrain the demonstration UI; they are not calibrated risk limits.
 
@@ -249,12 +251,12 @@ PY
 
 ### One reasoning demonstration
 
-1. Review the portfolio and the **2025-03-10 illustrative snapshot** in Overview / Market Monitor. This is the current application snapshot, not today's market data.
+1. Review the portfolio and the **2026-10-30 fictional synthetic snapshot** in Overview / Market Monitor. This is the current application snapshot, not today's market data.
 2. In Scenario Analysis, select **Broad risk-off**: −50bp rates, +75bp IG spreads, +250bp HY spreads, −15% equities, −5% EUR/USD.
 3. Select **Interpret this scenario with Metis**, then choose the first suggested question (the exact question in the Python example above).
-4. Inspect the response's mode badge, economic explanation, historical references, uncertainties and saved context. The selected scenario should show **−$3,347,000**, with rates **+$2,578,000**, credit **−$1,975,000**, equities **−$3,450,000**, and FX **−$500,000**. These are hypothetical stress results; the dated daily loss remains **−$560,770**.
+4. Inspect the response's mode badge, economic explanation, historical references, uncertainties and saved context. The selected scenario should show **−$4,240,000**, with rates **+$2,505,000**, credit **−$2,245,000**, equities **−$3,900,000**, and FX **−$600,000**. These are hypothetical stress results; the dated daily loss remains **−$282,200**.
 
-**Illustrative demo interpretation — not a live model response:** A Treasury rally can signal weaker growth rather than improving conditions for all assets. Duration gains can be outweighed by spread and equity losses: the broad risk-off stress loses $3.347m despite a $2.578m rate gain. The sourced 2008 description motivates a credit/equity risk analogy; March 2020 motivates scrutiny of liquidity and margin needs. The 2022 inflation regime offers a contrasting risk: rates can rise while risky assets also weaken. The existing rate-only selloff loses $2.578m with other factors held constant; it does not quantify a combined inflation shock. Default jumps, funding, curve basis and nonlinearity remain outside the calculation. Historical comparisons are qualitative, not claims about how this synthetic portfolio performed in those episodes.
+**Illustrative demo interpretation — not a live model response:** A Treasury rally can signal weaker growth rather than improving conditions for all assets. Duration gains can be outweighed by spread and equity losses: the broad risk-off stress loses $4.240m despite a $2.505m rate gain. The sourced 2008 description motivates a credit/equity risk analogy; March 2020 motivates scrutiny of liquidity and margin needs. The 2022 inflation regime offers a contrasting risk: rates can rise while risky assets also weaken. The existing rate-only selloff loses $2.505m with other factors held constant; it does not quantify a combined inflation shock. Default jumps, funding, curve basis and nonlinearity remain outside the calculation. Historical comparisons are qualitative, not claims about how this synthetic portfolio performed in those episodes.
 
 This walkthrough runs in demo mode without credentials, or through the configured live provider. The v0.2.1 live harness check used this question and scenario and validated the structured result. The illustrative paragraph above remains a demonstration example, not a transcript of the live response.
 

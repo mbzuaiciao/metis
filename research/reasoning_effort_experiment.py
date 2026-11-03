@@ -53,7 +53,7 @@ def write_private(path: Path, value: dict):
 
 
 def define_cases():
-    data = workstation()
+    data = workstation('2025-03-10')
     text = (REPO_ROOT / "frontend/src/investigation.ts").read_text()
     daily_q = re.search(r'export const dailyQuestion =\s*"([^"]+)"', text).group(1)
     scenario_q = re.search(r'export const scenarioQuestion =\s*"([^"]+)"', text).group(1)
@@ -135,7 +135,7 @@ def define_cases():
             "id": key,
             "question": q,
             "shocks": s,
-            "context": assemble_context(Shocks(**s)),
+            "context": assemble_context(Shocks(**s), investigation_date='2025-03-10'),
             "expectations": exp,
         }
         for key, q, s, exp in definitions

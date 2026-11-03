@@ -36,7 +36,7 @@ def test_context_diff_is_only_interpretation_fields():
             assert after[field] == before[field]
         assert "interpretation" not in after
     assert "commentary" not in evidence["market"]
-    assert full["scenario"]["total_pnl_usd"] == -3_347_000
+    assert full["scenario"]["total_pnl_usd"] == -4_240_000
 
 
 def test_request_modes_and_demo_stay_runnable(monkeypatch):

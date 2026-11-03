@@ -22,7 +22,7 @@ COMPACT_SYSTEM = SYSTEM+'\n\n'+COMPACT_OUTPUT
 
 
 def cases():
-    data = workstation()
+    data = workstation('2025-03-10')
     text = (HERE.parent/'frontend/src/investigation.ts').read_text()
     daily = re.search(r'export const dailyQuestion =\s*"([^"]+)"',text).group(1)
     scenario = re.search(r'export const scenarioQuestion =\s*"([^"]+)"',text).group(1)
@@ -32,7 +32,7 @@ def cases():
         ('02',scenario,broad,['Stress -3347000 versus daily -560770. Rates+2578000, spreads-1975000, equity-3450000, FX-500000. HY spread-1112500 versus net-872500.']),
         ('03','How did the receive-fixed and pay-fixed swaps behave in the daily yield decline, and what can we conclude about hedge effectiveness from the portfolio loss? Distinguish signed sensitivities, directional contributions and an unstated hedge objective.',data['market']['daily_shocks'],['Receive-fixed+224000, pay-fixed-96000, net swaps+128000. Negative payer DV01 -12000. Positive aggregate rates do not establish mandate success/failure or optimum.']),
         ('04','Can the cash balance, derivative marks and credit baskets establish funding adequacy, net counterparty exposure or issuer default losses under this stress? Give a useful scoped conclusion and the missing evidence, distinguishing marks and sensitivities from cash flows and losses.',broad,['Cash6m; no CSA/netting, collateral availability, actual calls/timing, issuer/recovery/default facts. Neither adequacy nor shortfall, net counterparty amount, concentrated issuers or default loss is established. CS01 spread only.'])]
-    return [{'id':key,'question':q,'context':assemble_context(Shocks(**shocks)), 'expected':expected} for key,q,shocks,expected in definitions]
+    return [{'id':key,'question':q,'context':assemble_context(Shocks(**shocks), investigation_date='2025-03-10'), 'expected':expected} for key,q,shocks,expected in definitions]
 
 
 def run(output_dir, provider=None):

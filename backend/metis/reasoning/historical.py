@@ -34,7 +34,8 @@ def historical_context() -> dict:
         rates_bp=round((obs['ust10']['current_yield_pct'] - obs['ust10']['previous_yield_pct']) * 100, 8),
         ig_bp=obs['ig_spread']['change_bp'], hy_bp=obs['hy_spread']['change_bp'],
         equity_pct=obs['sp500']['reported_return_pct'], fx_pct=obs['eurusd']['reported_return_pct'])
-    frame = load_positions()
+    # Preserve the reviewed legacy holdings/proxies independently of app defaults.
+    frame = load_positions('2025-03-10')
     # Only reviewed cash baskets use these indices; a new/changed exposure must
     # not silently inherit a proxy solely from its broad asset classification.
     mappings = inputs['credit_proxy_mappings']

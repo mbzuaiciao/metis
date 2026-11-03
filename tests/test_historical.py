@@ -51,8 +51,8 @@ def test_historical_case_reuses_sources_engine_results_and_preserves_original_da
             assert all(h[key] for key in ['mechanism', 'consistent_evidence', 'portfolio_implications', 'uncertainty', 'available_checks', 'additional_evidence'])
         assert answer['verification'] == []  # No misleading historical period mappings.
         assert workstation() == before
-        assert before['daily']['total_pnl_usd'] == -560770
-        assert before['market']['as_of'] == '2025-03-10'
+        assert before['daily']['total_pnl_usd'] == -282200
+        assert before['market']['as_of'] == '2026-10-30'
         monkeypatch.setattr('metis.reasoning.historical.historical_context', lambda: pytest.fail('Follow-up refreshed historical inputs'))
         follow = client.post('/api/reasoning', json={'question': 'What could distinguish them?', 'investigation_id': answer['investigation_id']})
         assert follow.status_code == 200
@@ -123,7 +123,7 @@ def test_credit_units_explicit_mapping_and_reconciliation():
         assert source['verified_on'] == '2026-11-03'
         assert source['url'].startswith('https://equibles.com/economicdata/')
     result = context['scenario']
-    prior = calculate(load_positions(), Shocks(rates_bp=5.37, equity_pct=-4.32, fx_pct=-1.46))
+    prior = calculate(load_positions('2025-03-10'), Shocks(rates_bp=5.37, equity_pct=-4.32, fx_pct=-1.46))
     positions = {p['id']: p for p in result['positions']}
     expected = {'IG-US': ('ig', 6300, 0, -37590), 'IG-EU': ('ig', 5200, 0, -30072),
                 'HY-US': ('hy', 2450, -44100, -59136), 'HY-EU': ('hy', 2000, -36000, -46740)}
@@ -149,7 +149,7 @@ def test_credit_units_explicit_mapping_and_reconciliation():
 
 def test_signed_cs01_reverses_short_spread_leg_without_extra_rates():
     # Hypothetical sign reversal in a test fixture only; production contains no credit shorts.
-    frame = load_positions().copy()
+    frame = load_positions('2025-03-10').copy()
     frame.loc[frame.id == 'HY-US', 'cs01_usd_per_bp'] *= -1
     result = calculate(frame, Shocks(hy_bp=18))
     positions = {p['id']: p for p in result['positions']}
@@ -159,9 +159,9 @@ def test_signed_cs01_reverses_short_spread_leg_without_extra_rates():
 
 
 def test_unreviewed_credit_instrument_cannot_silently_inherit_proxy(monkeypatch):
-    frame = load_positions()
+    frame = load_positions('2025-03-10')
     frame.loc[frame.id == 'HY-US', 'instrument'] = 'Unreviewed credit derivative'
-    monkeypatch.setattr('metis.reasoning.historical.load_positions', lambda: frame)
+    monkeypatch.setattr('metis.reasoning.historical.load_positions', lambda date: frame)
     with pytest.raises(ValueError, match='mapping requires review'):
         historical_context()
 
@@ -177,7 +177,7 @@ def test_legacy_captured_partial_context_is_not_upgraded_or_overwritten(monkeypa
         context['historical'] = {key: old_inputs[key] for key in ('episode', 'observations', 'mapping_assumptions', 'sources')}
         context['historical']['coverage'] = 'Partial-factor hypothetical calculation; credit-spread P&L and complete historical total unavailable'
         context['market']['observations'] = old_inputs['observations']
-        partial = calculate(load_positions(), Shocks(rates_bp=5.37, equity_pct=-4.32, fx_pct=-1.46))
+        partial = calculate(load_positions('2025-03-10'), Shocks(rates_bp=5.37, equity_pct=-4.32, fx_pct=-1.46))
         context['daily'] = context['scenario'] = partial
         context['portfolio']['positions'] = partial['positions']
         context['evidence'] = [{'id': 'portfolio', 'description': 'Synthetic holdings'}, {'id': 'scenario', 'description': 'Partial factors'},

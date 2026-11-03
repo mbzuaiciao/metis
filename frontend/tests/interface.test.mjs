@@ -392,8 +392,33 @@ test("three illustrative snapshots render qualified estimates and inspectable in
   const full = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots, onExplore() {}}));
   assert.equal((full.match(/<option/g) || []).length, 3);
   assert.match(full, /Use this snapshot as a causal reference/);
+  const methodologyMarker = '<details><summary>Methodology &amp; Assumptions</summary>';
+  assert.ok(full.indexOf('</table>') < full.indexOf('Use this snapshot as a causal reference'));
+  assert.ok(full.indexOf('Use this snapshot as a causal reference') < full.indexOf(methodologyMarker));
   for (const s of snapshots) {
     const html = renderToStaticMarkup(React.createElement(EventSnapshots, {snapshots: [s]}));
+    const methodologyIndex = html.indexOf(methodologyMarker);
+    assert.ok(methodologyIndex > html.indexOf('</table>'));
+    assert.ok(html.endsWith('</details></section>'));
+    assert.equal(html.split(methodologyMarker).length - 1, 1);
+    const introduction = html.slice(0, html.indexOf('<table'));
+    assert.match(introduction, /<\/select><\/label><p><b>Estimated portfolio P&amp;L:/);
+    assert.match(introduction, /Starting illustrative value \$100,000,000/);
+    assert.match(introduction, /ending illustrative value/);
+    assert.match(introduction, /Illustrative estimate — not actual portfolio returns\./);
+    assert.doesNotMatch(introduction, /Observed input|Dollar display|Market inputs:|not actual historical holdings/);
+    const methodology = html.slice(methodologyIndex);
+    for (const text of ['Observed input', 'Dollar display', 'Market inputs:', 'March ETF observations retrieved', 'not actual historical holdings', 'cannot identify or validate event causes']) {
+      assert.ok(methodology.includes(text));
+    }
+    const table = html.match(/<table[^>]*>([\s\S]*?)<\/table>/)[1];
+    assert.equal((table.match(/<th>/g) || []).length, 5);
+    assert.doesNotMatch(table, /Status \/ provenance|class="badge/);
+    assert.match(table, /Method \/ inputs/);
+    assert.equal((table.match(/<details><summary>Inspect basis<\/summary>/g) || []).length, 12);
+    for (const row of table.matchAll(/<tr data-event-position="[^"]+">([\s\S]*?)<\/tr>/g)) {
+      assert.equal((row[1].match(/<td>/g) || []).length, 5);
+    }
     assert.equal((html.match(/data-event-position=/g) || []).length, 12);
     assert.match(html, /Observed input/);
     assert.match(html, /Estimated/);

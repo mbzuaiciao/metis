@@ -2087,6 +2087,9 @@ footer > span:last-child {
 .archived-market-content {
   margin-top: 12px;
 }
+.archived-market-content > .panel:last-child {
+  margin-bottom: 0;
+}
 
 /* Portfolio tab font formatting */
 .portfolio-tab .etf-table td {

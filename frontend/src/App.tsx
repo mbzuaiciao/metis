@@ -810,8 +810,7 @@ export function getMarketSnapshotRows(
         r2ChgBp !== null
           ? `${r2ChgBp > 0 ? "+" : ""}${Math.round(r2ChgBp)}bp`
           : "Unavailable",
-      changeTone:
-        r2ChgBp !== null ? (r2ChgBp < 0 ? "negative" : r2ChgBp > 0 ? "positive" : "") : "",
+      changeTone: "",
       notes:
         "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
       sourceUrl: ust2?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS2",
@@ -827,8 +826,7 @@ export function getMarketSnapshotRows(
         r5ChgBp !== null
           ? `${r5ChgBp > 0 ? "+" : ""}${Math.round(r5ChgBp)}bp`
           : "Unavailable",
-      changeTone:
-        r5ChgBp !== null ? (r5ChgBp < 0 ? "negative" : r5ChgBp > 0 ? "positive" : "") : "",
+      changeTone: "",
       notes:
         "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
       sourceUrl: irsp?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS5",
@@ -844,8 +842,7 @@ export function getMarketSnapshotRows(
         r10ChgBp !== null
           ? `${r10ChgBp > 0 ? "+" : ""}${Math.round(r10ChgBp)}bp`
           : "Unavailable",
-      changeTone:
-        r10ChgBp !== null ? (r10ChgBp < 0 ? "negative" : r10ChgBp > 0 ? "positive" : "") : "",
+      changeTone: "",
       notes:
         "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
       sourceUrl: ust10?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS10",
@@ -960,8 +957,7 @@ export function Market({
       <div className="notice">
         <FlaskConical size={17} />
         <span>
-          Market Monitor: coherent multi-asset market snapshot covering rates, credit, equities and FX for the selected historical event window.
-          Benchmark comparison date: {data.market.previous_date}. Modeled benchmark fixtures are preserved in collapsed archived details below.
+          Market Monitor: coherent multi-asset market snapshot covering rates, credit, equities and FX for the selected historical event window. Modeled benchmark fixtures and synthetic economic context are preserved in collapsed archived details below.
         </span>
       </div>
 
@@ -1078,7 +1074,7 @@ export function Market({
         <summary>Archived October 30 fictional demonstration · synthetic benchmarks</summary>
         <div className="archived-market-content">
           <p className="context-note" style={{ marginBottom: "16px" }}>
-            The chart and benchmark table below contain synthetic multi-asset demonstration fixtures from the archived October 30 portfolio model. Modeled rates, credit spreads, and FX levels are not observed quotes.
+            The chart and benchmark table below contain synthetic multi-asset demonstration fixtures from the archived October 30 portfolio model (synthetic benchmark comparison date: {data.market.previous_date}). Modeled rates, credit spreads, and FX levels are not observed quotes.
           </p>
           <div className="grid-main">
             <Panel title="US Treasury yield curve (Archived synthetic demonstration)" note="Yield · %">
@@ -1142,12 +1138,12 @@ export function Market({
               </div>
             </Panel>
           </div>
+          <Panel title="Economic context" note="Assumed regime">
+            <p className="brief">{data.market.commentary}</p>
+          </Panel>
         </div>
       </details>
 
-      <Panel title="Economic context" note="Assumed regime">
-        <p className="brief">{data.market.commentary}</p>
-      </Panel>
       <div className="section-title">
         <h2>Historical reference library</h2>
         <span>

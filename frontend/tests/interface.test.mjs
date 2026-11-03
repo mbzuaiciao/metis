@@ -583,33 +583,51 @@ test("Market Monitor presents unified date-consistent multi-asset market snapsho
   assert.doesNotMatch(html, /<section class="panel[^"]*">[^<]*<div class="panel-heading"><h2>Observed equity ETF market prices/);
 
   // 2. Default October 2026 multi-asset table rows
-  // Rates (2Y, 5Y, 10Y)
+  // Rates (2Y, 5Y, 10Y) - neutral coloring preserving signs
   assert.match(html, /US Treasury 2Y yield/);
   assert.match(html, /4\.61%/);
   assert.match(html, /4\.56%/);
   assert.match(html, /-5bp/);
+
+  const dgs2Row = html.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs2Row, />-5bp<\/em>/);
+  assert.doesNotMatch(dgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
 
   assert.match(html, /US Treasury 5Y yield/);
   assert.match(html, /4\.78%/);
   assert.match(html, /4\.71%/);
   assert.match(html, /-7bp/);
 
+  const dgs5Row = html.match(/<tr data-market-instrument="DGS5">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs5Row, />-7bp<\/em>/);
+  assert.doesNotMatch(dgs5Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+
   assert.match(html, /US Treasury 10Y yield/);
   assert.match(html, /4\.98%/);
   assert.match(html, /4\.94%/);
   assert.match(html, /-4bp/);
 
-  // Equities (SPY, HEFA)
+  const dgs10Row = html.match(/<tr data-market-instrument="DGS10">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs10Row, />-4bp<\/em>/);
+  assert.doesNotMatch(dgs10Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+
+  // Equities (SPY, HEFA) - directional red/teal coloring preserved
   assert.match(html, /SPY/);
   assert.match(html, /\$769\.36/);
   assert.match(html, /\$755\.72/);
   assert.match(html, /-1\.77%/);
+
+  const spyRow = html.match(/<tr data-market-instrument="SPY">([\s\S]*?)<\/tr>/)[1];
+  assert.match(spyRow, /class="negative"[^>]*>-1\.77%/);
 
   assert.match(html, /HEFA/);
   assert.match(html, /\$46\.84/);
   assert.match(html, /\$46\.30/);
   assert.match(html, /-1\.15%/);
   assert.match(html, /HEFA represents USD-hedged developed ex-US exposure, not an unhedged index/);
+
+  const hefaRow = html.match(/<tr data-market-instrument="HEFA">([\s\S]*?)<\/tr>/)[1];
+  assert.match(hefaRow, /class="negative"[^>]*>-1\.15%/);
 
   // FX (EUR/USD)
   assert.match(html, /EUR\/USD/);
@@ -627,10 +645,21 @@ test("Market Monitor presents unified date-consistent multi-asset market snapsho
   assert.doesNotMatch(html, /<b>Daily return<\/b>/);
   assert.doesNotMatch(html, /Daily return/);
 
-  // Archived synthetic benchmarks collapsed
+  // Notice does not contain fictional benchmark date reference
+  const noticeMatch = html.match(/<div class="notice">([\s\S]*?)<\/div>/)[1];
+  assert.doesNotMatch(noticeMatch, /Benchmark comparison date/);
+
+  // Archived synthetic benchmarks collapsed with synthetic Economic context panel inside
   assert.match(html, /<details class="archived-market-details">/);
   assert.match(html, /Archived synthetic market benchmarks/);
   assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
+
+  const archivedContentMatch = html.match(/<div class="archived-market-content">([\s\S]*?)<\/details>/)[1];
+  assert.match(archivedContentMatch, /Economic context/);
+  assert.match(archivedContentMatch, /Assumed regime/);
+
+  const afterArchived = html.slice(html.lastIndexOf('</details>'));
+  assert.doesNotMatch(afterArchived, /Economic context/);
 
   // 3. September 2022 CPI window: verify all rows update synchronously
   const cpiHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "cpi-2022" }));
@@ -638,6 +667,10 @@ test("Market Monitor presents unified date-consistent multi-asset market snapsho
   assert.match(cpiHtml, /3\.58%/);
   assert.match(cpiHtml, /3\.75%/);
   assert.match(cpiHtml, /\+17bp/);
+
+  const cpiDgs2Row = cpiHtml.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
+  assert.match(cpiDgs2Row, />\+17bp<\/em>/);
+  assert.doesNotMatch(cpiDgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
   assert.match(cpiHtml, /3\.47%/);
   assert.match(cpiHtml, /3\.58%/);
   assert.match(cpiHtml, /\+11bp/);

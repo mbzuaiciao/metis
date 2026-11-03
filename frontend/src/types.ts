@@ -112,11 +112,14 @@ export type Reasoning = {
     >;
     historical?: {
       episode: string;
+      credit_spreads_included?: boolean;
       observations: {
         ust10: { previous_yield_pct: number; current_yield_pct: number };
         ust2: { previous_yield_pct: number; current_yield_pct: number };
         sp500: { reported_return_pct: number };
         eurusd: { reported_return_pct: number };
+        ig_spread?: { previous_spread_bp?: number; current_spread_bp?: number; change_bp: number | null };
+        hy_spread?: { previous_spread_bp?: number; current_spread_bp?: number; change_bp: number | null };
       };
       mapping_assumptions: string[];
       coverage: string;

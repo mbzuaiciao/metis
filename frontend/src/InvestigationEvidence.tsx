@@ -9,7 +9,7 @@ const usd = (v: number) =>
   }).format(v === 0 ? 0 : v);
 const tone = (v: number) => (v < 0 ? "negative" : v > 0 ? "positive" : "muted");
 
-export function FactorEvidence({ calculation, omittedCredit = false }: { calculation: Calculation; omittedCredit?: boolean }) {
+export function FactorEvidence({ calculation, omittedCredit = false, hypothetical = false }: { calculation: Calculation; omittedCredit?: boolean; hypothetical?: boolean }) {
   const names: Record<string, string> = {
     rates_pnl: "Government rates",
     credit_pnl: "Credit spreads",
@@ -25,7 +25,7 @@ export function FactorEvidence({ calculation, omittedCredit = false }: { calcula
         </div>
       ))}
       <div className="evidence-net">
-        <span>{omittedCredit ? "Partial-factor P&L · complete total unknown" : "Total portfolio P&L"}</span>
+        <span>{omittedCredit ? "Partial-factor P&L · complete total unknown" : hypothetical ? "Estimated hypothetical P&L" : "Total portfolio P&L"}</span>
         <strong className={tone(calculation.total_pnl_usd)}>
           {usd(calculation.total_pnl_usd)}
         </strong>

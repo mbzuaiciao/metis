@@ -4,6 +4,12 @@ import type { EtfPortfolio as Portfolio, EtfHistory } from './types';
 const usd = (v: number | null) => v === null ? 'Unavailable' : new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', maximumFractionDigits: 2,
 }).format(v);
+const valuationName = {
+  observed_security_close: 'Observed security close',
+  treasury_issue_price: 'Treasury issue price',
+  modeled_otc_mark: 'Modeled OTC mark',
+  cash_balance: 'Cash balance',
+};
 
 export function EtfPortfolio({ portfolio, history }: { portfolio: Portfolio; history: EtfHistory[] }) {
   const [period, setPeriod] = useState(0);
@@ -20,13 +26,22 @@ export function EtfPortfolio({ portfolio, history }: { portfolio: Portfolio; his
     <p><b>Covered price P&amp;L: {usd(comparison.covered_price_pnl_usd)}</b> on {usd(comparison.covered_allocation_usd)} of starting allocations.
       {' '}Complete portfolio P&amp;L: Unavailable. Total return: Unavailable.</p>
     <div className="etf-table-wrap"><table className="etf-table">
-      <thead><tr><th>Holding</th><th>Initial allocation / NAV weight</th><th>Starting close</th><th>Ending close</th><th>Price return</th><th>Price P&amp;L</th></tr></thead>
-      <tbody>{comparison.positions.map(p => <tr key={p.id}>
+      <thead><tr><th>Holding</th><th>Initial allocation / NAV weight</th><th>Valuation type / status</th><th>Starting valuation<br />{comparison.start}</th><th>Ending valuation<br />{comparison.end}</th><th>Historical contribution</th></tr></thead>
+      <tbody>{comparison.positions.map(p => <tr key={p.id} data-position-id={p.id}>
         <td><b>{p.id}</b> · {p.label}<br />{p.source_url ? <a href={p.source_url} target="_blank" rel="noreferrer">{p.name}</a> : p.name}</td>
         <td>{usd(p.allocation_usd)} / {p.weight_pct.toFixed(1)}%</td>
-        <td>{usd(p.start_observation?.close ?? null)}</td><td>{usd(p.end_observation?.close ?? null)}</td>
-        <td>{p.price_return_pct === null ? 'Unavailable' : `${p.price_return_pct.toFixed(3)}%`}</td>
-        <td>{usd(p.price_pnl_usd)}</td>
+        <td><b>{valuationName[p.valuation.type]}</b><br />
+          {p.valuation.status === 'available' ? 'Available' : p.valuation.status === 'illustrative_only' ? 'Illustrative only' : 'Unavailable'}
+          <br />{p.valuation.unit}
+          {p.valuation.type === 'cash_balance' && <p>Reference balance: {usd(p.valuation.reference_balance_usd ?? null)} · {p.valuation.reference_date} · illustrative, not a historical account observation.</p>}
+          <details><summary>Basis{p.audit ? ' / missing inputs' : ''}</summary><p>{p.valuation.basis}</p>
+            {p.audit && <><p>{p.audit.minimum_data}</p><p>Next step: {p.audit.next_step}</p></>}
+            {p.valuation.source_urls.map(url => <p key={url}><a href={url} target="_blank" rel="noreferrer">Valuation basis source</a></p>)}
+          </details>
+        </td>
+        <td>{usd(p.valuation.start_value)}{p.valuation.type === 'cash_balance' && <><br />Historical balance</>}</td>
+        <td>{usd(p.valuation.end_value)}{p.valuation.type === 'cash_balance' && <><br />Historical balance</>}</td>
+        <td>{p.instrument === 'ETF' ? <>{p.price_return_pct === null ? 'Price return: Unavailable' : `${p.price_return_pct.toFixed(3)}% price return`}<br />Price P&amp;L: {usd(p.price_pnl_usd)}</> : 'P&L: Unavailable'}</td>
       </tr>)}</tbody>
     </table></div>
     <p>{comparison.provider} · retrieved {comparison.retrieved_at}. {comparison.distribution_treatment} {comparison.split_treatment}</p>
@@ -44,9 +59,17 @@ export function EtfPortfolio({ portfolio, history }: { portfolio: Portfolio; his
       </article>)}
     </details>
     <details><summary>Remaining six instruments: valuation gaps and minimum data</summary>
-      {portfolio.positions.filter(p => p.audit).map(p => <article key={p.id}>
+      {comparison.positions.filter(p => p.audit).map(p => <article key={p.id}>
         <h3>{p.id} · {p.name}</h3><p>Historical valuation: Unavailable. {p.audit!.minimum_data}</p>
-        <p>{p.audit!.recommendation}</p>
+        <p>{p.audit!.recommendation} Next step: {p.audit!.next_step}</p>
+        {p.valuation.treasury_review && <>
+          <p>Treasury coverage checked {p.valuation.treasury_review.checked_on}: {p.valuation.treasury_review.decision}</p>
+          <p><a href={p.valuation.treasury_review.reference_source_url} target="_blank" rel="noreferrer">TreasuryDirect historical reference source</a>: {p.valuation.treasury_review.source_qualification}</p>
+          {p.valuation.treasury_review.candidates.map(c => <div key={c.cusip}>
+            <p><a href={c.terms_source_url} target="_blank" rel="noreferrer">Research candidate {c.cusip}</a> · {c.original_term} · coupon {c.coupon_pct}% · issued {c.issue_date} · matures {c.maturity_date} · {c.eligibility === 'live_on_dates' ? 'Live on comparison dates' : 'Ineligible on comparison dates'}.</p>
+            <p>Published special-security reference rows only (not marketable-bond quotes or portfolio valuations): {c.reference_rows.map(r => `${r.date}: ${r.end_of_day_reference}`).join('; ')}. Price/accrual basis unverified; unused in P&amp;L.</p>
+          </div>)}
+        </>}
       </article>)}
     </details>
     <p>The Overview, market, risk, scenario and AI investigation pages retain the archived synthetic demonstrations and their original baskets. Their sensitivities and P&amp;L do not describe this ETF allocation.</p>

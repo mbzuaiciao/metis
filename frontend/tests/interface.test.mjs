@@ -340,3 +340,46 @@ test("ETF view renders sourced price returns, unavailable valuations, special ma
   assert.match(html, /old generic-basket sensitivities are retained only in archived demonstrations/);
   assert.match(html, /Their sensitivities and P&amp;L do not describe this ETF allocation/);
 });
+
+test("both comparison tables use valuation types and dates; cash and OTC rows never imply quoted closes", () => {
+  for (const dates of [["2022-09-12", "2022-09-13"], ["2026-10-29", "2026-10-30"]]) {
+    const props = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+      "import json,sys; from metis.analytics.etf import portfolio,historical_prices; print(json.dumps({'portfolio':portfolio(),'history':[historical_prices(*sys.argv[1:])]}))", ...dates],
+      { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+    const html = renderToStaticMarkup(React.createElement(etfComponents.EtfPortfolio, props));
+    const row = id => html.match(new RegExp(`<tr data-position-id="${id}">([\\s\\S]*?)</tr>`))[1];
+    assert.doesNotMatch(html, /Starting close|Ending close/);
+    assert.match(html, /Starting valuation/);
+    for (const date of dates) assert.ok(html.includes(date));
+    for (const id of ['IRS-R', 'IRS-P', 'FX-EUR']) {
+      assert.match(row(id), /Modeled OTC mark/);
+      assert.match(row(id), /USD contractual NPV/);
+      assert.match(row(id), /no complete contract/);
+      assert.match(row(id), /Next step:/);
+      assert.match(row(id), /P&amp;L: Unavailable/);
+      assert.doesNotMatch(row(id), /price return|Observed security close/);
+    }
+    const cash = row('CASH');
+    assert.match(cash, /Cash balance/);
+    assert.match(cash, /Illustrative only/);
+    assert.match(cash, /Reference balance: \$4,000,000/);
+    assert.match(cash, /2026-10-30/);
+    assert.equal((cash.match(/Historical balance/g) || []).length, 2);
+    assert.match(cash, /interest accruals/);
+    assert.match(cash, /P&amp;L: Unavailable/);
+    assert.doesNotMatch(cash, /\$1\.00|price return|Observed security close/);
+    for (const id of ['UST10', 'UST2']) {
+      assert.match(row(id), /Treasury issue price/);
+      assert.match(row(id), /USD per \$100 face/);
+      assert.match(row(id), /Generic 2Y\/10Y yields are not bond prices/);
+      assert.match(row(id), /P&amp;L: Unavailable/);
+    }
+    assert.match(row('SPY'), /Observed security close/);
+    assert.match(row('SPY'), /USD per ETF share/);
+    assert.match(row('SPY'), /price return/);
+    assert.match(html, /Research candidate 91282C/);
+    assert.match(html, /only to market-based Treasury special securities/);
+    assert.match(html, /unused in P&amp;L/);
+    assert.match(html, /Live on comparison dates/);
+  }
+});

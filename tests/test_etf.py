@@ -106,3 +106,78 @@ def test_api_keeps_observed_etf_path_separate_from_archived_synthetic_inputs():
     assert result['positions'] == workstation()['positions']
     assert result['daily']['total_pnl_usd'] == -282200
     assert result['exposures']['dv01_usd_per_bp'] == 50100
+
+
+@pytest.mark.parametrize('start,end', sorted(etf.SUPPORTED_PAIRS))
+def test_type_specific_valuations_do_not_fabricate_non_etf_prices_or_pnl(start, end):
+    result = etf.historical_prices(start, end)
+    rows = {row['id']: row for row in result['positions']}
+    for row in rows.values():
+        v = row['valuation']
+        assert (v['start_date'], v['end_date']) == (start, end)
+        if row['instrument'] == 'ETF':
+            assert v['type'] == 'observed_security_close'
+            assert v['unit'] == 'USD per ETF share'
+            assert (v['status'] == 'available') == (row['status'] == 'available')
+        else:
+            assert v['start_value'] is v['end_value'] is None
+            assert row['start_observation'] is row['end_observation'] is None
+            assert row['price_pnl_usd'] is row['price_return_pct'] is None
+            assert row['audit']['next_step']
+    for id in ['IRS-R', 'IRS-P', 'FX-EUR']:
+        v = rows[id]['valuation']
+        assert v['type'] == 'modeled_otc_mark' and v['status'] == 'unavailable'
+        assert v['unit'] == 'USD contractual NPV'
+        assert 'no complete contract' in v['basis']
+    for id in ['UST10', 'UST2']:
+        v = rows[id]['valuation']
+        assert v['type'] == 'treasury_issue_price' and v['status'] == 'unavailable'
+        assert v['unit'] == 'USD per $100 face'
+        review = v['treasury_review']
+        assert 'only to market-based Treasury special securities' in review['source_qualification']
+        candidate, = review['candidates']
+        assert candidate['eligibility'] == 'live_on_dates'
+        assert [r['date'] for r in candidate['reference_rows']] == [start, end]
+        assert all(len(r['response_sha256']) == 64 for r in candidate['reference_rows'])
+        assert 'not adopted as observed marketable-bond closes' in review['decision']
+        # A published special-security reference must not become an observed security close.
+        assert v['start_value'] is None
+    cash = rows['CASH']['valuation']
+    assert cash['type'] == 'cash_balance' and cash['status'] == 'illustrative_only'
+    assert cash['reference_balance_usd'] == 4_000_000
+    assert cash['reference_date'] == '2026-10-30'
+    assert cash['unit'] == 'USD balance'
+    assert 'not evidence of historical account balances' in cash['basis']
+    assert result['portfolio_pnl_usd'] is None
+
+
+def test_verified_treasury_candidates_and_lifecycle_do_not_establish_price_coverage():
+    review = load_json('treasury-coverage')
+    candidates = {c['cusip']: c for c in review['candidates']}
+    assert {k: (c['original_term'], c['coupon_pct'], c['issue_date'], c['maturity_date']) for k, c in candidates.items()} == {
+        '91282CFF3': ('10-Year', 2.75, '2022-08-15', '2032-08-15'),
+        '91282CFA4': ('2-Year', 3.0, '2022-08-01', '2024-07-31'),
+        '91282CRF0': ('10-Year', 4.625, '2026-08-17', '2036-08-15'),
+        '91282CRH6': ('2-Year', 4.125, '2026-08-31', '2028-08-31'),
+    }
+    assert candidates['91282CFF3']['reference_rows'][0]['end_of_day_reference'] == '94.781250'
+    assert candidates['91282CRF0']['reference_rows'][1]['end_of_day_reference'] == '97.656250'
+    # Using the 2026 representative in 2022, or the matured 2022 2Y in 2026, is ineligible.
+    assert etf.treasury_eligibility(candidates['91282CRH6'], '2022-09-12', '2022-09-13') == 'not_issued'
+    assert etf.treasury_eligibility(candidates['91282CFA4'], '2026-10-29', '2026-10-30') == 'matured'
+    assert etf.treasury_eligibility(candidates['91282CFA4'], '2024-07-30', '2024-07-31') == 'matured'
+    assert etf.treasury_eligibility(candidates['91282CRF0'], '2026-08-16', '2026-08-17') == 'not_issued'
+    # Even a still-live 2022 10Y is no longer a roughly-10Y-maturity representative in October 2026.
+    oct_rows = etf.historical_prices('2026-10-29', '2026-10-30')['positions']
+    oct_ust10 = next(r for r in oct_rows if r['id'] == 'UST10')
+    assert oct_ust10['valuation']['treasury_review']['candidates'][0]['cusip'] == '91282CRF0'
+
+
+def test_missing_period_preserves_cash_reference_without_backfilling_historical_balances():
+    result = etf.historical_prices('2026-10-30', '2026-11-02')
+    for row in result['positions']:
+        assert row['valuation']['start_value'] is row['valuation']['end_value'] is None
+        assert row['price_pnl_usd'] is None
+        if row['id'].startswith('UST'):
+            assert row['valuation']['treasury_review']['candidates'] == []
+    assert result['covered_price_pnl_usd'] is None

@@ -9,6 +9,15 @@ REFERENCE_DATE = '2026-10-30'
 SUPPORTED_PAIRS = {('2026-10-29', '2026-10-30'), ('2022-09-12', '2022-09-13')}
 
 
+def treasury_eligibility(candidate: dict, start: str, end: str) -> str:
+    """Lifecycle eligibility is necessary, not evidence of holding or price coverage."""
+    if date.fromisoformat(start) < date.fromisoformat(candidate['issue_date']):
+        return 'not_issued'
+    if date.fromisoformat(end) >= date.fromisoformat(candidate['maturity_date']):
+        return 'matured'
+    return 'live_on_dates'
+
+
 def portfolio() -> dict:
     catalog = load_json('etf-portfolio')
     mapping = {fund['legacy_id']: fund for fund in catalog['funds']}
@@ -47,6 +56,7 @@ def historical_prices(start: str, end: str) -> dict:
         raise ValueError('Start date must precede end date.')
     data = portfolio()
     quotes = load_json('etf-observations')
+    treasury_review = load_json('treasury-coverage')
     observations = quotes['observations']
     rows = []
     for position in data['positions']:
@@ -74,6 +84,29 @@ def historical_prices(start: str, end: str) -> dict:
                                    price_pnl_usd=round(position['allocation_usd'] * change, 2))
                     else:
                         row['reason'] = 'Invalid/incompatible close metadata or split event; valuation unavailable.'
+        audit = position.get('audit')
+        row['valuation'] = {
+            'type': audit['valuation_type'] if audit else 'observed_security_close',
+            'status': 'available' if row['status'] == 'available' else 'unavailable',
+            'unit': audit['valuation_unit'] if audit else 'USD per ETF share',
+            'start_date': start, 'end_date': end,
+            'start_value': row['start_observation']['close'] if row['start_observation'] else None,
+            'end_value': row['end_observation']['close'] if row['end_observation'] else None,
+            'basis': audit['basis'] if audit else row['reason'],
+            'source_urls': audit['source_urls'] if audit else list(dict.fromkeys(
+                q['source_url'] for q in [row['start_observation'], row['end_observation']] if q)),
+        }
+        if audit:
+            row['reason'] = audit['basis']
+            if position['id'] == 'CASH':
+                row['valuation'].update(status='illustrative_only', reference_balance_usd=position['allocation_usd'],
+                                        reference_date=REFERENCE_DATE)
+            if position['id'] in {'UST10', 'UST2'}:
+                row['valuation']['treasury_review'] = {
+                    **{k: v for k, v in treasury_review.items() if k != 'candidates'},
+                    'candidates': [{**c, 'eligibility': treasury_eligibility(c, start, end)}
+                                   for c in treasury_review['candidates']
+                                   if c['position_id'] == position['id'] and (c['start'], c['end']) == (start, end)]}
         rows.append(row)
     covered = [row for row in rows if row['status'] == 'available']
     return {'start': start, 'end': end, 'positions': rows,

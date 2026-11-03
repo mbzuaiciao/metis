@@ -189,7 +189,7 @@ export type EtfPosition = {
   id: string; name: string; label: string; instrument: string;
   allocation_usd: number; weight_pct: number;
   source_url?: string; event_source_url?: string; exchange?: string; currency?: string; note?: string;
-  audit?: { minimum_data: string; recommendation: string };
+  audit?: { minimum_data: string; recommendation: string; next_step: string };
 };
 export type EtfPortfolio = {
   reference_date: string; allocation_nav_usd: number; observed_nav_usd: null;
@@ -206,7 +206,25 @@ export type EtfHistory = {
   provider: string; retrieved_at: string; method: string;
   distribution_treatment: string; split_treatment: string;
   positions: (EtfPosition & {
+    valuation: InstrumentValuation;
     status: string; reason: string; price_return_pct: number | null; price_pnl_usd: number | null;
     start_observation: EtfObservation | null; end_observation: EtfObservation | null;
   })[];
+};
+
+export type InstrumentValuation = {
+  type: 'observed_security_close' | 'treasury_issue_price' | 'modeled_otc_mark' | 'cash_balance';
+  status: 'available' | 'unavailable' | 'illustrative_only';
+  unit: string; start_date: string; end_date: string;
+  start_value: number | null; end_value: number | null;
+  basis: string; source_urls: string[];
+  reference_balance_usd?: number; reference_date?: string;
+  treasury_review?: {
+    checked_on: string; decision: string; source_qualification: string; reference_source_url: string;
+    candidates: {
+      cusip: string; coupon_pct: number; original_term: string;
+      issue_date: string; maturity_date: string; terms_source_url: string; eligibility: string;
+      reference_rows: { date: string; end_of_day_reference: string }[];
+    }[];
+  };
 };

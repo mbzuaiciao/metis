@@ -297,6 +297,28 @@ test("Overview and shared ticker render October fixture values rather than legac
   const ticker = renderToStaticMarkup(React.createElement(MarketTicker, {data}));
   assert.match(overview, /2026-10-30/);
   for (const amount of ["282,200", "501,000", "333,200", "390,000"]) assert.ok(overview.includes(amount));
+  assert.match(overview, /<h2>What drove the portfolio loss\?<\/h2>/);
+  assert.match(overview, /Daily factor contributions/);
+  assert.match(overview, /Government rates/);
+  assert.doesNotMatch(overview, /Rate contribution|A positive rate contribution did not prevent/);
+  for (const [daily_return_pct, expected, tone] of [
+    [data.daily_return_pct, "-0.28%", "negative"],
+    [1.234, "+1.23%", "positive"],
+    [0, "0.00%", "muted"],
+  ]) {
+    // Keep P&L/factors fixed so the return card must use the supplied return field.
+    const html = renderToStaticMarkup(React.createElement(Overview, {
+      data: {...data, daily_return_pct}, goAI() {}, goRisk() {}, goCausal() {}, busy: false,
+    }));
+    const cards = [...html.matchAll(/<div class="metric">([\s\S]*?)<\/div>/g)].slice(0, 4).map(match => match[1]);
+    assert.deepEqual(cards.map(card => card.match(/<span class="eyebrow">(.*?)<\/span>/)[1]),
+      ["Portfolio NAV", "Daily P&amp;L", "Daily Return", "Positions"]);
+    assert.match(cards[0], /USD · end-of-day synthetic marks/);
+    assert.match(cards[1], /<strong class="negative">-\$282,200<\/strong><small>USD · daily movement<\/small>/);
+    assert.doesNotMatch(cards[1], /%/);
+    assert.ok(cards[2].includes(`<strong class="${tone}">${expected}</strong><small>Versus opening NAV</small>`));
+    assert.match(cards[3], /<strong class="">12<\/strong>/);
+  }
   assert.match(ticker, /2026-10-30/);
   assert.match(ticker, /3\.90/);
   assert.match(ticker, /1\.1000/);

@@ -16,8 +16,19 @@ ContextMode = Literal["full", "evidence_only"]
 META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2, "reasoning_effort": "low"}
 
 
+class EconomicHypothesis(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str = Field(min_length=1, max_length=120)
+    mechanism: str = Field(min_length=1, max_length=700)
+    consistent_evidence: str = Field(min_length=1, max_length=700)
+    uncertainty: str = Field(min_length=1, max_length=700)
+    available_checks: str = Field(min_length=1, max_length=700)
+    additional_evidence: str = Field(min_length=1, max_length=700)
+
+
 class Interpretation(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    hypotheses: list[EconomicHypothesis] = Field(default_factory=list, min_length=2, max_length=3)
     summary: str = Field(min_length=1, max_length=6000)
     principal_risk_observations: list[str] = Field(min_length=1, max_length=12)
     economic_interpretation: str = Field(min_length=1, max_length=8000)
@@ -88,6 +99,7 @@ SYSTEM = """You are Metis, a financial risk interpretation assistant. Answer the
 Use the existing output fields as follows:
 - summary: exactly two short sentences, at most 75 words total. Lead with the most important portfolio risk conclusion and its economic mechanism. Distinguish a successful hedge contribution from the total portfolio result; include the most consequential uncertainty when relevant. No introductory boilerplate, tables, lists of metrics or repeated supporting detail.
 - principal_risk_observations: put the most material measured loss drivers first, ordered by supplied loss contributions, then explain important offsets and exposures. Label calculated contributions versus inferred economic relationships. Include derivative exposure versus marked value where material. Do not repeat the summary or a P&L table.
+- hypotheses: return two or three plausible competing economic explanations for the investigation's market moves, not P&L restatements or portfolio vulnerabilities. Each needs a short title, mechanism, consistent_evidence (specific supplied moves, explicitly hypothetical for scenarios), uncertainty (including unexplained or inconsistent moves), available_checks (a proposed check using only evidence already in context), and additional_evidence (specific missing data that could support or challenge this mechanism). Checks are suggestions, never completed tests. P&L consistency and verified numerical mappings do not verify a hypothesis or identify causality. Explicitly acknowledge when supplied evidence cannot distinguish the hypotheses; do not assign probabilities. Use context.investigation_scope when present, otherwise the user's requested daily/scenario scope.
 - economic_interpretation: explain how government rates, credit spreads, equities and FX interact. Distinguish the dated daily snapshot from the selected hypothetical scenario; do not describe scenario shocks as observed market moves.
 - historical_analogies: explain which supplied historical patterns apply, why, and where the analogy could fail. Historical descriptions are qualitative context, not calibrated replays.
 - potential_vulnerabilities: select only material concerns supported by the supplied context, rather than a generic catalogue. Begin each string with a short topic heading and colon, followed by Concern, Why it matters, Available evidence (cite IDs), and Next investigation (specific missing data or analysis). Put the most decision-relevant concerns first. Put ordering rationale and any inability to rank unmeasured risks in assumptions_and_uncertainties, never in a vulnerability preamble or standalone ordering-note item. Notional/DV01 alone do not establish a funding shortfall. Do not recommend trades or invent missing data. Consider unmeasured liquidity, funding, counterparty, default and nonlinear risks where relevant, and contrast recession/risk-off with inflation or rate-selloff conditions. Use supplied alternative_scenarios for numerical comparisons. A rate-only scenario holds other factors constant; do not present it as a complete inflation shock. Do not assign unsupported probabilities.
@@ -143,6 +155,33 @@ def assemble_context(shocks: Shocks, context_mode: ContextMode = "full") -> dict
     return evidence_only_context(context) if context_mode == "evidence_only" else context
 
 
+def demo_hypotheses(request: ReasoningRequest, context: dict) -> list[EconomicHypothesis]:
+    daily = context.get("investigation_scope") == "daily" or (
+        "investigation_scope" not in context and request.question.lower().startswith("explain the illustrative daily"))
+    selected = context["daily" if daily else "scenario"]
+    moves = selected["shocks"]
+    basis = "Synthetic daily moves" if daily else "Hypothetical assumptions (not observed moves)"
+    evidence = (f"{basis}: rates {moves['rates_bp']:+g}bp, IG {moves['ig_bp']:+g}bp, "
+                f"HY {moves['hy_bp']:+g}bp, equities {moves['equity_pct']:+g}%, EUR/USD {moves['fx_pct']:+g}%.")
+    risk_off = moves["equity_pct"] < 0 and moves["ig_bp"] > 0 and moves["hy_bp"] > 0
+    return [
+        EconomicHypothesis(
+            title="Growth concerns" if risk_off else "Growth and inflation repricing",
+            mechanism=("Weaker growth expectations could lower expected earnings, widen credit spreads and encourage government-bond buying." if risk_off else "Changing growth and inflation expectations could reprice discount rates and risk premia. The supplied signs need not share a single driver."),
+            consistent_evidence=evidence + (" Equity declines and wider spreads fit weaker growth." if risk_off else " This template does not establish a common macro driver for these signs."),
+            uncertainty="Growth expectations are unavailable. Falling yields would fit haven demand; rising yields would require an additional inflation or rate channel. FX also depends on relative country conditions. These inputs cannot distinguish this hypothesis from positioning or liquidity effects.",
+            available_checks="Compare captured rate, spread and equity signs and their separate backend P&L contributions. This checks the proposed pattern, not its cause.",
+            additional_evidence="Obtain dated growth forecast revisions, economic releases and inflation expectations. Compare their timing with yield-curve and spread changes; improving growth expectations would challenge a growth-scare account."),
+        EconomicHypothesis(
+            title="Liquidity and positioning shifts",
+            mechanism="Deleveraging or reallocations could move equities and credit independently of growth news. Cash demand can force government-bond sales, while haven demand can lower yields; the dominant channel depends on conditions.",
+            consistent_evidence=evidence + (" Joint risky-asset weakness is compatible with selling pressure, but does not show forced selling." if risk_off else " Changes in positioning could contribute, but supplied signs alone do not establish liquidity stress."),
+            uncertainty="No funding, flow or execution data are supplied. A rate rally does not rule out liquidity stress, and a selloff does not prove it. The available inputs cannot distinguish liquidity effects from macro repricing.",
+            available_checks="Inspect captured position sizes, signed DV01 and rate versus spread contributions to locate sensitivities. These do not measure cash needs or forced sales.",
+            additional_evidence="Obtain repo and funding spreads, bid-ask quotes, market depth, trading volumes and fund flows around the move. Stable funding and execution conditions would weaken a liquidity-stress explanation."),
+    ]
+
+
 class DemoProvider:
     def interpret(self, request: ReasoningRequest, context: dict) -> Interpretation:
         d = context["daily"]
@@ -164,6 +203,7 @@ class DemoProvider:
         elif any(word in q for word in ["histor", "episode", "analog"]) and not any(word in q for word in ["principal", "risks"]):
             summary = "2008 and March 2020 offer growth and liquidity analogies; 2022 is a contrasting inflation regime."
         return Interpretation(
+            hypotheses=demo_hypotheses(request, context),
             summary=summary,
             principal_risk_observations=[
                 f"Calculated daily rates contribution: {money(d['by_factor']['rates_pnl'])}; credit: {money(d['by_factor']['credit_pnl'])}.",
@@ -218,6 +258,10 @@ class HTTPProvider:
             url = f"{self.base}/chat/completions"
             headers = {"Authorization": f"Bearer {self.key}"}
             schema = output_model.model_json_schema()
+            # Strict provider schemas require every output property, including
+            # fields whose local defaults support older saved responses.
+            if output_model is Interpretation:
+                schema["required"] = list(schema["properties"])
             # Both bounded output types carry evidence IDs; constrain every occurrence.
             def constrain_evidence(node):
                 if isinstance(node, dict):
@@ -305,6 +349,8 @@ class HTTPProvider:
 
 def reason(request: ReasoningRequest) -> dict:
     context = assemble_context(request.shocks, request.context_mode)
+    if hasattr(request, "investigation_scope"):
+        context["investigation_scope"] = request.investigation_scope
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()
     if mode not in {"demo", "meta", "anthropic"}:
         raise ProviderError("METIS_PROVIDER must be demo, meta or anthropic.")

@@ -152,3 +152,20 @@ def test_evidence_only_snapshot_preserves_no_history_boundary():
         assert follow(client, initial).status_code == 200
         response = follow(client, initial, history=[{'role': 'assistant', 'content': 'Prior narrative'}])
         assert response.status_code == 409 and 'do not accept conversation history' in response.json()['detail']
+
+@pytest.mark.parametrize('scope', ['daily', 'scenario'])
+def test_hypotheses_follow_captured_scope_without_changing_calculations(scope):
+    from metis.analytics.engine import workstation, calculate, load_positions, Shocks
+    with TestClient(api.app) as client:
+        answer = start(client, scope, rates_bp=50, ig_bp=-10, hy_bp=-20, equity_pct=3)
+        expected = workstation()['daily'] if scope == 'daily' else calculate(
+            load_positions(), Shocks(rates_bp=50, ig_bp=-10, hy_bp=-20, equity_pct=3))
+        assert answer['context']['daily' if scope == 'daily' else 'scenario'] == expected
+        hypotheses = answer['interpretation']['hypotheses']
+        assert len(hypotheses) == 2
+        for hypothesis in hypotheses:
+            assert ('Synthetic daily moves' if scope == 'daily' else 'Hypothetical assumptions (not observed moves)') in hypothesis['consistent_evidence']
+            assert 'cannot distinguish' in hypothesis['uncertainty']
+            assert hypothesis['available_checks'] and hypothesis['additional_evidence']
+        assert follow(client, answer).json()['interpretation']['hypotheses'] == hypotheses
+        assert answer['verification']

@@ -17,7 +17,8 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
-import { ClaimVerification, VerificationDemo } from "./ClaimVerification";
+import { VerificationDemo } from "./ClaimVerification";
+import { InvestigationResults } from "./InvestigationResults";
 import { InvestigationScope } from "./InvestigationScope";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
@@ -44,10 +45,8 @@ import type {
 import {
   FactorEvidence,
   PositionEvidence,
-  InvestigationFindings,
 } from "./InvestigationEvidence";
 import {
-  executivePreview,
   dailyQuestion,
   scenarioQuestion,
   investigationRequest,
@@ -1066,11 +1065,10 @@ function ReasoningPage({
             <BrainCircuit size={24} />
           </div>
           <div>
-            <span className="eyebrow">2 · WHY DID IT HAPPEN?</span>
-            <h2>Put your risk in context.</h2>
+            <span className="eyebrow">ECONOMIC INVESTIGATION</span>
+            <h2>From portfolio moves to competing explanations.</h2>
             <p>
-              Ask about economic drivers, historical parallels, and the limits
-              of measured exposure.
+              See what happened, what might explain it, and which evidence to investigate next.
             </p>
           </div>
         </div>
@@ -1103,7 +1101,6 @@ function ReasoningPage({
             {error}
           </p>
         )}
-        <VerificationDemo />
         {messages.length === 0 && (
           <div className="prompt-list">
             {prompts.map((q) => (
@@ -1143,87 +1140,7 @@ function ReasoningPage({
                     : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
                 </span>
               </div>
-              <InvestigationScope answer={m} label="Answer scope" />
-              <section className="executive-conclusion">
-                <span className="eyebrow">WHAT MATTERS MOST · MODEL JUDGMENT</span>
-                <p className="answer-summary">{executivePreview(m.interpretation.summary)}</p>
-                {m.interpretation.summary.length > 480 && (
-                  <details className="answer-section">
-                    <summary>Executive excerpt above · read the full model summary</summary>
-                    <p>{m.interpretation.summary}</p>
-                  </details>
-                )}
-              </section>
-              <details className="answer-section">
-                <summary>Structured assertion checks · original prose Not checked</summary>
-                <ClaimVerification results={m.verification} />
-              </details>
-              <div className="captured-evidence">
-                <span className="eyebrow">
-                  MEASURED DRIVERS & OFFSETS · BACKEND CALCULATIONS
-                </span>
-                <p>
-                  Daily illustrative snapshot {m.context.market.as_of}:{" "}
-                  <b>{money(m.context.daily.total_pnl_usd)}</b>.{" "}
-                  {m.investigation_scope !== "daily" && (
-                    <>
-                      Hypothetical scenario:{" "}
-                      <b>{money(m.context.scenario.total_pnl_usd)}</b>.
-                    </>
-                  )}
-                </p>
-                <FactorEvidence
-                  calculation={
-                    m.investigation_scope === "daily"
-                      ? m.context.daily
-                      : m.context.scenario
-                  }
-                />
-                <PositionEvidence
-                  id={`answer-evidence-${i}`}
-                  calculation={
-                    m.investigation_scope === "daily"
-                      ? m.context.daily
-                      : m.context.scenario
-                  }
-                  exposures={m.context.portfolio.exposures}
-                />
-              </div>
-              <details className="answer-section">
-                <summary>Economic interpretation · why the risks interact</summary>
-                <p>{m.interpretation.economic_interpretation}</p>
-              </details>
-              {(
-                [
-                  [
-                    "Principal observations · model claims to check against calculations",
-                    m.interpretation.principal_risk_observations,
-                  ],
-                  [
-                    "Historical analogies",
-                    m.interpretation.historical_analogies,
-                  ],
-                ] as [string, string[]][]
-              ).map(([title, items]) => (
-                <details key={title} className="answer-section">
-                  <summary>{title}</summary>
-                  <ul>
-                    {items.map((v, j) => (
-                      <li key={j}>{v}</li>
-                    ))}
-                  </ul>
-                </details>
-              ))}
-              <InvestigationFindings
-                id={
-                  i === messages.length - 1
-                    ? "investigation-findings"
-                    : undefined
-                }
-                items={m.interpretation.potential_vulnerabilities}
-                uncertainties={m.interpretation.assumptions_and_uncertainties}
-                evidenceId={`answer-evidence-${i}`}
-              />
+              <InvestigationResults answer={m} investigationId={i === messages.length - 1 ? "investigation-findings" : undefined} />
               <button className="text-button" disabled={busy} onClick={() => {
                 setActiveInvestigationId(m.investigation_id);
                 document.getElementById("followup-composer")?.scrollIntoView({ behavior: "smooth" });
@@ -1232,46 +1149,12 @@ function ReasoningPage({
                 3 · Explore or adjust a hypothetical stress{" "}
                 <ArrowRight size={15} />
               </button>
-              <div className="evidence">
-                <h3>Supporting evidence</h3>
-                {m.context.evidence
-                  .filter((e) =>
-                    m.interpretation.evidence_references.includes(e.id),
-                  )
-                  .map((e) =>
-                    e.url ? (
-                      <a
-                        href={e.url}
-                        key={e.id}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        [{e.id}] {e.description} ↗
-                      </a>
-                    ) : (
-                      <span key={e.id}>
-                        [{e.id}] {e.description}
-                      </span>
-                    ),
-                  )}
-              </div>
-              <details>
-                <summary>Inspect context and backend operations</summary>
-                <p>
-                  Application assembled this context before invocation. No
-                  autonomous tool calls.
-                </p>
-                <pre>
-                  {JSON.stringify(
-                    { operations: m.context_operations, context: m.context },
-                    null,
-                    2,
-                  )}
-                </pre>
-              </details>
             </article>
           );
         })}
+        <section className="verification-examples" aria-label="Demonstration examples">
+          <VerificationDemo />
+        </section>
         <form
           className="composer"
           id="followup-composer"
@@ -1603,7 +1486,7 @@ export default function App() {
             </div>
           ) : (
             <>
-              <nav
+              {page !== 5 && <nav
                 className="investigation-trail"
                 aria-label="Risk investigation"
               >
@@ -1644,7 +1527,7 @@ export default function App() {
                     <small>Evidence & missing inputs</small>
                   </span>
                 </button>
-              </nav>
+              </nav>}
               {page === 0 && (
                 <Overview
                   data={data}

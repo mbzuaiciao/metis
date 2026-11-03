@@ -62,6 +62,15 @@ def test_live_provider_contract(monkeypatch, provider):
             assert output_format["json_schema"]["strict"] is True
             schema = output_format["json_schema"]["schema"]
             assert schema["additionalProperties"] is False
+            assert "hypotheses" in schema["required"]
+            assert schema["properties"]["hypotheses"]["minItems"] == 2
+            assert schema["properties"]["hypotheses"]["maxItems"] == 3
+            hypothesis_schema = schema["$defs"]["EconomicHypothesis"]
+            assert hypothesis_schema["additionalProperties"] is False
+            assert set(hypothesis_schema["required"]) == {
+                "title", "mechanism", "consistent_evidence", "uncertainty",
+                "available_checks", "additional_evidence",
+            }
             assert set(schema["required"]) == set(expected.model_fields_set)
             assert schema["properties"]["evidence_references"]["items"]["enum"] == [e["id"] for e in context["evidence"]]
             return httpx.Response(200, json={"choices":[{"finish_reason":"stop","message":{"content":expected.model_dump_json()}}]})

@@ -50,8 +50,13 @@ def test_frozen_record_integrity_and_independent_expectations():
     for path, digest in result['source_sha256'].items():
         source = (HERE.parent/path).read_bytes()
         if path == 'backend/metis/reasoning/harness.py':
-            # The archived experiment predates the 2026-10-29 effort setting.
-            # Allow only that exact configuration delta; retain frozen hashes.
+            # Product schema/prompt changes in November do not rewrite the
+            # experiment's source provenance. Check the preserved Git revision,
+            # then undo its sole effort-setting delta as before.
+            import subprocess
+            source = subprocess.check_output([
+                'git', 'show', 'ca4eeaa76480ceac7f5169d4b08ed207590cdeec:' + path,
+            ], cwd=HERE.parent)
             source = source.replace(
                 b'META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2, "reasoning_effort": "low"}',
                 b'META_INFERENCE_PARAMETERS = {"max_completion_tokens": 8000, "temperature": 0.2}',

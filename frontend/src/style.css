@@ -1751,3 +1751,14 @@ footer > span:last-child {
 .reasoning-layout > .conversation { min-width: 0; }
 .reasoning-layout .composer select { width: 100%; min-width: 0; }
 .investigation-results { overflow-wrap: anywhere; }
+
+.etf-portfolio { margin-bottom: 28px; }
+.etf-portfolio p { line-height: 1.6; color: var(--muted, #a6b2c4); margin: 12px 0; }
+.etf-portfolio details { margin: 16px 0; padding: 16px; border: 1px solid #263347; border-radius: 8px; }
+.etf-portfolio summary { cursor: pointer; }
+.etf-portfolio article { margin: 20px 0; }
+.etf-portfolio select { padding: 8px; background: #141e2d; color: #e5edf8; border: 1px solid #3a4b63; border-radius: 5px; }
+.etf-table-wrap { overflow-x: auto; margin: 20px 0; }
+.etf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.etf-table th, .etf-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #263347; vertical-align: top; }
+.etf-table a { display: inline-block; margin-top: 4px; }

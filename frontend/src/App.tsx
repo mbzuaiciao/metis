@@ -23,6 +23,7 @@ import { InvestigationScope } from "./InvestigationScope";
 import { DefaultInvestigationDate } from "./DefaultInvestigationDate";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
+import { EtfPortfolio } from "./EtfPortfolio";
 import { initialCausalState } from "./causal";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -627,6 +628,8 @@ function PositionGrid({
 function Portfolio({ data }: { data: Workstation }) {
   return (
     <>
+      <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
+      <details><summary>Archived October 30 fictional demonstration · original baskets and sensitivities</summary>
       <div className="metrics three">
         <Metric
           label="Net asset value"
@@ -645,7 +648,7 @@ function Portfolio({ data }: { data: Workstation }) {
           className="negative"
         />
       </div>
-      <Panel title="Portfolio positions" note="Synthetic multi-asset portfolio">
+      <Panel title="Archived portfolio positions" note="Synthetic multi-asset portfolio · not ETF risk">
         <PositionGrid positions={data.positions} />
       </Panel>
       <div className="notice">
@@ -656,6 +659,7 @@ function Portfolio({ data }: { data: Workstation }) {
           Signed marks contribute separately to NAV. All values are USD.
         </span>
       </div>
+      </details>
     </>
   );
 }
@@ -1519,7 +1523,9 @@ export default function App() {
                   : "Connecting to backend"}
             </div>
           </div>
-          {data && page !== 7 && <p className="context-note">{data.investigation.disclosure}</p>}
+          {data && page !== 7 && <p className="context-note">{page === 1
+            ? 'ETF allocation uses illustrative October dollar weights with separately sourced price observations. Archived demonstrations retain synthetic basket risk and P&L.'
+            : data.investigation.disclosure + ' Archived basket demonstration; ETF allocation and observed price returns are on Portfolio.'}</p>}
           {page === 7 ? (
             <ResearchLimitations />
           ) : error ? (

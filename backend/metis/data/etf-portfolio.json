@@ -1,0 +1,105 @@
+{
+  "verified_on": "2026-11-03",
+  "funds": [
+    {
+      "legacy_id": "IG-US",
+      "ticker": "LQD",
+      "name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
+      "label": "US dollar IG credit",
+      "exchange": "NYSE Arca",
+      "currency": "USD",
+      "eligible_from": "2002-07-22",
+      "source_url": "https://www.ishares.com/us/products/239566/",
+      "note": "USD bonds; no foreign-currency hedge mandate."
+    },
+    {
+      "legacy_id": "IG-EU",
+      "ticker": "EUIG",
+      "name": "iShares Euro Investment Grade Corporate Bond USD Hedged ETF",
+      "label": "Euro IG \u00b7 USD hedged",
+      "exchange": "Cboe BZX",
+      "currency": "USD",
+      "eligible_from": "2025-11-06",
+      "source_url": "https://www.ishares.com/us/products/346691/",
+      "note": "Euro-denominated IG bonds, hedged to USD; currency denomination is not issuer domicile. First listed Nov 6, 2025; no September 2022 history.",
+      "event_source_url": "https://www.cboe.com/us/equities/listings/listed_products/symbols/EUIG/"
+    },
+    {
+      "legacy_id": "HY-US",
+      "ticker": "HYG",
+      "name": "iShares iBoxx $ High Yield Corporate Bond ETF",
+      "label": "US dollar HY credit",
+      "exchange": "NYSE Arca",
+      "currency": "USD",
+      "eligible_from": "2007-04-04",
+      "source_url": "https://www.ishares.com/us/products/239565/",
+      "note": "USD high-yield corporate bonds; no foreign-currency hedge mandate."
+    },
+    {
+      "legacy_id": "HY-EU",
+      "ticker": "EUHY",
+      "name": "iShares Euro High Yield Corporate Bond USD Hedged ETF",
+      "label": "Euro HY \u00b7 USD hedged",
+      "exchange": "Cboe BZX",
+      "currency": "USD",
+      "eligible_from": "2025-11-03",
+      "source_url": "https://www.ishares.com/us/products/239550/",
+      "note": "Current euro HY USD-hedged mandate starts Nov 3, 2025. Earlier HYXU prices track a different mandate and are ineligible.",
+      "event_source_url": "https://www.sec.gov/Archives/edgar/data/930667/000119312526003756/d78463dncsr.htm"
+    },
+    {
+      "legacy_id": "EQ-US",
+      "ticker": "SPY",
+      "name": "State Street SPDR S&P 500 ETF Trust",
+      "label": "US large-cap equities",
+      "exchange": "NYSE Arca",
+      "currency": "USD",
+      "eligible_from": "1993-01-22",
+      "source_url": "https://www.ssga.com/us/en/intermediary/etfs/state-street-spdr-sp-500-etf-trust-spy",
+      "note": "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate."
+    },
+    {
+      "legacy_id": "EQ-DM",
+      "ticker": "HEFA",
+      "name": "iShares Currency Hedged MSCI EAFE ETF",
+      "label": "EAFE \u00b7 USD hedged",
+      "exchange": "Cboe BZX",
+      "currency": "USD",
+      "eligible_from": "2014-01-31",
+      "source_url": "https://www.ishares.com/us/products/259622/",
+      "note": "MSCI EAFE developed equities, hedged to USD; excludes US and Canada, not all definitions of developed ex-US."
+    }
+  ],
+  "audit": [
+    {
+      "id": "UST10",
+      "minimum_data": "CUSIP/ISIN, coupon, maturity, face amount, settlement date, clean price source and accrued interest/day-count.",
+      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows."
+    },
+    {
+      "id": "UST2",
+      "minimum_data": "CUSIP/ISIN, coupon, maturity, face amount, settlement date, clean price source and accrued interest/day-count.",
+      "recommendation": "Retain Treasury; identify the security and obtain dated dirty prices including coupon cash flows."
+    },
+    {
+      "id": "IRS-R",
+      "minimum_data": "Trade confirmation, notional, fixed rate, effective/maturity dates, payment schedules, day-count, floating index/reset history, collateral terms and dated discount/forward curves.",
+      "recommendation": "Retain receive-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves."
+    },
+    {
+      "id": "IRS-P",
+      "minimum_data": "Trade confirmation, notional, fixed rate, effective/maturity dates, payment schedules, day-count, floating index/reset history, collateral terms and dated discount/forward curves.",
+      "recommendation": "Retain pay-fixed OTC swap; revalue both legs and cash flows using its contractual terms and curves."
+    },
+    {
+      "id": "FX-EUR",
+      "minimum_data": "Bought/sold currencies and amounts, strike, trade/settlement/maturity dates, dated spot/forward points, discount curves and collateral terms.",
+      "recommendation": "Retain OTC FX forward; price remaining cash flows with maturity-matched forwards, not spot return times mark."
+    },
+    {
+      "id": "CASH",
+      "minimum_data": "Dated account/collateral statements, currency, available/restricted balances, interest accruals and cash flows.",
+      "recommendation": "Reconcile illustrative USD balance to statements; do not infer liquidity adequacy or historical interest income."
+    }
+  ]
+}

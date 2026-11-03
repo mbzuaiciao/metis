@@ -232,6 +232,9 @@ export type InstrumentValuation = {
 
 export type EventSnapshot = {
   id: string; title: string; start: string; end: string;
+  euro_rate_change_bp?: number;
+  euro_ig_spread_change_bp?: number;
+  euro_hy_spread_change_bp?: number;
   start_nav_usd: number; end_nav_usd: number | null;
   estimated_pnl_usd: number | null; covered_pnl_usd: number; coverage_count: number;
   disclosure: string; causal_use: string; march_etf_retrieved_at: string;

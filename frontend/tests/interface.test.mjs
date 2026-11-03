@@ -570,7 +570,7 @@ test("Historical event replay in Causal Scenario Exploration retains 3 event win
   assert.match(html, /Use this snapshot as a causal reference/);
 });
 
-test("Market Monitor displays dated ETF closes for SPY and HEFA and removes Daily return placeholder", async () => {
+test("Market Monitor presents unified date-consistent multi-asset market snapshot across all three windows", async () => {
   const { Market } = await import("../src/App.tsx");
   const output = execFileSync('../.venv/bin/python', ['-c',
     "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio()}))"],
@@ -578,35 +578,139 @@ test("Market Monitor displays dated ETF closes for SPY and HEFA and removes Dail
   const data = JSON.parse(output);
   const html = renderToStaticMarkup(React.createElement(Market, { data }));
 
-  // Shows SPY and HEFA observed closes from cached event snapshots
-  assert.match(html, /Observed equity ETF market prices/);
+  // 1. One unified Market snapshot panel header
+  assert.match(html, /Market snapshot · 2026-10-29 → 2026-10-30/);
+  assert.doesNotMatch(html, /<section class="panel[^"]*">[^<]*<div class="panel-heading"><h2>Observed equity ETF market prices/);
+
+  // 2. Default October 2026 multi-asset table rows
+  // Rates (2Y, 5Y, 10Y) - neutral coloring preserving signs
+  assert.match(html, /US Treasury 2Y yield/);
+  assert.match(html, /4\.61%/);
+  assert.match(html, /4\.56%/);
+  assert.match(html, /-5bp/);
+
+  const dgs2Row = html.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs2Row, />-5bp<\/em>/);
+  assert.doesNotMatch(dgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+
+  assert.match(html, /US Treasury 5Y yield/);
+  assert.match(html, /4\.78%/);
+  assert.match(html, /4\.71%/);
+  assert.match(html, /-7bp/);
+
+  const dgs5Row = html.match(/<tr data-market-instrument="DGS5">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs5Row, />-7bp<\/em>/);
+  assert.doesNotMatch(dgs5Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+
+  assert.match(html, /US Treasury 10Y yield/);
+  assert.match(html, /4\.98%/);
+  assert.match(html, /4\.94%/);
+  assert.match(html, /-4bp/);
+
+  const dgs10Row = html.match(/<tr data-market-instrument="DGS10">([\s\S]*?)<\/tr>/)[1];
+  assert.match(dgs10Row, />-4bp<\/em>/);
+  assert.doesNotMatch(dgs10Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+
+  // Equities (SPY, HEFA) - directional red/teal coloring preserved
   assert.match(html, /SPY/);
-  assert.match(html, /HEFA/);
   assert.match(html, /\$769\.36/);
   assert.match(html, /\$755\.72/);
   assert.match(html, /-1\.77%/);
+
+  const spyRow = html.match(/<tr data-market-instrument="SPY">([\s\S]*?)<\/tr>/)[1];
+  assert.match(spyRow, /class="negative"[^>]*>-1\.77%/);
+
+  assert.match(html, /HEFA/);
   assert.match(html, /\$46\.84/);
   assert.match(html, /\$46\.30/);
   assert.match(html, /-1\.15%/);
   assert.match(html, /HEFA represents USD-hedged developed ex-US exposure, not an unhedged index/);
 
+  const hefaRow = html.match(/<tr data-market-instrument="HEFA">([\s\S]*?)<\/tr>/)[1];
+  assert.match(hefaRow, /class="negative"[^>]*>-1\.15%/);
+
+  // FX (EUR/USD)
+  assert.match(html, /EUR\/USD/);
+  assert.match(html, /1\.1165/);
+  assert.match(html, /1\.1163/);
+  assert.match(html, /-0\.02%/);
+  assert.match(html, /observation clock differs from ETF 4:00 PM close/);
+
+  // Credit (IG, HY) — Not available for Oct 2026
+  assert.match(html, /Investment grade credit spread/);
+  assert.match(html, /High yield credit spread/);
+  assert.match(html, /Dated historical spread quotes unavailable/);
+
   // Removes 'Daily return' placeholder level
   assert.doesNotMatch(html, /<b>Daily return<\/b>/);
   assert.doesNotMatch(html, /Daily return/);
 
-  // Explicitly separates synthetic benchmarks from observed ETF prices
+  // Notice does not contain fictional benchmark date reference
+  const noticeMatch = html.match(/<div class="notice">([\s\S]*?)<\/div>/)[1];
+  assert.doesNotMatch(noticeMatch, /Benchmark comparison date/);
+
+  // Archived synthetic benchmarks collapsed with synthetic Economic context panel inside
+  assert.match(html, /<details class="archived-market-details">/);
   assert.match(html, /Archived synthetic market benchmarks/);
   assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
-  assert.match(html, /Yahoo Finance/);
 
-  // Verify selecting a different event window (e.g. CPI 2022) displays its cached closes
+  const archivedContentMatch = html.match(/<div class="archived-market-content">([\s\S]*?)<\/details>/)[1];
+  assert.match(archivedContentMatch, /Economic context/);
+  assert.match(archivedContentMatch, /Assumed regime/);
+
+  const afterArchived = html.slice(html.lastIndexOf('</details>'));
+  assert.doesNotMatch(afterArchived, /Economic context/);
+
+  // 3. September 2022 CPI window: verify all rows update synchronously
   const cpiHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "cpi-2022" }));
+  assert.match(cpiHtml, /Market snapshot · 2022-09-12 → 2022-09-13/);
+  assert.match(cpiHtml, /3\.58%/);
+  assert.match(cpiHtml, /3\.75%/);
+  assert.match(cpiHtml, /\+17bp/);
+
+  const cpiDgs2Row = cpiHtml.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
+  assert.match(cpiDgs2Row, />\+17bp<\/em>/);
+  assert.doesNotMatch(cpiDgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
+  assert.match(cpiHtml, /3\.47%/);
+  assert.match(cpiHtml, /3\.58%/);
+  assert.match(cpiHtml, /\+11bp/);
+  assert.match(cpiHtml, /3\.37%/);
+  assert.match(cpiHtml, /3\.42%/);
+  assert.match(cpiHtml, /\+5bp/);
   assert.match(cpiHtml, /\$410\.97/);
   assert.match(cpiHtml, /\$393\.10/);
   assert.match(cpiHtml, /-4\.35%/);
   assert.match(cpiHtml, /\$32\.56/);
   assert.match(cpiHtml, /\$31\.86/);
   assert.match(cpiHtml, /-2\.15%/);
+  assert.match(cpiHtml, /1\.0129/);
+  assert.match(cpiHtml, /0\.9997/);
+  assert.match(cpiHtml, /-1\.30%/);
+  assert.match(cpiHtml, /\+15bp \(Assumed shock\)/);
+  assert.match(cpiHtml, /\+30bp \(Assumed shock\)/);
+
+  // 4. March 2025 window: verify all rows update synchronously
+  const marchHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "march-2025" }));
+  assert.match(marchHtml, /Market snapshot · 2025-03-07 → 2025-03-10/);
+  assert.match(marchHtml, /3\.99%/);
+  assert.match(marchHtml, /3\.89%/);
+  assert.match(marchHtml, /-10bp/);
+  assert.match(marchHtml, /4\.09%/);
+  assert.match(marchHtml, /3\.98%/);
+  assert.match(marchHtml, /-11bp/);
+  assert.match(marchHtml, /4\.32%/);
+  assert.match(marchHtml, /4\.22%/);
+  assert.match(marchHtml, /\$575\.92/);
+  assert.match(marchHtml, /\$560\.58/);
+  assert.match(marchHtml, /-2\.66%/);
+  assert.match(marchHtml, /\$37\.27/);
+  assert.match(marchHtml, /\$36\.42/);
+  assert.match(marchHtml, /-2\.28%/);
+  assert.match(marchHtml, /1\.0859/);
+  assert.match(marchHtml, /1\.0837/);
+  assert.match(marchHtml, /-0\.20%/);
+  assert.match(marchHtml, /\+10bp \(Assumed shock\)/);
+  assert.match(marchHtml, /\+25bp \(Assumed shock\)/);
 });
 
 test("Market Monitor and Causal Scenario Exploration share historical event selection consistently", async () => {

@@ -740,39 +740,192 @@ export function Portfolio({ data }: { data: Workstation }) {
     </div>
   );
 }
-function getObservedEtfRows(snapshot?: EventSnapshot, portfolio?: EtfPortfolioType) {
+export function getMarketSnapshotRows(
+  snapshot?: EventSnapshot,
+  portfolio?: EtfPortfolioType
+) {
   if (!snapshot) return [];
-  const tickers = ["SPY", "HEFA"] as const;
-  return tickers.map((ticker) => {
-    const pos = snapshot.positions.find((p) => p.id === ticker);
-    const fund = portfolio?.positions.find((p) => p.id === ticker);
-    const startClose = pos?.inputs[0]?.value ?? null;
-    const endClose = pos?.inputs[1]?.value ?? null;
-    const changePct =
-      startClose !== null && endClose !== null && startClose > 0
-        ? (endClose / startClose - 1) * 100
-        : null;
-    const label = pos?.label ?? (ticker === "SPY" ? "US large-cap equities" : "EAFE · USD hedged");
-    const name =
-      fund?.name ??
-      (ticker === "SPY"
-        ? "State Street SPDR S&P 500 ETF Trust"
-        : "iShares Currency Hedged MSCI EAFE ETF");
-    const note =
-      fund?.note ??
-      (ticker === "SPY"
-        ? "S&P 500 US large-cap equities; USD traded, no foreign-currency hedge mandate."
-        : "MSCI EAFE developed equities, hedged to USD; excludes US and Canada. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.");
-    return {
-      ticker,
-      label,
-      name,
-      note,
-      startClose,
-      endClose,
-      changePct,
-    };
-  });
+
+  const ust2 = snapshot.positions.find((p) => p.id === "UST2");
+  const irsp = snapshot.positions.find((p) => p.id === "IRS-P");
+  const ust10 = snapshot.positions.find((p) => p.id === "UST10");
+  const spy = snapshot.positions.find((p) => p.id === "SPY");
+  const hefa = snapshot.positions.find((p) => p.id === "HEFA");
+  const fx = snapshot.positions.find((p) => p.id === "FX-EUR");
+
+  const spyFund = portfolio?.positions.find((p) => p.id === "SPY");
+
+  // Rates
+  const r2Start = ust2?.inputs[0]?.value ?? null;
+  const r2End = ust2?.inputs[1]?.value ?? null;
+  const r2ChgBp =
+    r2Start !== null && r2End !== null ? (r2End - r2Start) * 100 : null;
+
+  const r5Start = irsp?.inputs[0]?.value ?? null;
+  const r5End = irsp?.inputs[1]?.value ?? null;
+  const r5ChgBp =
+    r5Start !== null && r5End !== null ? (r5End - r5Start) * 100 : null;
+
+  const r10Start = ust10?.inputs[0]?.value ?? null;
+  const r10End = ust10?.inputs[1]?.value ?? null;
+  const r10ChgBp =
+    r10Start !== null && r10End !== null ? (r10End - r10Start) * 100 : null;
+
+  // Equities
+  const spyStart = spy?.inputs[0]?.value ?? null;
+  const spyEnd = spy?.inputs[1]?.value ?? null;
+  const spyChgPct =
+    spyStart !== null && spyEnd !== null && spyStart > 0
+      ? (spyEnd / spyStart - 1) * 100
+      : null;
+
+  const hefaStart = hefa?.inputs[0]?.value ?? null;
+  const hefaEnd = hefa?.inputs[1]?.value ?? null;
+  const hefaChgPct =
+    hefaStart !== null && hefaEnd !== null && hefaStart > 0
+      ? (hefaEnd / hefaStart - 1) * 100
+      : null;
+
+  // Foreign Exchange
+  const fxStart = fx?.inputs[0]?.value ?? null;
+  const fxEnd = fx?.inputs[1]?.value ?? null;
+  const fxChgPct =
+    fxStart !== null && fxEnd !== null && fxStart > 0
+      ? (fxEnd / fxStart - 1) * 100
+      : null;
+
+  // Credit spread assumptions
+  const creditIgShock = snapshot.euro_ig_spread_change_bp ?? 0;
+  const creditHyShock = snapshot.euro_hy_spread_change_bp ?? 0;
+
+  return [
+    {
+      id: "DGS2",
+      assetClass: "Government rates",
+      instrument: "US Treasury 2Y yield",
+      ticker: "DGS2",
+      startFormatted: r2Start !== null ? `${r2Start.toFixed(2)}%` : "Unavailable",
+      endFormatted: r2End !== null ? `${r2End.toFixed(2)}%` : "Unavailable",
+      changeFormatted:
+        r2ChgBp !== null
+          ? `${r2ChgBp > 0 ? "+" : ""}${Math.round(r2ChgBp)}bp`
+          : "Unavailable",
+      changeTone: "",
+      notes:
+        "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
+      sourceUrl: ust2?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS2",
+    },
+    {
+      id: "DGS5",
+      assetClass: "Government rates",
+      instrument: "US Treasury 5Y yield",
+      ticker: "DGS5",
+      startFormatted: r5Start !== null ? `${r5Start.toFixed(2)}%` : "Unavailable",
+      endFormatted: r5End !== null ? `${r5End.toFixed(2)}%` : "Unavailable",
+      changeFormatted:
+        r5ChgBp !== null
+          ? `${r5ChgBp > 0 ? "+" : ""}${Math.round(r5ChgBp)}bp`
+          : "Unavailable",
+      changeTone: "",
+      notes:
+        "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
+      sourceUrl: irsp?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS5",
+    },
+    {
+      id: "DGS10",
+      assetClass: "Government rates",
+      instrument: "US Treasury 10Y yield",
+      ticker: "DGS10",
+      startFormatted: r10Start !== null ? `${r10Start.toFixed(2)}%` : "Unavailable",
+      endFormatted: r10End !== null ? `${r10End.toFixed(2)}%` : "Unavailable",
+      changeFormatted:
+        r10ChgBp !== null
+          ? `${r10ChgBp > 0 ? "+" : ""}${Math.round(r10ChgBp)}bp`
+          : "Unavailable",
+      changeTone: "",
+      notes:
+        "Federal Reserve Board H.15 daily constant-maturity indication; not a bond price quote.",
+      sourceUrl: ust10?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DGS10",
+    },
+    {
+      id: "SPY",
+      assetClass: "Equities",
+      instrument: "SPY · US large-cap equities",
+      ticker: "SPY",
+      startFormatted: spyStart !== null ? `$${spyStart.toFixed(2)}` : "Unavailable",
+      endFormatted: spyEnd !== null ? `$${spyEnd.toFixed(2)}` : "Unavailable",
+      changeFormatted:
+        spyChgPct !== null ? `${spyChgPct > 0 ? "+" : ""}${spyChgPct.toFixed(2)}%` : "Unavailable",
+      changeTone:
+        spyChgPct !== null ? (spyChgPct < 0 ? "negative" : spyChgPct > 0 ? "positive" : "") : "",
+      notes:
+        spyFund?.note ??
+        "State Street SPDR S&P 500 ETF Trust; unadjusted secondary market close, price return only.",
+      sourceUrl: spy?.inputs[0]?.source_url,
+    },
+    {
+      id: "HEFA",
+      assetClass: "Equities",
+      instrument: "HEFA · Developed ex-US equities (USD hedged)",
+      ticker: "HEFA",
+      startFormatted: hefaStart !== null ? `$${hefaStart.toFixed(2)}` : "Unavailable",
+      endFormatted: hefaEnd !== null ? `$${hefaEnd.toFixed(2)}` : "Unavailable",
+      changeFormatted:
+        hefaChgPct !== null ? `${hefaChgPct > 0 ? "+" : ""}${hefaChgPct.toFixed(2)}%` : "Unavailable",
+      changeTone:
+        hefaChgPct !== null ? (hefaChgPct < 0 ? "negative" : hefaChgPct > 0 ? "positive" : "") : "",
+      notes:
+        "iShares Currency Hedged MSCI EAFE ETF. HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.",
+      sourceUrl: hefa?.inputs[0]?.source_url,
+    },
+    {
+      id: "EURUSD",
+      assetClass: "Foreign exchange",
+      instrument: "EUR/USD spot exchange rate",
+      ticker: "DEXUSEU",
+      startFormatted: fxStart !== null ? `${fxStart.toFixed(4)}` : "Unavailable",
+      endFormatted: fxEnd !== null ? `${fxEnd.toFixed(4)}` : "Unavailable",
+      changeFormatted:
+        fxChgPct !== null ? `${fxChgPct > 0 ? "+" : ""}${fxChgPct.toFixed(2)}%` : "Unavailable",
+      changeTone:
+        fxChgPct !== null ? (fxChgPct < 0 ? "negative" : fxChgPct > 0 ? "positive" : "") : "",
+      notes:
+        "Federal Reserve Board H.10 New York noon buying rate in USD per EUR; observation clock differs from ETF 4:00 PM close.",
+      sourceUrl: fx?.inputs[0]?.source_url ?? "https://fred.stlouisfed.org/series/DEXUSEU",
+    },
+    {
+      id: "CREDIT-IG",
+      assetClass: "Corporate credit",
+      instrument: "Investment grade credit spread",
+      ticker: "IG Spread",
+      startFormatted: "Not available",
+      endFormatted: "Not available",
+      changeFormatted:
+        creditIgShock > 0 ? `+${creditIgShock}bp (Assumed shock)` : "Not available",
+      changeTone: creditIgShock > 0 ? "negative" : "",
+      notes:
+        creditIgShock > 0
+          ? `Hypothetical model assumption (+${creditIgShock}bp euro IG spread shock), not an observed historical spread quote.`
+          : "Dated historical spread quotes unavailable. Credit risk monitored via corporate bond ETF price returns (LQD).",
+      sourceUrl: undefined,
+    },
+    {
+      id: "CREDIT-HY",
+      assetClass: "Corporate credit",
+      instrument: "High yield credit spread",
+      ticker: "HY Spread",
+      startFormatted: "Not available",
+      endFormatted: "Not available",
+      changeFormatted:
+        creditHyShock > 0 ? `+${creditHyShock}bp (Assumed shock)` : "Not available",
+      changeTone: creditHyShock > 0 ? "negative" : "",
+      notes:
+        creditHyShock > 0
+          ? `Hypothetical model assumption (+${creditHyShock}bp euro HY spread shock), not an observed historical spread quote.`
+          : "Dated historical spread quotes unavailable. Credit risk monitored via corporate bond ETF price returns (HYG).",
+      sourceUrl: undefined,
+    },
+  ];
 }
 
 export function Market({
@@ -792,7 +945,7 @@ export function Market({
     snapshots.find((s) => s.id === "october-2026") ??
     snapshots[0];
 
-  const etfRows = getObservedEtfRows(activeSnapshot, data.etf_portfolio);
+  const marketRows = getMarketSnapshotRows(activeSnapshot, data.etf_portfolio);
 
   const handleSelectEvent = (id: string) => {
     setLocalEventId(id);
@@ -800,24 +953,23 @@ export function Market({
   };
 
   return (
-    <>
+    <div className="market-tab">
       <div className="notice">
         <FlaskConical size={17} />
         <span>
-          Market Monitor: observed secondary-market equity ETF closing prices and archived synthetic multi-asset benchmarks.
-          Benchmark comparison date: {data.market.previous_date}. Historical sources below are separate from illustrative benchmark levels.
+          Market Monitor: coherent multi-asset market snapshot covering rates, credit, equities and FX for the selected historical event window. Modeled benchmark fixtures and synthetic economic context are preserved in collapsed archived details below.
         </span>
       </div>
 
-      {activeSnapshot && etfRows.length > 0 && (
+      {activeSnapshot && marketRows.length > 0 && (
         <Panel
-          title="Observed equity ETF market prices"
-          note={`${activeSnapshot.start} → ${activeSnapshot.end} · Sourced closing prices`}
+          title={`Market snapshot · ${activeSnapshot.start} → ${activeSnapshot.end}`}
+          note="Multi-asset historical comparison · Rates, equities, FX and credit"
         >
           {snapshots.length > 0 && (
             <div className="table-toolbar">
               <label>
-                Historical comparison:
+                Historical event window:{" "}
                 <select
                   value={activeSnapshot.id}
                   onChange={(e) => handleSelectEvent(e.target.value)}
@@ -830,144 +982,168 @@ export function Market({
                           ? "March 2025 comparison"
                           : s.id === "cpi-2022"
                             ? "September 2022 CPI shock"
-                            : s.title}
+                            : `${s.start} → ${s.end} · ${s.title}`}
                     </option>
                   ))}
                 </select>
               </label>
-              <span>Sourced secondary-market data · Yahoo Finance</span>
+              <span className="context-note">
+                Synchronized with Causal Scenario Exploration · Sourced FRED &amp; Yahoo Finance data
+              </span>
             </div>
           )}
+
           <div className="etf-table-wrap">
-            <table className="etf-table">
+            <table className="etf-table unified-market-table">
               <thead>
                 <tr>
-                  <th>Instrument</th>
+                  <th>Market / Instrument</th>
                   <th>
-                    Starting close
+                    Starting level
                     <br />
                     {activeSnapshot.start}
                   </th>
                   <th>
-                    Ending close
+                    Ending level or price
                     <br />
                     {activeSnapshot.end}
                   </th>
-                  <th>Price return</th>
-                  <th>Mandate &amp; Notes</th>
+                  <th>Change</th>
+                  <th>Provenance &amp; Mandate</th>
                 </tr>
               </thead>
               <tbody>
-                {etfRows.map((row) => (
-                  <tr key={row.ticker}>
+                {marketRows.map((row) => (
+                  <tr key={row.id} data-market-instrument={row.id}>
                     <td>
-                      <b>{row.ticker}</b> · {row.label}
+                      <b>{row.instrument}</b>
                       <br />
-                      <small>{row.name}</small>
+                      <small className="market-asset-class">{row.assetClass} · {row.ticker}</small>
                     </td>
-                    <td>{row.startClose !== null ? `$${row.startClose.toFixed(2)}` : "Unavailable"}</td>
-                    <td>{row.endClose !== null ? `$${row.endClose.toFixed(2)}` : "Unavailable"}</td>
+                    <td>{row.startFormatted}</td>
+                    <td>{row.endFormatted}</td>
                     <td>
-                      {row.changePct !== null ? (
+                      {row.changeFormatted !== "Not available" && row.changeFormatted !== "Unavailable" ? (
                         <em
-                          className={
-                            row.changePct < 0
-                              ? "negative"
-                              : row.changePct > 0
-                                ? "positive"
-                                : ""
-                          }
+                          className={row.changeTone}
                           style={{ fontStyle: "normal", fontWeight: 600 }}
                         >
-                          {signed(row.changePct, "%")}
+                          {row.changeFormatted}
                         </em>
                       ) : (
-                        "Unavailable"
+                        <span className="context-note">{row.changeFormatted}</span>
                       )}
                     </td>
                     <td>
-                      <small>{row.note}</small>
+                      <small>
+                        {row.notes}{" "}
+                        {row.sourceUrl && (
+                          <a href={row.sourceUrl} target="_blank" rel="noreferrer">
+                            Source
+                          </a>
+                        )}
+                      </small>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="context-note">
-            Unadjusted closing prices; distributions excluded, price return only, not total return. Real-time feed unavailable.
-            HEFA represents USD-hedged developed ex-US exposure, not an unhedged index.
-          </p>
+
+          <details className="market-provenance-details">
+            <summary>Sources, Provenance &amp; Observation Timing</summary>
+            <div className="market-provenance-content">
+              <p>
+                <b>Treasury yields:</b> Federal Reserve Board H.15 daily constant-maturity indications (DGS2, DGS5, DGS10) via FRED. Constant-maturity yields are yield-curve benchmarks, not marketable Treasury bond quotes or prices.
+              </p>
+              <p>
+                <b>Equity ETFs:</b> Sourced unadjusted secondary-market closing prices from Yahoo Finance. Price return only; distributions, splits, and cash flows excluded (not a total-return index). HEFA represents USD-hedged developed ex-US exposure (MSCI EAFE hedged to USD), not an unhedged index.
+              </p>
+              <p>
+                <b>Foreign exchange:</b> Federal Reserve Board H.10 New York noon buying rate (DEXUSEU) in USD per EUR. Observation clock is noon ET, asynchronous with the 4:00 PM equity close.
+              </p>
+              <p>
+                <b>Corporate credit spreads:</b> Quoted historical corporate bond option-adjusted spreads (OAS) are unavailable for these windows. September 2022 and March 2025 event models use explicit hypothetical euro credit spread shock assumptions (+15bp/+30bp and +10bp/+25bp); October 2026 relies on observed secondary-market ETF price returns (LQD, HYG).
+              </p>
+            </div>
+          </details>
         </Panel>
       )}
 
-      <div className="grid-main">
-        <Panel title="US Treasury yield curve" note="Yield · %">
-          <Chart
-            data={[
-              {
-                type: "scatter",
-                mode: "lines+markers",
-                name: data.market.previous_date,
-                x: data.market.yields.map((y) => y.tenor),
-                y: data.market.yields.map((y) => y.previous_pct),
-                line: { color: "#5d7189", dash: "dot", width: 2 },
-                hovertemplate: "%{x}: %{y:.2f}%<extra>Previous</extra>",
-              },
-              {
-                type: "scatter",
-                mode: "lines+markers",
-                name: data.market.as_of,
-                x: data.market.yields.map((y) => y.tenor),
-                y: data.market.yields.map((y) => y.current_pct),
-                line: { color: "#52d6bb", width: 3 },
-                hovertemplate: "%{x}: %{y:.2f}%<extra>Selected date</extra>",
-              },
-            ]}
-            layout={{
-              showlegend: true,
-              legend: { orientation: "h", x: 0, y: 1.2 },
-              yaxis: {
-                gridcolor: "#232e3e",
-                ticksuffix: "%",
-              },
-            }}
-          />
-        </Panel>
-        <Panel
-          title="Archived synthetic market benchmarks"
-          note={`Fictional demonstration · As of ${data.market.as_of}`}
-        >
-          <div className="market-table">
-            {data.market.yields.map((y) => (
-              <div key={y.tenor}>
-                <span>Treasury {y.tenor}</span>
-                <b>{y.current_pct.toFixed(2)}%</b>
-                <em>{((y.current_pct - y.previous_pct) * 100).toFixed(0)}bp</em>
-              </div>
-            ))}
-            {data.market.credit.map((c) => (
-              <div key={c.name}>
-                <span>{c.name} spread</span>
-                <b>{c.level_bp}bp</b>
-                <em className="negative">+{c.change_bp}bp</em>
-              </div>
-            ))}
-            {data.market.fx.map((f) => (
-              <div key={f.name}>
-                <span>{f.name}</span>
-                <b>{f.level.toFixed(4)}</b>
-                <em className="negative">{signed(f.change_pct, "%")}</em>
-              </div>
-            ))}
-          </div>
-          <p className="context-note" style={{ marginTop: "12px", padding: "0 19px" }}>
-            Synthetic multi-asset benchmarks from archived October 30 demonstration. Modeled rates, credit spreads, and FX levels are not observed quotes.
+      <details className="archived-market-details">
+        <summary>Archived October 30 fictional demonstration · synthetic benchmarks</summary>
+        <div className="archived-market-content">
+          <p className="context-note" style={{ marginBottom: "16px" }}>
+            The chart and benchmark table below contain synthetic multi-asset demonstration fixtures from the archived October 30 portfolio model (synthetic benchmark comparison date: {data.market.previous_date}). Modeled rates, credit spreads, and FX levels are not observed quotes.
           </p>
-        </Panel>
-      </div>
-      <Panel title="Economic context" note="Assumed regime">
-        <p className="brief">{data.market.commentary}</p>
-      </Panel>
+          <div className="grid-main">
+            <Panel title="US Treasury yield curve (Archived synthetic demonstration)" note="Yield · %">
+              <Chart
+                data={[
+                  {
+                    type: "scatter",
+                    mode: "lines+markers",
+                    name: data.market.previous_date,
+                    x: data.market.yields.map((y) => y.tenor),
+                    y: data.market.yields.map((y) => y.previous_pct),
+                    line: { color: "#5d7189", dash: "dot", width: 2 },
+                    hovertemplate: "%{x}: %{y:.2f}%<extra>Previous</extra>",
+                  },
+                  {
+                    type: "scatter",
+                    mode: "lines+markers",
+                    name: data.market.as_of,
+                    x: data.market.yields.map((y) => y.tenor),
+                    y: data.market.yields.map((y) => y.current_pct),
+                    line: { color: "#52d6bb", width: 3 },
+                    hovertemplate: "%{x}: %{y:.2f}%<extra>Selected date</extra>",
+                  },
+                ]}
+                layout={{
+                  showlegend: true,
+                  legend: { orientation: "h", x: 0, y: 1.2 },
+                  yaxis: {
+                    gridcolor: "#232e3e",
+                    ticksuffix: "%",
+                  },
+                }}
+              />
+            </Panel>
+            <Panel
+              title="Archived synthetic market benchmarks"
+              note={`Fictional demonstration · As of ${data.market.as_of}`}
+            >
+              <div className="market-table">
+                {data.market.yields.map((y) => (
+                  <div key={y.tenor}>
+                    <span>Treasury {y.tenor}</span>
+                    <b>{y.current_pct.toFixed(2)}%</b>
+                    <em>{((y.current_pct - y.previous_pct) * 100).toFixed(0)}bp</em>
+                  </div>
+                ))}
+                {data.market.credit.map((c) => (
+                  <div key={c.name}>
+                    <span>{c.name} spread</span>
+                    <b>{c.level_bp}bp</b>
+                    <em className="negative">+{c.change_bp}bp</em>
+                  </div>
+                ))}
+                {data.market.fx.map((f) => (
+                  <div key={f.name}>
+                    <span>{f.name}</span>
+                    <b>{f.level.toFixed(4)}</b>
+                    <em className="negative">{signed(f.change_pct, "%")}</em>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          </div>
+          <Panel title="Economic context" note="Assumed regime">
+            <p className="brief">{data.market.commentary}</p>
+          </Panel>
+        </div>
+      </details>
+
       <div className="section-title">
         <h2>Historical reference library</h2>
         <span>
@@ -975,7 +1151,7 @@ export function Market({
         </span>
       </div>
       <EpisodeCards episodes={data.history} />
-    </>
+    </div>
   );
 }
 function Risk({ data }: { data: Workstation }) {

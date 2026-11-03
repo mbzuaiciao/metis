@@ -570,147 +570,89 @@ test("Historical event replay in Causal Scenario Exploration retains 3 event win
   assert.match(html, /Use this snapshot as a causal reference/);
 });
 
-test("Market Monitor presents unified date-consistent multi-asset market snapshot across all three windows", async () => {
-  const { Market } = await import("../src/App.tsx");
-  const output = execFileSync('../.venv/bin/python', ['-c',
-    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio()}))"],
-    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
-  const data = JSON.parse(output);
-  const html = renderToStaticMarkup(React.createElement(Market, { data }));
+test("Market Monitor aligns all 12 holdings with Portfolio across three windows", async () => {
+  const { Market, Portfolio, getMarketSnapshotRows } = await import("../src/App.tsx");
+  const { EventTable, money } = await import("../src/EventSnapshots.tsx");
+  const data = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio, historical_prices; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio(), 'etf_history': [historical_prices('2026-10-29', '2026-10-30')]}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+  const original = JSON.stringify(data);
+  const ids = ['UST10', 'UST2', 'IRS-R', 'IRS-P', 'LQD', 'EUIG', 'HYG', 'EUHY', 'SPY', 'HEFA', 'FX-EUR', 'CASH'];
+  const expectedPnl = {'cpi-2022': -1620071.41, 'march-2025': -482623.35, 'october-2026': -332957.96};
+  const portfolio = renderToStaticMarkup(React.createElement(Portfolio, {data}));
+  const holdingRows = html => [...html.matchAll(/<tr data-event-position="([^"]+)">([\s\S]*?)<\/tr>/g)];
+  const cells = row => [...row[2].matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/g)].slice(1).map(v => [v[1], v[2]]);
+  for (const snapshot of data.event_snapshots) {
+    assert.equal(snapshot.estimated_pnl_usd, expectedPnl[snapshot.id]);
+    assert.equal(snapshot.start_nav_usd, 100000000);
+    const html = renderToStaticMarkup(React.createElement(Market, {data, selectedEventId: snapshot.id}));
+    const rows = holdingRows(html);
+    assert.deepEqual(rows.map(r => r[1]), ids);
+    assert.ok(html.includes(`Market snapshot · ${snapshot.start} → ${snapshot.end}`));
+    assert.match(html, /Illustrative snapshot — market inputs where available, modeled valuations otherwise/);
+    const table = html.match(/<table class="etf-table event-table">([\s\S]*?)<\/table>/)[1];
+    assert.ok(table.includes(`Starting USD value<br/>${snapshot.start}`));
+    assert.ok(table.includes(`Ending USD value<br/>${snapshot.end}`));
+    assert.match(table, /Change · Estimated USD P&amp;L/);
+    const replayRows = holdingRows(renderToStaticMarkup(React.createElement(EventTable, {snapshot})));
+    for (const [i, row] of rows.entries()) {
+      const values = cells(row);
+      assert.deepEqual(values, cells(replayRows[i]));
+      const p = snapshot.positions[i];
+      assert.deepEqual(values.map(v => v[1]), [money(p.start_value_usd), money(p.end_value_usd), money(p.pnl_usd)]);
+      for (const v of values) assert.doesNotMatch(v[1], /Unavailable/);
+      assert.equal(values[2][0], p.pnl_usd < 0 ? ' class="negative"' : p.pnl_usd > 0 ? ' class="positive"' : '');
+      if (snapshot.id === 'october-2026') assert.ok(portfolio.includes(replayRows[i][0]));
+    }
+    assert.match(table, /Hypothetical modeled USD NPV/);
+    assert.match(table, /Assumed USD cash balance/);
+    for (const id of ['LQD', 'EUIG', 'HYG', 'EUHY', 'SPY', 'HEFA']) {
+      const row = rows.find(r => r[1] === id)[2];
+      assert.match(row, /<details class="holding-details">/);
+      if (['EUIG', 'EUHY'].includes(id) && snapshot.id !== 'october-2026') {
+        assert.match(row, /Hypothetical euro-credit exposure/);
+        assert.doesNotMatch(row, /observed ETF close inputs/);
+      } else {
+        assert.ok(row.includes('observed ETF close inputs (USD/share)'));
+        assert.match(row, /Source<\/a>/);
+        assert.ok(row.includes(String(snapshot.positions.find(p => p.id === id).inputs[0].value)));
+      }
+    }
+    assert.ok(html.includes('<details class="market-provenance-details"><summary>Market drivers / benchmarks</summary>'));
+    assert.deepEqual([...html.matchAll(/data-market-benchmark="([^"]+)"/g)].map(r => r[1]), ['DGS2', 'DGS5', 'DGS10', 'DEXUSEU']);
+    assert.ok(html.includes('DGS5 is a Treasury-yield proxy for the 5Y pay-fixed swap (IRS-P)'));
+    for (const benchmark of getMarketSnapshotRows(snapshot)) {
+      assert.ok(html.includes(benchmark.startFormatted));
+      assert.ok(html.includes(benchmark.endFormatted));
+      assert.ok(html.includes(benchmark.changeFormatted));
+    }
+    assert.doesNotMatch(table, /data-market-benchmark|CREDIT-IG|CREDIT-HY/);
+    assert.doesNotMatch(html, /Historical reference library|episode-grid/);
+    assert.match(html, /<details class="archived-market-details">/);
+    assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
+  }
+  assert.equal(JSON.stringify(data), original);
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  assert.ok(app.includes('displayData && page !== 2 && <MarketTicker'));
+  assert.ok(app.includes('data && page !== 7 && page !== 2 && <p'));
 
-  // 1. One unified Market snapshot panel header
-  assert.match(html, /Market snapshot · 2026-10-29 → 2026-10-30/);
-  assert.doesNotMatch(html, /<section class="panel[^"]*">[^<]*<div class="panel-heading"><h2>Observed equity ETF market prices/);
+});
 
-  // 2. Default October 2026 multi-asset table rows
-  // Rates (2Y, 5Y, 10Y) - neutral coloring preserving signs
-  assert.match(html, /US Treasury 2Y yield/);
-  assert.match(html, /4\.61%/);
-  assert.match(html, /4\.56%/);
-  assert.match(html, /-5bp/);
-
-  const dgs2Row = html.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
-  assert.match(dgs2Row, />-5bp<\/em>/);
-  assert.doesNotMatch(dgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
-
-  assert.match(html, /US Treasury 5Y yield/);
-  assert.match(html, /4\.78%/);
-  assert.match(html, /4\.71%/);
-  assert.match(html, /-7bp/);
-
-  const dgs5Row = html.match(/<tr data-market-instrument="DGS5">([\s\S]*?)<\/tr>/)[1];
-  assert.match(dgs5Row, />-7bp<\/em>/);
-  assert.doesNotMatch(dgs5Row, /class="[^"]*(?:negative|positive)[^"]*"/);
-
-  assert.match(html, /US Treasury 10Y yield/);
-  assert.match(html, /4\.98%/);
-  assert.match(html, /4\.94%/);
-  assert.match(html, /-4bp/);
-
-  const dgs10Row = html.match(/<tr data-market-instrument="DGS10">([\s\S]*?)<\/tr>/)[1];
-  assert.match(dgs10Row, />-4bp<\/em>/);
-  assert.doesNotMatch(dgs10Row, /class="[^"]*(?:negative|positive)[^"]*"/);
-
-  // Equities (SPY, HEFA) - directional red/teal coloring preserved
-  assert.match(html, /SPY/);
-  assert.match(html, /\$769\.36/);
-  assert.match(html, /\$755\.72/);
-  assert.match(html, /-1\.77%/);
-
-  const spyRow = html.match(/<tr data-market-instrument="SPY">([\s\S]*?)<\/tr>/)[1];
-  assert.match(spyRow, /class="negative"[^>]*>-1\.77%/);
-
-  assert.match(html, /HEFA/);
-  assert.match(html, /\$46\.84/);
-  assert.match(html, /\$46\.30/);
-  assert.match(html, /-1\.15%/);
-  assert.match(html, /HEFA represents USD-hedged developed ex-US exposure, not an unhedged index/);
-
-  const hefaRow = html.match(/<tr data-market-instrument="HEFA">([\s\S]*?)<\/tr>/)[1];
-  assert.match(hefaRow, /class="negative"[^>]*>-1\.15%/);
-
-  // FX (EUR/USD)
-  assert.match(html, /EUR\/USD/);
-  assert.match(html, /1\.1165/);
-  assert.match(html, /1\.1163/);
-  assert.match(html, /-0\.02%/);
-  assert.match(html, /observation clock differs from ETF 4:00 PM close/);
-
-  // Credit (IG, HY) — Not available for Oct 2026
-  assert.match(html, /Investment grade credit spread/);
-  assert.match(html, /High yield credit spread/);
-  assert.match(html, /Dated historical spread quotes unavailable/);
-
-  // Removes 'Daily return' placeholder level
-  assert.doesNotMatch(html, /<b>Daily return<\/b>/);
-  assert.doesNotMatch(html, /Daily return/);
-
-  // Notice does not contain fictional benchmark date reference
-  const noticeMatch = html.match(/<div class="notice">([\s\S]*?)<\/div>/)[1];
-  assert.doesNotMatch(noticeMatch, /Benchmark comparison date/);
-
-  // Archived synthetic benchmarks collapsed with synthetic Economic context panel inside
-  assert.match(html, /<details class="archived-market-details">/);
-  assert.match(html, /Archived synthetic market benchmarks/);
-  assert.match(html, /Modeled rates, credit spreads, and FX levels are not observed quotes/);
-
-  const archivedContentMatch = html.match(/<div class="archived-market-content">([\s\S]*?)<\/details>/)[1];
-  assert.match(archivedContentMatch, /Economic context/);
-  assert.match(archivedContentMatch, /Assumed regime/);
-
-  const afterArchived = html.slice(html.lastIndexOf('</details>'));
-  assert.doesNotMatch(afterArchived, /Economic context/);
-
-  // 3. September 2022 CPI window: verify all rows update synchronously
-  const cpiHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "cpi-2022" }));
-  assert.match(cpiHtml, /Market snapshot · 2022-09-12 → 2022-09-13/);
-  assert.match(cpiHtml, /3\.58%/);
-  assert.match(cpiHtml, /3\.75%/);
-  assert.match(cpiHtml, /\+17bp/);
-
-  const cpiDgs2Row = cpiHtml.match(/<tr data-market-instrument="DGS2">([\s\S]*?)<\/tr>/)[1];
-  assert.match(cpiDgs2Row, />\+17bp<\/em>/);
-  assert.doesNotMatch(cpiDgs2Row, /class="[^"]*(?:negative|positive)[^"]*"/);
-  assert.match(cpiHtml, /3\.47%/);
-  assert.match(cpiHtml, /3\.58%/);
-  assert.match(cpiHtml, /\+11bp/);
-  assert.match(cpiHtml, /3\.37%/);
-  assert.match(cpiHtml, /3\.42%/);
-  assert.match(cpiHtml, /\+5bp/);
-  assert.match(cpiHtml, /\$410\.97/);
-  assert.match(cpiHtml, /\$393\.10/);
-  assert.match(cpiHtml, /-4\.35%/);
-  assert.match(cpiHtml, /\$32\.56/);
-  assert.match(cpiHtml, /\$31\.86/);
-  assert.match(cpiHtml, /-2\.15%/);
-  assert.match(cpiHtml, /1\.0129/);
-  assert.match(cpiHtml, /0\.9997/);
-  assert.match(cpiHtml, /-1\.30%/);
-  assert.match(cpiHtml, /\+15bp \(Assumed shock\)/);
-  assert.match(cpiHtml, /\+30bp \(Assumed shock\)/);
-
-  // 4. March 2025 window: verify all rows update synchronously
-  const marchHtml = renderToStaticMarkup(React.createElement(Market, { data, selectedEventId: "march-2025" }));
-  assert.match(marchHtml, /Market snapshot · 2025-03-07 → 2025-03-10/);
-  assert.match(marchHtml, /3\.99%/);
-  assert.match(marchHtml, /3\.89%/);
-  assert.match(marchHtml, /-10bp/);
-  assert.match(marchHtml, /4\.09%/);
-  assert.match(marchHtml, /3\.98%/);
-  assert.match(marchHtml, /-11bp/);
-  assert.match(marchHtml, /4\.32%/);
-  assert.match(marchHtml, /4\.22%/);
-  assert.match(marchHtml, /\$575\.92/);
-  assert.match(marchHtml, /\$560\.58/);
-  assert.match(marchHtml, /-2\.66%/);
-  assert.match(marchHtml, /\$37\.27/);
-  assert.match(marchHtml, /\$36\.42/);
-  assert.match(marchHtml, /-2\.28%/);
-  assert.match(marchHtml, /1\.0859/);
-  assert.match(marchHtml, /1\.0837/);
-  assert.match(marchHtml, /-0\.20%/);
-  assert.match(marchHtml, /\+10bp \(Assumed shock\)/);
-  assert.match(marchHtml, /\+25bp \(Assumed shock\)/);
+test("Historical reference library follows causal exploration, collapsed with unchanged cards and sources", async () => {
+  const { EpisodeCards } = await import("../src/EpisodeCards.tsx");
+  const data = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; print(json.dumps(workstation()))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+  const html = renderToStaticMarkup(React.createElement(CausalExploration, {
+    data, state: initialCausalState, setState() {}, generate() {}, calculate() {}, useShocks() {},
+  }));
+  assert.ok(html.includes('<details class="answer-section historical-library"><summary>Historical reference library</summary>'));
+  assert.equal((html.match(/Historical reference library/g) || []).length, 1);
+  assert.ok(html.indexOf('historical-library') > html.indexOf('Generate competing mechanisms'));
+  const cards = renderToStaticMarkup(React.createElement(EpisodeCards, {episodes: data.history}));
+  assert.ok(html.includes(cards));
+  assert.equal((html.match(/class="episode"/g) || []).length, data.history.length);
+  for (const episode of data.history) assert.ok(html.includes(episode.source_url));
 });
 
 test("Market Monitor and Causal Scenario Exploration share historical event selection consistently", async () => {

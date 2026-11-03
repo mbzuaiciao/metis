@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { Calculation, CausalRequest, CausalResult, Shocks, Workstation } from "./types";
 import { acceptProposals, causalRequest, editAssumption, demoHypotheses, type CausalState } from "./causal";
 import { FactorEvidence, PositionEvidence } from "./InvestigationEvidence";
+import { EpisodeCards } from "./EpisodeCards";
 import { EventSnapshots } from "./EventSnapshots";
 
 const usd = (value: number) => new Intl.NumberFormat("en-US", {
@@ -207,5 +208,10 @@ export function CausalExploration({
       <p className="context-note">Only this action invokes the existing scenario engine. Editing an assumption clears both previous results. Model directions and magnitudes are hypotheses; P&L is a deterministic consequence of the accepted inputs, not a forecast. Neither result identifies the actual economic cause.</p>
     </>}
     </section>
+    <details className="answer-section historical-library">
+      <summary>Historical reference library</summary>
+      <p className="context-note">Historical facts + explicitly labeled portfolio interpretations</p>
+      <EpisodeCards episodes={data.history ?? []} />
+    </details>
   </section>;
 }

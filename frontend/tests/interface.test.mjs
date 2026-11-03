@@ -412,12 +412,12 @@ test("three illustrative snapshots render qualified estimates and inspectable in
       assert.ok(methodology.includes(text));
     }
     const table = html.match(/<table[^>]*>([\s\S]*?)<\/table>/)[1];
-    assert.equal((table.match(/<th>/g) || []).length, 5);
-    assert.doesNotMatch(table, /Status \/ provenance|class="badge/);
-    assert.match(table, /Method \/ inputs/);
-    assert.equal((table.match(/<details><summary>Inspect basis<\/summary>/g) || []).length, 12);
+    assert.equal((table.match(/<th>/g) || []).length, 4);
+    assert.doesNotMatch(table, /Status \/ provenance|class="badge|Method \/ inputs/);
+    assert.equal((table.match(/<details class="holding-details">/g) || []).length, 12);
+    assert.equal((table.match(/class="holding-chevron"/g) || []).length, 12);
     for (const row of table.matchAll(/<tr data-event-position="[^"]+">([\s\S]*?)<\/tr>/g)) {
-      assert.equal((row[1].match(/<td>/g) || []).length, 5);
+      assert.equal((row[1].match(/<td>/g) || []).length, 4);
     }
     assert.equal((html.match(/data-event-position=/g) || []).length, 12);
     assert.match(html, /Observed input/);
@@ -448,4 +448,7 @@ test("three illustrative snapshots render qualified estimates and inspectable in
   }));
   assert.match(causal, /option value="cpi-2022" selected/);
   assert.match(causal, /they do not revalue the event snapshot/);
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(app, /EXAMPLE DATA/);
+  assert.match(app, /className="portfolio-tab"/);
 });

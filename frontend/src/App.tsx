@@ -628,7 +628,7 @@ function PositionGrid({
 }
 function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: string) => void }) {
   return (
-    <>
+    <div className="portfolio-tab">
       <EventSnapshots snapshots={data.event_snapshots} onExplore={onExplore} />
       <details><summary>Observed-price coverage and instrument audit · preserved evidence</summary>
         <EtfPortfolio portfolio={data.etf_portfolio} history={data.etf_history} />
@@ -664,7 +664,7 @@ function Portfolio({ data, onExplore }: { data: Workstation; onExplore: (id: str
         </span>
       </div>
       </details>
-    </>
+    </div>
   );
 }
 export function Market({ data }: { data: Workstation }) {
@@ -1499,9 +1499,6 @@ export default function App() {
             <b>{pages[page].name}</b>
           </div>
           <div className="topbar-right">
-            <span className="badge amber">
-              <FlaskConical size={12} /> EXAMPLE DATA
-            </span>
             <span className="date">
               {page === 7 ? "Research archive" : displayData?.market.as_of ?? "Loading snapshot"}
             </span>

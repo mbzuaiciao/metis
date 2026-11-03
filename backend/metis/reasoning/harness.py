@@ -184,6 +184,9 @@ def demo_hypotheses(request: ReasoningRequest, context: dict) -> list[EconomicHy
 
 class DemoProvider:
     def interpret(self, request: ReasoningRequest, context: dict) -> Interpretation:
+        if context.get("investigation_scope") == "historical":
+            from metis.reasoning.historical import historical_demo
+            return historical_demo(context)
         d = context["daily"]
         s = context["scenario"]
         q = request.question.lower()
@@ -248,6 +251,9 @@ class HTTPProvider:
             raise ProviderError("Provider base URL must use HTTPS (or HTTP on localhost), with no embedded credentials, query or fragment. Keep the API key in its environment variable.")
 
     def interpret(self, request: ReasoningRequest, context: dict) -> Interpretation:
+        if context.get("investigation_scope") == "historical":
+            from metis.reasoning.historical import HistoricalInterpretation, HISTORICAL_SYSTEM
+            return self.structured(request, context, HistoricalInterpretation, HISTORICAL_SYSTEM, "historical_interpretation")
         return self.structured(request, context, Interpretation, SYSTEM, "financial_interpretation")
 
     def structured(self, request: ReasoningRequest, context: dict, output_model: type[BaseModel], system: str, schema_name: str) -> BaseModel:
@@ -348,7 +354,11 @@ class HTTPProvider:
 
 
 def reason(request: ReasoningRequest) -> dict:
-    context = assemble_context(request.shocks, request.context_mode)
+    if getattr(request, "investigation_scope", None) == "historical":
+        from metis.reasoning.historical import historical_context
+        context = historical_context()
+    else:
+        context = assemble_context(request.shocks, request.context_mode)
     if hasattr(request, "investigation_scope"):
         context["investigation_scope"] = request.investigation_scope
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()
@@ -361,4 +371,4 @@ def reason(request: ReasoningRequest) -> dict:
             "interpretation": result.model_dump(), "verification": verify_claims(result.financial_claims, context), "context": context,
             "context_operations": [{"operation": name, "source": source} for name, source in [
                 ("retrieve_portfolio", "portfolio"), ("retrieve_market", "market"),
-                ("calculate_scenario", "scenario"), ("retrieve_history", "historical_context")]]}
+                ("calculate_scenario", "scenario"), ("retrieve_history", "historical" if context.get("investigation_scope") == "historical" else "historical_context")]]}

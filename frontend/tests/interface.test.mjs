@@ -199,3 +199,25 @@ test("verification demonstrations follow active answers and are labeled separate
   assert.ok(app.indexOf("<InvestigationResults") < app.indexOf("<VerificationDemo"));
   assert.match(app, /aria-label="Demonstration examples"/);
 });
+
+test("historical results preserve three questions, portfolio links and unavailable spread displays", () => {
+  const calculation = {shocks: {rates_bp: 5.37, ig_bp: 0, hy_bp: 0, equity_pct: -4.32, fx_pct: -1.46},
+    total_pnl_usd: -1416477.2, by_factor: {rates_pnl: -276877.2, credit_pnl: 0, equity_pnl: -993600, fx_pnl: -146000},
+    positions: [{id: "IRS-R", name: "Receive-fixed", rates_pnl: -150360, credit_pnl: 0, equity_pnl: 0, fx_pnl: 0, pnl_usd: -150360, dv01_usd_per_bp: 28000, cs01_usd_per_bp: 0, market_value_usd: 4000000, notional_usd: 40000000}]};
+  const input = JSON.parse(readFileSync(new URL("../../backend/metis/data/historical-20220913.json", import.meta.url), "utf8"));
+  const answer = {investigation_scope: "historical", mode: "meta", context_operations: [], context: {
+    market: {as_of: "2022-09-13"}, historical: input, macro_context: input.macro_context,
+    portfolio: {portfolio_name: "Synthetic fixed holdings", nav_usd: 100000000, exposures: {}},
+    scenario: calculation, daily: calculation, evidence: []},
+    interpretation: {summary: "Historical summary", economic_interpretation: "Competing mechanisms",
+      principal_risk_observations: [], historical_analogies: [], potential_vulnerabilities: [], assumptions_and_uncertainties: [], evidence_references: [],
+      hypotheses: ["Policy", "Earnings", "Positioning"].map(title => ({title, mechanism: "Proposed transmission", consistent_evidence: "Observed moves",
+        portfolio_implications: "IRS-R loses under the positive yield proxy", uncertainty: "Not causal", available_checks: "Compare signs", additional_evidence: "Distinguishing evidence"}))}};
+  const html = renderToStaticMarkup(React.createElement(InvestigationResults, {answer}));
+  assert.ok(html.indexOf("What happened?") < html.indexOf("What might explain it?"));
+  assert.ok(html.indexOf("What might explain it?") < html.indexOf("How can we investigate?"));
+  for (const text of ["2022-09-13", "Hypothesis C", "Portfolio implications", "IRS-R loses", "complete historical total is unknown", "IG/HY spread changes and credit-spread", "Unavailable", "Partial-factor position P&amp;L", "Distinguishing evidence", "0.1%", "3.7434"]) assert.ok(html.includes(text), text);
+  assert.doesNotMatch(html, /IG spreads · bp|HY spreads · bp|Credit spreads<\/span><strong[^>]*>\$0|2025-03-10|Hypothetical stress investigation/);
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  assert.match(app, /ask\(historicalQuestion, "historical"\)/);
+});

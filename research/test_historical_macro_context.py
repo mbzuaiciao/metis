@@ -2,6 +2,8 @@
 from copy import deepcopy
 import importlib.util
 import json
+import hashlib
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -14,7 +16,15 @@ spec.loader.exec_module(study)
 
 def test_frozen_pair_and_no_event_leakage():
     prepared = study.prepare()
-    assert prepared == json.loads(study.PUBLIC.read_text())
+    frozen = json.loads(study.PUBLIC.read_text())
+    # The completed experiment fingerprints its then-current production harness.
+    # Verify that provenance in Git, rather than freezing future product code.
+    source = 'backend/metis/reasoning/harness.py'
+    historical = subprocess.check_output(['git', 'show', f'2b75a7c:{source}'], cwd=HERE.parent)
+    assert hashlib.sha256(historical).hexdigest() == frozen['source_sha256'][source]
+    comparable = deepcopy(prepared)
+    comparable['source_sha256'][source] = frozen['source_sha256'][source]
+    assert comparable == frozen
     a, b = prepared["contexts"]["A"], deepcopy(prepared["contexts"]["B"])
     macro = b.pop("macro_context")
     assert a == b

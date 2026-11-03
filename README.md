@@ -287,3 +287,11 @@ There is no authentication, persistence, real-time data, optimizer, probability 
 ## Smallest next step for a Meta hackathon demo
 
 Restart the backend with the local Meta configuration and rehearse the existing Overview → Scenario Analysis → Metis AI walkthrough, checking the LIVE META badge and saved evidence context. No additional infrastructure is needed.
+
+## Historical hypothesis investigation · September 13, 2022
+
+Open **Metis AI Reasoning → Investigate September 13, 2022 · US CPI surprise**. The existing provider receives the prepared historical observations, same-day CPI backdrop, synthetic fixed holdings/exposures and backend partial-factor P&L together. Meta must return exactly three hypotheses, each with an economic mechanism, market implications, portfolio implications and proposed distinguishing evidence. Demo mode uses explicitly labeled deterministic templates. Follow-ups retain this captured historical context independently of stress controls.
+
+The three-question interface remains **What happened? / What might explain it? / How can we investigate?** Historical inputs reuse [the completed research](research/historical-macro-context-20220913.md); the March 2025 illustrative dataset and risk engine are unchanged. Credit spreads are unavailable: engine zero placeholders omit their contribution, and the interface displays unavailable spread P&L and a partial-factor result, never a complete historical total. Synthetic current holdings, parallel 10Y rates and S&P mappings are assumptions, not historical portfolio observations. No automatic retrieval, hypothesis validation or new provider is added.
+
+See [implementation validation and live-call findings](research/historical-hypothesis-implementation-20261103.md) for examples, file inventory and limitations. Raw application responses remain local under ignored `research/runs/`.

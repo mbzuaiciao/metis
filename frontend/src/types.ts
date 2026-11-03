@@ -80,9 +80,9 @@ export type Workstation = {
 };
 export type Reasoning = {
   investigation_id: string;
-  investigation_scope: "daily" | "scenario";
+  investigation_scope: "daily" | "scenario" | "historical";
   verification?: ClaimVerdict[];
-  investigation_focus?: "daily" | "scenario" | "question";
+  investigation_focus?: "daily" | "scenario" | "historical" | "question";
   question: string;
   mode: string;
   model: string | null;
@@ -91,6 +91,7 @@ export type Reasoning = {
       title: string;
       mechanism: string;
       consistent_evidence: string;
+      portfolio_implications?: string;
       uncertainty: string;
       available_checks: string;
       additional_evidence: string;
@@ -109,6 +110,19 @@ export type Reasoning = {
       Workstation,
       "portfolio_name" | "nav_usd" | "positions" | "exposures"
     >;
+    historical?: {
+      episode: string;
+      observations: {
+        ust10: { previous_yield_pct: number; current_yield_pct: number };
+        ust2: { previous_yield_pct: number; current_yield_pct: number };
+        sp500: { reported_return_pct: number };
+        eurusd: { reported_return_pct: number };
+      };
+      mapping_assumptions: string[];
+      coverage: string;
+      sources: Record<string, { description: string; url: string }>;
+    };
+    macro_context?: { cutoff: string; facts: { source: string; text: string }[] };
     daily: Calculation;
     market: Workstation["market"];
     scenario: Calculation;

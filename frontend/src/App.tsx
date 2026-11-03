@@ -48,6 +48,7 @@ import {
 } from "./InvestigationEvidence";
 import {
   dailyQuestion,
+  historicalQuestion,
   scenarioQuestion,
   investigationRequest,
   followupTarget,
@@ -1073,6 +1074,10 @@ function ReasoningPage({
           </div>
         </div>
         <section className="reasoning-actions">
+          <button className="primary" disabled={busy}
+            onClick={() => void ask(historicalQuestion, "historical")}>
+            Investigate September 13, 2022 · US CPI surprise
+          </button>
           <button
             className="primary"
             onClick={() => void ask(dailyQuestion, "daily")}
@@ -1126,7 +1131,9 @@ function ReasoningPage({
                       ? "DAILY LOSS INVESTIGATION"
                       : m.investigation_scope === "scenario"
                         ? "HYPOTHETICAL SCENARIO INVESTIGATION"
-                        : "YOUR QUESTION"}
+                        : m.investigation_scope === "historical"
+                          ? "HISTORICAL CPI INVESTIGATION"
+                          : "YOUR QUESTION"}
                   </span> · View question
                 </summary>
                 <p>{m.question}</p>
@@ -1259,7 +1266,7 @@ function MarketTicker({ data }: { data: Workstation }) {
   const movement = (y.current_pct - y.previous_pct) * 100;
   return (
     <div className="ticker">
-      <span className="ticker-label">MARKET SNAPSHOT</span>
+      <span className="ticker-label">MARKET SNAPSHOT · {data.market.as_of}</span>
       <span>
         UST {y.tenor} <b>{y.current_pct.toFixed(2)}%</b>
         <em>
@@ -1324,7 +1331,7 @@ export default function App() {
     setQuestion(q);
     setReasoningError("");
     const isFollowup = focus === "question" && messages.length > 0;
-    if (!isFollowup && focus !== "daily" && (pending || scenarioError || !calc)) {
+    if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !calc)) {
       setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
     }

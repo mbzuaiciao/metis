@@ -203,3 +203,12 @@ test("investigation guides explain conditional consequences without asserting a 
   assert.match(vulnerabilityGuide("Credit").consequence, /first-order/);
   assert.match(vulnerabilityGuide("Liquidity").consequence, /does not estimate/);
 });
+
+test("historical start is independent of stress controls and follow-up retains historical snapshot", () => {
+  const request = investigationRequest("historical", "Explain CPI", daily, null, prior);
+  assert.deepEqual(request, {question: "Explain CPI", investigation_scope: "historical", history: []});
+  const original = captured("historical-a", "historical");
+  original.context.market.as_of = "2022-09-13";
+  assert.match(scopeLabel(original), /Historical CPI investigation.*2022-09-13.*partial-factor/);
+  assert.equal(investigationRequest("question", "Distinguish them", daily, null, [original]).investigation_id, "historical-a");
+});

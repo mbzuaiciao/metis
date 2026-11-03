@@ -17,7 +17,7 @@ from metis.verification.claims import verify_claims
 
 
 class InvestigationRequest(ReasoningRequest):
-    investigation_scope: Literal['daily', 'scenario'] = 'scenario'
+    investigation_scope: Literal['daily', 'scenario', 'historical'] = 'scenario'
 
 
 class FollowupRequest(BaseModel):

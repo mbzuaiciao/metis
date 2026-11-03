@@ -106,13 +106,13 @@ test("research tab exposes six sourced studies and unresolved boundaries", () =>
   assert.match(html, /RESEARCH_LOG\.md/);
   assert.match(html, /Numerical claim checks do not validate entire/);
 });
-test("research page is the seventh sidebar item and renders without backend data", () => {
+test("research page is the eighth sidebar item and renders without backend data", () => {
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
-  const ai = app.indexOf('name: "Metis AI Reasoning"');
+  const ai = app.indexOf('name: "Meta AI Reasoning"');
   const research = app.indexOf('name: "Research & Limitations"');
   assert.ok(ai > 0 && research > ai);
-  assert.match(app, /page === 6 \? \(\s*<ResearchLimitations \/>/);
-  assert.match(app, /page === 6\s*\? "Documented studies"/);
+  assert.match(app, /page === 7 \? \(\s*<ResearchLimitations \/>/);
+  assert.match(app, /page === 7\s*\? "Documented studies"/);
 });
 
 test("accepted causal hypotheses show backend P&L side by side, never before calculation", () => {
@@ -198,4 +198,54 @@ test("verification demonstrations follow active answers and are labeled separate
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
   assert.ok(app.indexOf("<InvestigationResults") < app.indexOf("<VerificationDemo"));
   assert.match(app, /aria-label="Demonstration examples"/);
+});
+
+test("historical results preserve three questions, portfolio links and unavailable spread displays", () => {
+  const calculation = {shocks: {rates_bp: 5.37, ig_bp: 0, hy_bp: 0, equity_pct: -4.32, fx_pct: -1.46},
+    total_pnl_usd: -1416477.2, by_factor: {rates_pnl: -276877.2, credit_pnl: 0, equity_pnl: -993600, fx_pnl: -146000},
+    positions: [{id: "IRS-R", name: "Receive-fixed", rates_pnl: -150360, credit_pnl: 0, equity_pnl: 0, fx_pnl: 0, pnl_usd: -150360, dv01_usd_per_bp: 28000, cs01_usd_per_bp: 0, market_value_usd: 4000000, notional_usd: 40000000}]};
+  const input = JSON.parse(readFileSync(new URL("../../research/historical-macro-20220913-inputs.json", import.meta.url), "utf8"));
+  const answer = {investigation_scope: "historical", mode: "meta", context_operations: [], context: {
+    market: {as_of: "2022-09-13"}, historical: input, macro_context: input.macro_context,
+    portfolio: {portfolio_name: "Synthetic fixed holdings", nav_usd: 100000000, exposures: {}},
+    scenario: calculation, daily: calculation, evidence: []},
+    interpretation: {summary: "Historical summary", economic_interpretation: "Competing mechanisms",
+      principal_risk_observations: [], historical_analogies: [], potential_vulnerabilities: [], assumptions_and_uncertainties: [], evidence_references: [],
+      hypotheses: ["Policy", "Earnings", "Positioning"].map(title => ({title, mechanism: "Proposed transmission", consistent_evidence: "Observed moves",
+        portfolio_implications: "IRS-R loses under the positive yield proxy", uncertainty: "Not causal", available_checks: "Compare signs", additional_evidence: "Distinguishing evidence"}))}};
+  const html = renderToStaticMarkup(React.createElement(InvestigationResults, {answer}));
+  assert.ok(html.indexOf("What happened?") < html.indexOf("What might explain it?"));
+  assert.ok(html.indexOf("What might explain it?") < html.indexOf("How can we investigate?"));
+  for (const text of ["2022-09-13", "Hypothesis C", "Portfolio implications", "IRS-R loses", "complete historical total is unknown", "IG/HY spread changes and credit-spread", "Unavailable", "Partial-factor position P&amp;L", "Distinguishing evidence", "0.1%", "3.7434"]) assert.ok(html.includes(text), text);
+  assert.doesNotMatch(html, /IG spreads · bp|HY spreads · bp|Credit spreads<\/span><strong[^>]*>\$0|2025-03-10|Hypothetical stress investigation/);
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  assert.match(app, /ask\(historicalQuestion, "historical"\)/);
+});
+
+
+test("historical credit correction shows all modeled factors while older captured coverage stays partial", () => {
+  const input = JSON.parse(readFileSync(new URL("../../backend/metis/data/historical-20220913.json", import.meta.url), "utf8"));
+  const calculation = {shocks: {rates_bp: 5.37, ig_bp: 0, hy_bp: 18, equity_pct: -4.32, fx_pct: -1.46},
+    total_pnl_usd: -1496577.2, by_factor: {rates_pnl: -276877.2, credit_pnl: -80100, equity_pnl: -993600, fx_pnl: -146000},
+    positions: [{id: "HY-US", name: "US high yield", rates_pnl: -15036, credit_pnl: -44100, equity_pnl: 0, fx_pnl: 0,
+      pnl_usd: -59136, dv01_usd_per_bp: 2800, cs01_usd_per_bp: 2450, market_value_usd: 7000000, notional_usd: 7000000}]};
+  const answer = {investigation_scope: "historical", mode: "demo", context_operations: [], context: {
+    market: {as_of: "2022-09-13"}, historical: {...input, credit_spreads_included: true}, macro_context: input.macro_context,
+    portfolio: {portfolio_name: "Synthetic fixed holdings", nav_usd: 100000000, exposures: {}},
+    scenario: calculation, daily: calculation, evidence: []},
+    interpretation: {summary: "Summary", economic_interpretation: "Mechanisms", principal_risk_observations: [],
+      historical_analogies: [], potential_vulnerabilities: [], assumptions_and_uncertainties: [], evidence_references: [],
+      hypotheses: ["Policy", "Earnings", "Positioning"].map(title => ({title, mechanism: "Transmission", consistent_evidence: "Moves",
+        portfolio_implications: "Position effects", uncertainty: "Not causal", available_checks: "Signs", additional_evidence: "Flows"}))}};
+  const original = structuredClone(answer);
+  const html = renderToStaticMarkup(React.createElement(InvestigationResults, {answer}));
+  for (const text of ["1 · What happened?", "2 · What might explain it?", "3 · How can we investigate?", "Hypothesis C",
+    "$1,496,577", "credit spreads -$80,100", "146 → 146bp (0bp)", "450 → 468bp (+18bp)",
+    "estimated hypothetical P&amp;L", "European spread moves are not observed", "-$44,100", "-$59,136"]) assert.ok(html.includes(text), text);
+  assert.match(html, /equibles.com/);
+  assert.doesNotMatch(html, /Unavailable|complete historical total is unknown|Partial-factor|zero engine placeholders/);
+  assert.deepEqual(answer, original);
+  const scope = renderToStaticMarkup(React.createElement(InvestigationScope, {answer, label: "Follow-up scope"}));
+  assert.match(scope, /estimated hypothetical P&amp;L/);
+  assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
 });

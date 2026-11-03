@@ -1,8 +1,10 @@
 import type { Calculation, Reasoning } from "./types";
 
-export type InvestigationFocus = "daily" | "scenario" | "question";
+export type InvestigationFocus = "daily" | "scenario" | "historical" | "question";
 export const dailyQuestion =
   "Explain the illustrative daily portfolio loss. Why did positive government-rate P&L fail to offset credit-spread, equity and FX losses? Identify the important positions and exposures. Separate calculated facts from economic interpretations, and identify vulnerabilities and missing evidence worth investigating. The scenario supplied with this question uses the daily snapshot shocks, not the separately selected stress scenario.";
+export const historicalQuestion =
+  "Generate exactly three economically distinct competing hypotheses for September 13, 2022 using the supplied historical market observations, CPI backdrop and synthetic portfolio exposures and estimated hypothetical P&L, including sourced index OAS proxies and credit contributions. Explain transmission, market and position implications, and evidence that would distinguish the hypotheses. Distinguish index observations from proxy mappings; do not establish causality.";
 export const scenarioQuestion =
   "Interpret the selected hypothetical stress scenario. Explain its assumed shocks, factor contributions and total portfolio P&L, distinguish rate gains from spread losses and net position P&L, and identify vulnerabilities and missing evidence worth investigating. Keep this hypothetical result separate from the dated illustrative daily P&L; it is not a forecast.";
 
@@ -36,6 +38,9 @@ export function investigationRequest(
         ]),
     };
   }
+  if (focus === "historical") return {
+    question: question.trim(), investigation_scope: "historical", history: [],
+  };
   const calculation = focus === "daily" ? daily : scenario;
   if (!calculation) throw new Error("Wait for the selected scenario to finish calculating.");
   return {
@@ -48,6 +53,7 @@ export function investigationRequest(
 
 export function scopeLabel(answer: Reasoning) {
   const date = answer.context.market.as_of;
+  if (answer.investigation_scope === "historical") return `Historical CPI investigation · ${date} · synthetic holdings · ${answer.context.historical?.credit_spreads_included ? "estimated hypothetical P&L" : "partial-factor P&L"}`;
   if (answer.investigation_scope === "daily") return `Daily snapshot · ${date}`;
   const s = answer.context.scenario.shocks;
   return `Captured stress · ${date} · rates ${s.rates_bp}bp, IG ${s.ig_bp}bp, HY ${s.hy_bp}bp, equities ${s.equity_pct}%, EUR/USD ${s.fx_pct}%`;

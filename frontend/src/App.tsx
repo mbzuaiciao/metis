@@ -48,6 +48,7 @@ import {
 } from "./InvestigationEvidence";
 import {
   dailyQuestion,
+  historicalQuestion,
   scenarioQuestion,
   investigationRequest,
   followupTarget,
@@ -90,8 +91,9 @@ const pages = [
   { name: "Portfolio", icon: Layers3 },
   { name: "Market Monitor", icon: Globe2 },
   { name: "Risk Analytics", icon: BarChart3 },
-  { name: "Scenario Analysis", icon: SlidersHorizontal },
-  { name: "Metis AI Reasoning", icon: BrainCircuit },
+  { name: "Risk Sensitivity Analysis", icon: SlidersHorizontal },
+  { name: "Causal Scenario Exploration", icon: FlaskConical },
+  { name: "Meta AI Reasoning", icon: BrainCircuit },
   { name: "Research & Limitations", icon: BookOpen },
 ];
 const subtitles = [
@@ -99,7 +101,8 @@ const subtitles = [
   "Positions, valuations and the exposures behind them.",
   "The market context behind portfolio performance.",
   "Understand the drivers. Look beyond the headline.",
-  "Test the portfolio against a different market.",
+  "Explore how individual market risk factors affect portfolio P&L.",
+  "Compare economic explanations and their potential cross-asset implications.",
   "From measured exposure to economic understanding.",
   "Experiments, evidence, limitations, and open research questions.",
 ];
@@ -1073,20 +1076,48 @@ function ReasoningPage({
           </div>
         </div>
         <section className="reasoning-actions">
-          <button
-            className="primary"
-            onClick={() => void ask(dailyQuestion, "daily")}
-            disabled={busy}
-          >
-            Start new daily investigation <ArrowRight size={15} />
-          </button>
-          <button className="secondary" disabled={busy || pending || !calc}
-            onClick={() => void ask(scenarioQuestion, "scenario")}>
-            Start new investigation of current stress
-          </button>
-          <button className="secondary" onClick={goScenario}>
-            3 · Explore a hypothetical scenario
-          </button>
+          <div>
+            <button className="primary" disabled={busy}
+              aria-describedby="historical-option-description"
+              onClick={() => void ask(historicalQuestion, "historical")}>
+              Investigate a Historical Event
+            </button>
+            <p id="historical-option-description" className="context-note">
+              September 13, 2022 · US CPI surprise. Examine how historical market movements would affect the synthetic portfolio and explore competing macroeconomic explanations.
+            </p>
+          </div>
+          <div>
+            <button
+              className="primary"
+              onClick={() => void ask(dailyQuestion, "daily")}
+              disabled={busy}
+              aria-describedby="daily-option-description"
+            >
+              Explain Daily P&L <ArrowRight size={15} />
+            </button>
+            <p id="daily-option-description" className="context-note">
+              Understand the gains and losses in the portfolio's selected daily snapshot. The current snapshot is synthetic, not live market data.
+            </p>
+          </div>
+          <div>
+            <button className="secondary" disabled={busy || pending || !calc}
+              aria-describedby="stress-option-description"
+              onClick={() => void ask(scenarioQuestion, "scenario")}>
+              Explain Current Stress Scenario
+            </button>
+            <p id="stress-option-description" className="context-note">
+              Understand how the portfolio responds to the currently selected stress assumptions.
+            </p>
+          </div>
+          <div>
+            <button className="secondary" onClick={goScenario}
+              aria-describedby="what-if-option-description">
+              Explore What-If Scenarios
+            </button>
+            <p id="what-if-option-description" className="context-note">
+              Change market assumptions and see how they affect portfolio P&L.
+            </p>
+          </div>
         </section>
         {busy && (
           <div className="notice" role="status">
@@ -1126,7 +1157,9 @@ function ReasoningPage({
                       ? "DAILY LOSS INVESTIGATION"
                       : m.investigation_scope === "scenario"
                         ? "HYPOTHETICAL SCENARIO INVESTIGATION"
-                        : "YOUR QUESTION"}
+                        : m.investigation_scope === "historical"
+                          ? "HISTORICAL CPI INVESTIGATION"
+                          : "YOUR QUESTION"}
                   </span> · View question
                 </summary>
                 <p>{m.question}</p>
@@ -1172,7 +1205,7 @@ function ReasoningPage({
               </option>)}
             </select>
             <InvestigationScope answer={target} label="Follow-up scope" />
-          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Start new daily investigation.</p>}
+          </> : <p className="context-note">New stress investigation using current scenario controls. To investigate the daily snapshot, select Explain Daily P&L.</p>}
           <label className="sr-only" htmlFor="question">
             Ask Metis a portfolio question
           </label>
@@ -1259,7 +1292,7 @@ function MarketTicker({ data }: { data: Workstation }) {
   const movement = (y.current_pct - y.previous_pct) * 100;
   return (
     <div className="ticker">
-      <span className="ticker-label">MARKET SNAPSHOT</span>
+      <span className="ticker-label">MARKET SNAPSHOT · {data.market.as_of}</span>
       <span>
         UST {y.tenor} <b>{y.current_pct.toFixed(2)}%</b>
         <em>
@@ -1294,7 +1327,6 @@ function MarketTicker({ data }: { data: Workstation }) {
 }
 export default function App() {
   const [page, setPage] = useState(0);
-  const [scenarioMode, setScenarioMode] = useState<"independent" | "causal">("independent");
   const [causalState, setCausalState] = useState(initialCausalState);
   const [data, setData] = useState<Workstation | null>(null);
   const [error, setError] = useState("");
@@ -1320,11 +1352,11 @@ export default function App() {
   }
   async function ask(q: string, focus: InvestigationFocus = "question") {
     if (!data || requestInFlight.current || !q.trim()) return;
-    navigate(5);
+    navigate(6);
     setQuestion(q);
     setReasoningError("");
     const isFollowup = focus === "question" && messages.length > 0;
-    if (!isFollowup && focus !== "daily" && (pending || scenarioError || !calc)) {
+    if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !calc)) {
       setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
     }
@@ -1418,7 +1450,7 @@ export default function App() {
             >
               <p.icon size={18} />
               <span>{p.name}</span>
-              {i === 5 && <span className="ai-dot" />}
+              {i === 6 && <span className="ai-dot" />}
             </button>
           ))}
         </nav>
@@ -1448,7 +1480,7 @@ export default function App() {
               <FlaskConical size={12} /> EXAMPLE DATA
             </span>
             <span className="date">
-              {page === 6 ? "Research archive" : data?.market.as_of ?? "Loading snapshot"}
+              {page === 7 ? "Research archive" : data?.market.as_of ?? "Loading snapshot"}
             </span>
             <div className="avatar">MG</div>
           </div>
@@ -1458,21 +1490,21 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                {page === 6 ? "METIS RESEARCH / METHODS & LIMITATIONS" : <>GLOBAL OPPORTUNITIES <span>/</span> USD BASE</>}
+                {page === 7 ? "METIS RESEARCH / METHODS & LIMITATIONS" : <>GLOBAL OPPORTUNITIES <span>/</span> USD BASE</>}
               </div>
               <h1>{pages[page].name}</h1>
               <p>{subtitles[page]}</p>
             </div>
             <div className="snapshot-tag">
               <span className="status-dot" />{" "}
-              {page === 6
+              {page === 7
                 ? "Documented studies"
                 : data
                   ? `${data.positions.length} positions · ${data.market.as_of}`
                   : "Connecting to backend"}
             </div>
           </div>
-          {page === 6 ? (
+          {page === 7 ? (
             <ResearchLimitations />
           ) : error ? (
             <div role="alert" className="error">
@@ -1486,7 +1518,7 @@ export default function App() {
             </div>
           ) : (
             <>
-              {page !== 5 && <nav
+              {page !== 6 && <nav
                 className="investigation-trail"
                 aria-label="Risk investigation"
               >
@@ -1500,8 +1532,8 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => navigate(5)}
-                  aria-current={page === 5 ? "step" : undefined}
+                  onClick={() => navigate(6)}
+                  aria-current={page === 6 ? "step" : undefined}
                 >
                   <b>2</b>
                   <span>
@@ -1518,7 +1550,7 @@ export default function App() {
                   </span>
                 </button>
                 <button
-                  onClick={() => navigate(5, "investigation-findings")}
+                  onClick={() => navigate(6, "investigation-findings")}
                   disabled={messages.length === 0}
                 >
                   <b>4</b>
@@ -1533,7 +1565,7 @@ export default function App() {
                   data={data}
                   goAI={() => void ask(dailyQuestion, "daily")}
                   goRisk={() => navigate(3)}
-                  goCausal={() => { setScenarioMode("causal"); navigate(4); }}
+                  goCausal={() => navigate(5)}
                   busy={reasoningBusy}
                 />
               )}
@@ -1541,31 +1573,24 @@ export default function App() {
               {page === 2 && <Market data={data} />}{" "}
               {page === 3 && <Risk data={data} />}{" "}
               {page === 4 && (
-                <>
-                  <div className="scenario-modes" role="group" aria-label="Scenario mode">
-                    <button className={scenarioMode === "independent" ? "secondary active" : "secondary"} aria-pressed={scenarioMode === "independent"} onClick={() => setScenarioMode("independent")}>Independent Shocks</button>
-                    <button className={scenarioMode === "causal" ? "secondary active" : "secondary"} aria-pressed={scenarioMode === "causal"} onClick={() => setScenarioMode("causal")}>Causal Exploration</button>
-                  </div>
-                  {scenarioMode === "causal" ? (
-                    <CausalExploration state={causalState} setState={setCausalState} data={data}
-                      generate={request => api("causal-exploration", request)}
-                      calculate={accepted => api("scenario", accepted)}
-                      useShocks={accepted => { changeShocks(accepted); setScenarioMode("independent"); }} />
-                  ) : (
-                    <Scenarios
-                      data={data}
-                      shocks={shocks}
-                      setShocks={changeShocks}
-                      calc={calc}
-                      pending={pending}
-                      error={scenarioError}
-                      goAI={() => void ask(scenarioQuestion, "scenario")}
-                      busy={reasoningBusy}
-                    />
-                  )}
-                </>
-              )}{" "}
+                <Scenarios
+                  data={data}
+                  shocks={shocks}
+                  setShocks={changeShocks}
+                  calc={calc}
+                  pending={pending}
+                  error={scenarioError}
+                  goAI={() => void ask(scenarioQuestion, "scenario")}
+                  busy={reasoningBusy}
+                />
+              )}
               {page === 5 && (
+                <CausalExploration state={causalState} setState={setCausalState} data={data}
+                  generate={request => api("causal-exploration", request)}
+                  calculate={accepted => api("scenario", accepted)}
+                  useShocks={accepted => { changeShocks(accepted); navigate(4); }} />
+              )}
+              {page === 6 && (
                 <ReasoningPage
                   data={data}
                   calc={scenarioError ? null : calc}

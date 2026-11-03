@@ -9,7 +9,7 @@ const usd = (v: number) =>
   }).format(v === 0 ? 0 : v);
 const tone = (v: number) => (v < 0 ? "negative" : v > 0 ? "positive" : "muted");
 
-export function FactorEvidence({ calculation }: { calculation: Calculation }) {
+export function FactorEvidence({ calculation, omittedCredit = false, hypothetical = false }: { calculation: Calculation; omittedCredit?: boolean; hypothetical?: boolean }) {
   const names: Record<string, string> = {
     rates_pnl: "Government rates",
     credit_pnl: "Credit spreads",
@@ -21,11 +21,11 @@ export function FactorEvidence({ calculation }: { calculation: Calculation }) {
       {measuredContributions(calculation).map(([key, value]) => (
         <div key={key}>
           <span>{names[key] ?? key}</span>
-          <strong className={tone(value)}>{usd(value)}</strong>
+          <strong className={tone(value)}>{omittedCredit && key === "credit_pnl" ? "Unavailable" : usd(value)}</strong>
         </div>
       ))}
       <div className="evidence-net">
-        <span>Total portfolio P&L</span>
+        <span>{omittedCredit ? "Partial-factor P&L · complete total unknown" : hypothetical ? "Estimated hypothetical P&L" : "Total portfolio P&L"}</span>
         <strong className={tone(calculation.total_pnl_usd)}>
           {usd(calculation.total_pnl_usd)}
         </strong>
@@ -42,10 +42,12 @@ export function FactorEvidence({ calculation }: { calculation: Calculation }) {
 
 export function PositionEvidence({
   calculation,
+  omittedCredit = false,
   exposures,
   id,
 }: {
   calculation: Calculation;
+  omittedCredit?: boolean;
   exposures: Workstation["exposures"];
   id?: string;
 }) {
@@ -53,7 +55,7 @@ export function PositionEvidence({
     <details className="position-evidence" id={id}>
       <summary>Inspect position contributions and signed DV01</summary>
       <p>
-        Backend calculations · USD. Net position P&L includes all four factors.
+        Backend calculations · USD. {omittedCredit ? "Partial-factor P&L excludes unknown spread contributions; zero engine placeholders are not observations." : "Net position P&L includes all four factors."}
         Positive DV01 gains on a 1bp yield decline; it is not P&L.
         CS01 is a first-order spread sensitivity. Instrument and asset-class
         DV01 views can overlap; do not add overlapping groups.
@@ -67,7 +69,7 @@ export function PositionEvidence({
               <th>Credit spreads</th>
               <th>Equities</th>
               <th>FX</th>
-              <th>Net position P&L</th>
+              <th>{omittedCredit ? "Partial-factor position P&L" : "Net position P&L"}</th>
               <th>DV01 · $/bp</th>
               <th>CS01 · $/bp</th>
               <th>Marked value</th>
@@ -89,7 +91,7 @@ export function PositionEvidence({
                   p.pnl_usd,
                 ].map((v, i) => (
                   <td className={tone(v)} key={i}>
-                    {usd(v)}
+                    {omittedCredit && i === 1 ? "Unavailable" : usd(v)}
                   </td>
                 ))}
                 <td>{usd(p.dv01_usd_per_bp)}</td>
@@ -101,7 +103,7 @@ export function PositionEvidence({
           </tbody>
           <tfoot>
             <tr>
-              <th>Portfolio totals</th>
+              <th>{omittedCredit ? "Partial-factor totals" : "Portfolio totals"}</th>
               {[
                 calculation.by_factor.rates_pnl,
                 calculation.by_factor.credit_pnl,
@@ -110,7 +112,7 @@ export function PositionEvidence({
                 calculation.total_pnl_usd,
               ].map((v, i) => (
                 <td key={i} className={tone(v)}>
-                  {usd(v)}
+                  {omittedCredit && i === 1 ? "Unavailable" : usd(v)}
                 </td>
               ))}
               <td>{usd(exposures.dv01_usd_per_bp)}</td>
@@ -123,7 +125,7 @@ export function PositionEvidence({
       </div>
       <p>
         Totals above are supplied by the backend. Credit-spread P&L is a factor
-        contribution; net credit-position P&L also includes the rate leg. Swap
+        contribution; {omittedCredit ? "here it is unavailable, so credit-position P&L shows only its rate leg." : "net credit-position P&L also includes the rate leg."} Swap
         notionals, marks and DV01 measure different things.
       </p>
     </details>

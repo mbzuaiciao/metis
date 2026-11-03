@@ -1,0 +1,72 @@
+{
+  "episode": "2022-09-13 US inflation surprise",
+  "previous_date": "2022-09-12",
+  "as_of": "2022-09-13",
+  "retrieved_on": "2026-11-03",
+  "sources": {
+    "bls": {
+      "url": "https://www.bls.gov/news.release/archives/cpi_09132022.htm",
+      "published_at": "2022-09-13T08:30:00-04:00",
+      "description": "Original August 2022 CPI release; contemporaneous vintage, not revised series."
+    },
+    "reuters": {
+      "url": "https://www.marketscreener.com/news/latest/Stocks-tumble-dollar-rallies-as-soaring-U-S-inflation-implies-an-aggressive-Fed-41765172/",
+      "published_at": "2022-09-13T16:53:00-04:00",
+      "description": "Reuters after-US-close wrap, syndicated by MarketScreener. Bond/FX last quotes are not synchronized official closing fixes."
+    },
+    "ig_availability": {
+      "url": "https://fred.stlouisfed.org/series/BAMLC0A0CM",
+      "description": "Series notes say history limited to three years starting April 2026; September 2022 not available through this series at retrieval. No paid source sought."
+    },
+    "hy_availability": {
+      "url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+      "description": "Same three-year history limitation. No reliable September 12/13 spread pair retrieved; omitted."
+    }
+  },
+  "observations": {
+    "ust10": {
+      "previous_yield_pct": 3.362,
+      "current_yield_pct": 3.4157,
+      "previous_convention": "Late Monday September 12",
+      "current_convention": "Last quote in September 13 after-close wrap; quote clock unavailable",
+      "source": "reuters"
+    },
+    "ust2": {
+      "previous_yield_pct": 3.571,
+      "current_yield_pct": 3.7434,
+      "previous_convention": "Previous session September 12",
+      "current_convention": "Last quote in same wrap; quote clock unavailable",
+      "source": "reuters"
+    },
+    "sp500": {
+      "current_close_points": 3932.69,
+      "point_change": -177.72,
+      "reported_return_pct": -4.32,
+      "convention": "September 13 US cash close versus September 12 close; use reported rounded return, not recomputed return",
+      "source": "reuters"
+    },
+    "eurusd": {
+      "current_usd_per_eur": 0.9971,
+      "previous_usd_per_eur": null,
+      "reported_return_pct": -1.46,
+      "convention": "Reported September 13 daily percentage change versus preceding session; exact previous quote and quote clocks unavailable; do not infer an exact prior level from rounded percentage",
+      "source": "reuters"
+    },
+    "ig_spread": {"change_bp": null, "status": "not retrieved reliably; omitted", "source": "ig_availability"},
+    "hy_spread": {"change_bp": null, "status": "not retrieved reliably; omitted", "source": "hy_availability"}
+  },
+  "mapping_assumptions": [
+    "Use observed 10Y yield change as a parallel shock to every position's signed DV01, including swaps and US/European credit; this is a proxy assumption, not the actual curve. The 2Y move is retained in both conditions as evidence of nonparallel movement.",
+    "Apply the reported S&P 500 percentage return to both US and developed ex-US equity deltas. The ex-US mapping is illustrative, not an observed ex-US return.",
+    "Apply reported EUR/USD percentage change to the synthetic long-EUR delta; no revaluation of historical forward points, carry or basis.",
+    "Set engine IG/HY shocks to zero only to omit unavailable spread contributions. Zero is not an observation of unchanged spreads. Credit-spread P&L and the all-factor historical total are unknown; reported total is a partial-factor hypothetical calculation.",
+    "Hold current synthetic positions and sensitivities fixed. They are not historical holdings. The USD 100m mark sum is a synthetic reference denominator, not a historical NAV."
+  ],
+  "macro_context": {
+    "cutoff": "End of 2022-09-13 America/New_York",
+    "facts": [
+      {"source": "bls", "text": "At 08:30 ET, August CPI was released: headline +0.1% month-on-month seasonally adjusted and +8.3% year-on-year unadjusted; excluding food and energy, +0.6% month-on-month and +6.3% year-on-year. Shelter, food and medical care contributed to inflation despite falling gasoline prices."},
+      {"source": "reuters", "text": "The consensus headline monthly forecast had been -0.1%. The market wrap described a reversal of prior optimism about easing inflation and a slower tightening path, with investors reassessing the Fed toward more aggressive rate increases at its upcoming meeting and worrying about recession risk. These are contemporaneous reported expectations, not a subsequent policy decision or established cause of all daily moves."}
+    ]
+  }
+}

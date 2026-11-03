@@ -149,7 +149,7 @@ export function CausalExploration({ state, setState, data, generate, calculate, 
             <h3>{i === 0 ? "A" : "B"} · Calculated consequences · accepted assumptions</h3>
             <FactorEvidence calculation={state.calculations[i]} />
             <PositionEvidence calculation={state.calculations[i]} exposures={result.context.portfolio.exposures} />
-            <button className="text-button" onClick={() => useShocks({ ...state.calculations[i].shocks })}>Use accepted {i === 0 ? "A" : "B"} shocks in Independent Shocks</button>
+            <button className="text-button" onClick={() => useShocks({ ...state.calculations[i].shocks })}>Use accepted {i === 0 ? "A" : "B"} shocks in Risk Sensitivity Analysis</button>
           </div>}
         </article>)}
       </div>

@@ -1,0 +1,132 @@
+{
+  "episode": "2022-09-13 US inflation surprise",
+  "previous_date": "2022-09-12",
+  "as_of": "2022-09-13",
+  "retrieved_on": "2026-11-03",
+  "sources": {
+    "bls": {
+      "url": "https://www.bls.gov/news.release/archives/cpi_09132022.htm",
+      "published_at": "2022-09-13T08:30:00-04:00",
+      "description": "Original August 2022 CPI release; contemporaneous vintage, not revised series."
+    },
+    "reuters": {
+      "url": "https://www.marketscreener.com/news/latest/Stocks-tumble-dollar-rallies-as-soaring-U-S-inflation-implies-an-aggressive-Fed-41765172/",
+      "published_at": "2022-09-13T16:53:00-04:00",
+      "description": "Reuters after-US-close wrap, syndicated by MarketScreener. Bond/FX last quotes are not synchronized official closing fixes."
+    },
+    "ig_oas": {
+      "url": "https://equibles.com/economicdata/bamlc0a0cm/history/11",
+      "series_url": "https://fred.stlouisfed.org/series/BAMLC0A0CM",
+      "verified_on": "2026-11-03",
+      "description": "Equibles historical daily ICE BofA US Corporate Index OAS (BAMLC0A0CM); September 12/13 values reported in percent, not bp. FRED confirms units and index definition; its current window excludes 2022. Retrieved vintage, not a certified contemporaneous release."
+    },
+    "hy_oas": {
+      "url": "https://equibles.com/economicdata/bamlh0a0hym2/history/11",
+      "series_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+      "verified_on": "2026-11-03",
+      "description": "Equibles historical daily ICE BofA US High Yield Index OAS (BAMLH0A0HYM2); September 12/13 values reported in percent, not bp. FRED confirms units and index definition; its current window excludes 2022. Retrieved vintage, not a certified contemporaneous release."
+    }
+  },
+  "observations": {
+    "ust10": {
+      "previous_yield_pct": 3.362,
+      "current_yield_pct": 3.4157,
+      "previous_convention": "Late Monday September 12",
+      "current_convention": "Last quote in September 13 after-close wrap; quote clock unavailable",
+      "source": "reuters"
+    },
+    "ust2": {
+      "previous_yield_pct": 3.571,
+      "current_yield_pct": 3.7434,
+      "previous_convention": "Previous session September 12",
+      "current_convention": "Last quote in same wrap; quote clock unavailable",
+      "source": "reuters"
+    },
+    "sp500": {
+      "current_close_points": 3932.69,
+      "point_change": -177.72,
+      "reported_return_pct": -4.32,
+      "convention": "September 13 US cash close versus September 12 close; use reported rounded return, not recomputed return",
+      "source": "reuters"
+    },
+    "eurusd": {
+      "current_usd_per_eur": 0.9971,
+      "previous_usd_per_eur": null,
+      "reported_return_pct": -1.46,
+      "convention": "Reported September 13 daily percentage change versus preceding session; exact previous quote and quote clocks unavailable; do not infer an exact prior level from rounded percentage",
+      "source": "reuters"
+    },
+    "ig_spread": {
+      "series_id": "BAMLC0A0CM",
+      "unit": "Percent",
+      "previous_spread_pct": 1.46,
+      "current_spread_pct": 1.46,
+      "previous_spread_bp": 146.0,
+      "current_spread_bp": 146.0,
+      "change_bp": 0.0,
+      "convention": "Daily close OAS for September 13 versus September 12; aggregate option-adjusted spread over a Treasury curve, not individual bond prices. Exact quote clock and original publication timestamp unavailable.",
+      "source": "ig_oas"
+    },
+    "hy_spread": {
+      "series_id": "BAMLH0A0HYM2",
+      "unit": "Percent",
+      "previous_spread_pct": 4.5,
+      "current_spread_pct": 4.68,
+      "previous_spread_bp": 450.0,
+      "current_spread_bp": 468.0,
+      "change_bp": 18.0,
+      "convention": "Daily close OAS for September 13 versus September 12; aggregate option-adjusted spread over a Treasury curve, not individual bond prices. Exact quote clock and original publication timestamp unavailable.",
+      "source": "hy_oas"
+    }
+  },
+  "mapping_assumptions": [
+    "Use observed 10Y yield change as a parallel shock to every position's signed DV01, including swaps and US/European credit; this is a proxy assumption, not the actual curve. The 2Y move is retained as evidence of nonparallel movement.",
+    "Apply the reported S&P 500 percentage return to both US and developed ex-US equity deltas. The ex-US mapping is illustrative, not an observed ex-US return.",
+    "Apply reported EUR/USD percentage change to the synthetic long-EUR delta; no revaluation of historical forward points, carry or basis.",
+    "Apply US Corporate OAS to explicitly mapped IG-US/IG-EU cash-bond baskets and US High Yield OAS to HY-US/HY-EU, using existing signed CS01. IG 0bp is an observed index change, not an omission placeholder. European baskets use same-rating US indices as cross-region proxies; actual European OAS and basket-specific changes are not observed. All four modeled factors are included under these assumptions; this is an estimated hypothetical result, not an exact historical portfolio valuation.",
+    "Hold current synthetic positions and sensitivities fixed. They are not historical holdings. The USD 100m mark sum is a synthetic reference denominator, not a historical NAV."
+  ],
+  "macro_context": {
+    "cutoff": "End of 2022-09-13 America/New_York",
+    "facts": [
+      {
+        "source": "bls",
+        "text": "At 08:30 ET, August CPI was released: headline +0.1% month-on-month seasonally adjusted and +8.3% year-on-year unadjusted; excluding food and energy, +0.6% month-on-month and +6.3% year-on-year. Shelter, food and medical care contributed to inflation despite falling gasoline prices."
+      },
+      {
+        "source": "reuters",
+        "text": "The consensus headline monthly forecast had been -0.1%. The market wrap described a reversal of prior optimism about easing inflation and a slower tightening path, with investors reassessing the Fed toward more aggressive rate increases at its upcoming meeting and worrying about recession risk. These are contemporaneous reported expectations, not a subsequent policy decision or established cause of all daily moves."
+      }
+    ]
+  },
+  "credit_proxy_mappings": [
+    {
+      "position_id": "IG-US",
+      "spread_bucket": "ig",
+      "instrument": "Cash bond basket",
+      "series_id": "BAMLC0A0CM",
+      "basis": "Same-rating US cash corporate bond index proxy"
+    },
+    {
+      "position_id": "IG-EU",
+      "spread_bucket": "ig",
+      "instrument": "Cash bond basket",
+      "series_id": "BAMLC0A0CM",
+      "basis": "Same-rating US index used as cross-region proxy for a European FX-hedged cash basket; no observed European spread move"
+    },
+    {
+      "position_id": "HY-US",
+      "spread_bucket": "hy",
+      "instrument": "Cash bond basket",
+      "series_id": "BAMLH0A0HYM2",
+      "basis": "Same-rating US cash corporate bond index proxy"
+    },
+    {
+      "position_id": "HY-EU",
+      "spread_bucket": "hy",
+      "instrument": "Cash bond basket",
+      "series_id": "BAMLH0A0HYM2",
+      "basis": "Same-rating US index used as cross-region proxy for a European FX-hedged cash basket; no observed European spread move"
+    }
+  ]
+}

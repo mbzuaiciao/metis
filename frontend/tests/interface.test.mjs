@@ -636,3 +636,88 @@ test("Market Monitor and Causal Scenario Exploration share historical event sele
     assert.match(causalHtml, new RegExp(snapshot.end));
   }
 });
+
+test("Portfolio presents compact 12-position snapshot leading with dated P&L and collapsed methodology audit", async () => {
+  const { Portfolio } = await import("../src/App.tsx");
+  const output = execFileSync('../.venv/bin/python', ['-c',
+    "import json; from metis.analytics.engine import workstation; from metis.analytics.etf import portfolio, historical_prices; from metis.analytics.events import event_snapshots; print(json.dumps({**workstation(), 'event_snapshots': event_snapshots(), 'etf_portfolio': portfolio(), 'etf_history': [historical_prices('2026-10-29', '2026-10-30'), historical_prices('2022-09-12', '2022-09-13')]}))"],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const data = JSON.parse(output);
+  const html = renderToStaticMarkup(React.createElement(Portfolio, { data }));
+
+  // 1. Structure check: First screen opens with compact 12-position snapshot section
+  const snapshotSectionMatch = html.match(/<section class="etf-portfolio portfolio-snapshot" aria-label="Portfolio snapshot">([\s\S]*?)<\/section>/);
+  assert.ok(snapshotSectionMatch, "Portfolio snapshot section must exist at top");
+  const snapshotHtml = snapshotSectionMatch[1];
+
+  // Title and compact lead summary with modeled full-snapshot P&L (-$333,000 on $100m)
+  assert.match(snapshotHtml, /<h2>Portfolio snapshot · As of 2026-10-30<\/h2>/);
+  assert.match(snapshotHtml, /Estimated portfolio P&amp;L: <span class="negative">-\$333,000<\/span>/);
+  assert.match(snapshotHtml, /Starting illustrative value \$100,000,000 → ending illustrative value \$99,667,000 · 12\/12 rows/);
+  assert.match(snapshotHtml, /Illustrative modeled P&amp;L, not observed account returns · MTD: Not available/);
+
+  // Directly followed by the 4-column compact table
+  const tableMatch = snapshotHtml.match(/<table class="etf-table event-table">([\s\S]*?)<\/table>/);
+  assert.ok(tableMatch, "4-column compact table must exist in snapshot section");
+  const tableHtml = tableMatch[1];
+
+  // Header verification: 4 columns
+  assert.match(tableHtml, /<th>Holding<\/th>/);
+  assert.match(tableHtml, /<th>Starting USD value<br\s*\/?>2026-10-29<\/th>/);
+  assert.match(tableHtml, /<th>Ending USD value<br\s*\/?>2026-10-30<\/th>/);
+  assert.match(tableHtml, /<th>Estimated P&amp;L<\/th>/);
+
+  // 12 position rows with expander chevrons
+  const rows = [...tableHtml.matchAll(/<tr data-event-position="([^"]+)">([\s\S]*?)<\/tr>/g)];
+  assert.equal(rows.length, 12, "Must contain exactly 12 position rows");
+  assert.equal((tableHtml.match(/class="holding-chevron"/g) || []).length, 12);
+  assert.equal((tableHtml.match(/<details class="holding-details">/g) || []).length, 12);
+
+  // Modeled values for non-ETF instruments (Treasuries, Swaps, FX, Cash) rather than "Unavailable"
+  for (const [rowHtml, posId] of rows.map(r => [r[2], r[1]])) {
+    const cells = [...rowHtml.matchAll(/<td\b([^>]*)>([\s\S]*?)<\/td>/g)];
+    assert.equal(cells.length, 4, `Row ${posId} must have 4 cells`);
+    const [, startVal, endVal, pnl] = cells;
+
+    // None of the table value cells should be 'Unavailable'
+    assert.doesNotMatch(startVal[2], /Unavailable/, `Row ${posId} starting value must be modeled`);
+    assert.doesNotMatch(endVal[2], /Unavailable/, `Row ${posId} ending value must be modeled`);
+    assert.doesNotMatch(pnl[2], /Unavailable/, `Row ${posId} P&L must be modeled`);
+
+    // Valuations uncolored
+    assert.doesNotMatch(startVal[1], /negative|positive/);
+    assert.doesNotMatch(endVal[1], /negative|positive/);
+  }
+
+  // Specific instrument check in compact table
+  const ust10Row = rows.find(r => r[1] === "UST10")[2];
+  assert.match(ust10Row, /\$18,000,000/);
+  assert.match(ust10Row, /\$18,058,000/);
+  assert.match(ust10Row, /<td class="positive">\$58,000<\/td>/);
+
+  const irsPRow = rows.find(r => r[1] === "IRS-P")[2];
+  assert.match(irsPRow, /-\$500,000/);
+  assert.match(irsPRow, /-\$579,000/);
+  assert.match(irsPRow, /<td class="negative">-\$79,000<\/td>/);
+
+  const cashRow = rows.find(r => r[1] === "CASH")[2];
+  assert.match(cashRow, /\$4,000,000/);
+  assert.match(cashRow, /<td>\$0<\/td>/); // neutral zero uncolored
+
+  // 2. Collapsed details: Methodology, Assumptions, and Preserved observed-price audit
+  assert.match(html, /<details class="portfolio-methodology-details">[\s\S]*?<summary>Methodology &amp; Assumptions · Preserved observed-price audit<\/summary>/);
+
+  // Distinct metrics: whole-snapshot modeled P&L vs observed-price ETF sleeve
+  assert.match(html, /Observed-only ETF sleeve comparison/);
+  assert.match(html, /Covered price P&amp;L: <span class="negative">-\$417,244\.37<\/span><\/b> on \$64,000,000\.00 of starting allocations/);
+  assert.match(html, /Complete portfolio P&amp;L: Unavailable \(observed-price basis\)/);
+
+  // Preserved instrument audit and CUSIPs inside collapsed section
+  assert.match(html, /Observed-price coverage audit · preserved evidence/);
+  assert.match(html, /Remaining six instruments: valuation gaps and minimum data/);
+  assert.match(html, /TreasuryDirect historical reference source/);
+
+  // NO event selector anywhere in Portfolio
+  assert.doesNotMatch(html, /<select/);
+  assert.doesNotMatch(html, /Event window/);
+});

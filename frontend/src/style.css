@@ -2028,4 +2028,39 @@ footer > span:last-child {
   font-variant-numeric: tabular-nums;
   font-size: 14px;
 }
+.portfolio-tab .event-table td {
+  font-size: 14.5px;
+}
+.portfolio-tab .event-table td:nth-child(2),
+.portfolio-tab .event-table td:nth-child(3),
+.portfolio-tab .event-table td:nth-child(4) {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 500;
+  color: #e6eef8;
+  white-space: nowrap;
+}
+.portfolio-tab .event-table td:nth-child(4) {
+  font-weight: 600;
+}
+.portfolio-tab > details {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border: 1px solid #233247;
+  border-radius: 8px;
+  background: rgba(14, 21, 31, 0.4);
+}
+.portfolio-tab > details > summary {
+  font-size: 15px;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.portfolio-tab > details[open] > summary {
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+.portfolio-audit-content {
+  margin-top: 12px;
+}
 

@@ -1935,6 +1935,10 @@ footer > span:last-child {
 .investigation-step p { line-height: 1.65; }
 .economic-hypothesis, .investigation-plan { margin-top: 18px; padding: 18px; border: 1px solid #293746; border-radius: 8px; }
 .economic-hypothesis h3, .investigation-plan h3 { margin: 0 0 12px; }
+.hypothesis-comparison { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; margin-top: 18px; }
+.hypothesis-comparison .economic-hypothesis { min-width: 0; margin-top: 0; }
+.hypothesis-comparison .economic-hypothesis p { margin: 8px 0; }
+.hypothesis-comparison .economic-hypothesis p:has(> b) { margin-top: 16px; }
 .hypothesis-section { border-left: 3px solid #52d6bb; padding-left: 20px; }
 .investigation-support { margin-top: 22px; }
 .verification-examples { margin: 24px 0; }

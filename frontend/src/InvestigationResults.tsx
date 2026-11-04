@@ -52,13 +52,18 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
         The supplied {historical ? "historical observations and macro context" : daily ? "synthetic observations" : "scenario assumptions"} alone cannot distinguish these mechanisms or identify a cause.</p>
       {answer.mode === "demo" && <p className="context-note">Deterministic demonstration templates, not model-selected findings. Check their fit to this investigation.</p>}
       {hypotheses.length === 0 && <p>No structured competing hypotheses were returned for this answer. The original economic interpretation remains in supporting evidence; start a new investigation for the three-question format.</p>}
-      {hypotheses.map((hypothesis, index) => <article className="economic-hypothesis" key={index}>
-        <h3>Hypothesis {String.fromCharCode(65 + index)} · {hypothesis.title}</h3>
-        <p>{hypothesis.mechanism}</p>
-        <p><b>{historical ? "Market implications" : daily ? "Consistent observations" : "Consistency with hypothetical assumptions"}:</b> {hypothesis.consistent_evidence}</p>
-        {hypothesis.portfolio_implications && <p><b>Portfolio implications:</b> {hypothesis.portfolio_implications}</p>}
-        <p><b>Uncertain or unexplained:</b> {hypothesis.uncertainty}</p>
-      </article>)}
+      {hypotheses.length > 0 && <div className="hypothesis-comparison" aria-label="Competing hypothesis comparison">
+        {hypotheses.map((hypothesis, index) => <article className="economic-hypothesis" key={index}>
+          <h3>Hypothesis {String.fromCharCode(65 + index)} · {hypothesis.title}</h3>
+          <p><b>Proposed mechanism</b></p>
+          <p>{hypothesis.mechanism}</p>
+          <p><b>{historical ? "Consistent historical observations" : daily ? "Consistent synthetic observations" : "Consistent scenario assumptions"}</b></p>
+          <p>{hypothesis.consistent_evidence}</p>
+          {hypothesis.portfolio_implications && <><p><b>Portfolio implications</b></p><p>{hypothesis.portfolio_implications}</p></>}
+          <p><b>Unknown or not established</b></p>
+          <p>{hypothesis.uncertainty}</p>
+        </article>)}
+      </div>}
     </section>
     <section className="investigation-step" id={investigationId}>
       <h2>3 · How can we investigate?</h2>

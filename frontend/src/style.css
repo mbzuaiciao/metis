@@ -2832,6 +2832,10 @@ h1 {
   color: var(--muse-text-muted);
 }
 
+.risk-sensitivity .preset.active small {
+  color: var(--muse-text-secondary);
+}
+
 .risk-sensitivity .scenario-layout {
   grid-template-columns: 360px minmax(0, 1fr);
 }

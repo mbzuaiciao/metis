@@ -1278,20 +1278,15 @@ function ReasoningPage({
           const i = messages.length - 1 - displayedIndex;
           return (
             <article className="reasoning-answer" key={i}>
-              <details className="user-question">
-                <summary>
-                  <span className="eyebrow">
-                    {m.investigation_scope === "daily"
-                      ? "DAILY LOSS INVESTIGATION"
-                      : m.investigation_scope === "scenario"
-                        ? "HYPOTHETICAL SCENARIO INVESTIGATION"
-                        : m.investigation_scope === "historical"
-                          ? "HISTORICAL CPI INVESTIGATION"
-                          : "YOUR QUESTION"}
-                  </span> · View question
-                </summary>
-                <p>{m.question}</p>
-              </details>
+              <span className="eyebrow">
+                {m.investigation_scope === "daily"
+                  ? "DAILY LOSS INVESTIGATION"
+                  : m.investigation_scope === "scenario"
+                    ? "HYPOTHETICAL SCENARIO INVESTIGATION"
+                    : m.investigation_scope === "historical"
+                      ? "HISTORICAL CPI INVESTIGATION"
+                      : "YOUR QUESTION"}
+              </span>
               <div className="answer-header">
                 <Sparkles size={17} />
                 <b>Metis interpretation</b>

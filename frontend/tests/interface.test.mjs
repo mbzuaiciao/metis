@@ -235,7 +235,7 @@ test("three-question results retain scoped backend values and collapse supportin
     by_factor: {rates_pnl: rate, credit_pnl: 0, equity_pnl: equity, fx_pnl: 0},
     positions: [], shocks: {rates_bp: -8, ig_bp: 18, hy_bp: 45, equity_pct: -2.2, fx_pct: -0.6}});
   for (const scope of ["daily", "scenario"]) {
-    const answer = {investigation_scope: scope, mode: "demo", context_operations: [],
+    const answer = {investigation_scope: scope, mode: "demo", question: `Exact ${scope} question?`, context_operations: [],
       context: {market: {as_of: "2025-03-10"}, portfolio: {portfolio_name: "Captured", nav_usd: 100000000, exposures: {dv01_usd_per_bp: 0, cs01_usd_per_bp: 0}},
         daily: makeCalculation(-123, 100, -223), scenario: makeCalculation(456, 500, -44), evidence: []},
       interpretation: {summary: "Full original summary", economic_interpretation: "Original economic text",
@@ -251,6 +251,19 @@ test("three-question results retain scoped backend values and collapse supportin
     const third = html.indexOf("3 · How can we investigate?");
     const details = html.indexOf('<details');
     assert.ok(first < second && second < third && third < details);
+    const lead = html.slice(0, first);
+    assert.ok(lead.includes(answer.question));
+    for (const text of [answer.interpretation.summary, ...answer.interpretation.principal_risk_observations]) {
+      assert.ok(lead.includes(text));
+      assert.equal(html.split(text).length - 1, 1);
+    }
+    assert.doesNotMatch(lead, /<details/);
+    assert.match(lead, /Deterministic demo answer · template content, not a live model response/);
+    assert.ok(html.indexOf("Original economic text") > details);
+    const live = renderToStaticMarkup(React.createElement(InvestigationResults, {answer: {...answer, mode: "meta"}}));
+    assert.match(live.slice(0, live.indexOf("1 · What happened?")), /Model answer · original prose Not checked/);
+    assert.doesNotMatch(live.slice(0, live.indexOf("1 · What happened?")), /Deterministic demo answer/);
+
     assert.match(html, scope === "daily" ? /lost \$123/ : /gained \$456/);
     assert.match(html, scope === "daily" ? /fictional synthetic snapshot/ : /simulated assumptions, not historical observations/);
     assert.match(html, /Hypothesis A/);
@@ -1136,3 +1149,29 @@ test("AI Reasoning offers an inflation stress preset separate from portfolio sel
  assert.match(page, /2022 U\.S\. Inflation Shock/);
  assert.match(page, /setShocks\(\{ \.\.\.inflationPreset\.shocks \}\)/);
 });
+
+// Opt-in offline render of authorized private responses; no model request or copied fixture.
+for (const file of (process.env.METIS_SAVED_ANSWERS ?? "").split(":").filter(Boolean)) {
+  test("saved live answer exposes exact question, summary and observations before stages", () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = () => { throw new Error("Offline render must not fetch"); };
+    try {
+      const answer = JSON.parse(readFileSync(file, "utf8")).response;
+      assert.equal(answer.mode, "meta");
+      const original = structuredClone(answer);
+      const html = renderToStaticMarkup(React.createElement(InvestigationResults, {answer}));
+      const lead = html.slice(0, html.indexOf("1 · What happened?"));
+      const escape = text => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#x27;");
+      for (const text of [answer.question, answer.interpretation.summary, ...answer.interpretation.principal_risk_observations]) {
+        assert.ok(lead.includes(escape(text)), "Returned text must be visible verbatim");
+        assert.equal(html.split(escape(text)).length - 1, 1, "Returned text must not be duplicated");
+      }
+      assert.doesNotMatch(lead, /<details/);
+      assert.match(lead, /Model answer · original prose Not checked/);
+      assert.match(html, /<details class="answer-section investigation-support">/);
+      assert.match(html, /Evidence references/);
+      assert.match(html, /Structured assertion verification/);
+      assert.deepEqual(answer, original);
+    } finally { globalThis.fetch = originalFetch; }
+  });
+}

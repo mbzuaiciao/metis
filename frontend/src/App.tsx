@@ -1226,7 +1226,7 @@ function ReasoningPage({
               disabled={busy}
               aria-describedby="daily-option-description"
             >
-              Explain Portfolio P&L <ArrowRight size={15} />
+              Explain Daily Portfolio P&L <ArrowRight size={15} />
             </button>
             <p id="daily-option-description" className="context-note">
               Explain the portfolio's P&L for {dailyData.market.as_of}, including its key positions and risk drivers.
@@ -1256,6 +1256,10 @@ function ReasoningPage({
             {error}
           </p>
         )}
+        <p id="preset-question-context" className="context-note">
+          Preset questions start a new daily P&L investigation using the selected portfolio's daily snapshot. They do not apply the Historical Stress Scenario.
+          After an investigation starts, use the follow-up question box to continue it. Follow-ups retain the investigation's captured portfolio and assumptions, including stress assumptions for stress investigations, even if you change the selectors.
+        </p>
         {messages.length === 0 && (
           <div className="prompt-list">
             {prompts.map((q) => (

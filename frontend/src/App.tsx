@@ -1163,7 +1163,6 @@ function ReasoningPage({
   busy,
   error,
   ask,
-  goScenario,
   activeInvestigationId,
   setActiveInvestigationId,
 }: {
@@ -1178,7 +1177,6 @@ function ReasoningPage({
   busy: boolean;
   error: string;
   ask: (q: string, focus?: InvestigationFocus) => Promise<void>;
-  goScenario: () => void;
   activeInvestigationId: string | null;
   setActiveInvestigationId: (id: string) => void;
 }) {
@@ -1234,15 +1232,6 @@ function ReasoningPage({
             </button>
             <p id="stress-option-description" className="context-note">
               Understand how the portfolio responds to the currently selected stress assumptions.
-            </p>
-          </div>
-          <div>
-            <button className="secondary" onClick={goScenario}
-              aria-describedby="what-if-option-description">
-              Explore What-If Scenarios
-            </button>
-            <p id="what-if-option-description" className="context-note">
-              Change market assumptions and see how they affect portfolio P&L.
             </p>
           </div>
         </section>
@@ -1305,10 +1294,6 @@ function ReasoningPage({
                 setActiveInvestigationId(m.investigation_id);
                 document.getElementById("followup-composer")?.scrollIntoView({ behavior: "smooth" });
               }}>Continue this investigation</button>
-              <button className="text-button" onClick={goScenario}>
-                3 · Explore or adjust a hypothetical stress{" "}
-                <ArrowRight size={15} />
-              </button>
             </article>
           );
         })}
@@ -1771,7 +1756,6 @@ export default function App() {
                   activeInvestigationId={activeInvestigationId}
                   setActiveInvestigationId={setActiveInvestigationId}
                   ask={ask}
-                  goScenario={() => navigate(4)}
                 />
               )}
             </>

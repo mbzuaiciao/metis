@@ -1258,7 +1258,7 @@ function ReasoningPage({
         )}
         <p id="preset-question-context" className="context-note">
           Preset questions start a new daily P&L investigation using the selected portfolio's daily snapshot. They do not apply the Historical Stress Scenario.
-          Once an investigation exists, preset questions continue the active investigation using its captured portfolio and assumptions, including stress assumptions for stress investigations, even if the selectors have changed.
+          After an investigation starts, use the follow-up question box to continue it. Follow-ups retain the investigation's captured portfolio and assumptions, including stress assumptions for stress investigations, even if you change the selectors.
         </p>
         {messages.length === 0 && (
           <div className="prompt-list">

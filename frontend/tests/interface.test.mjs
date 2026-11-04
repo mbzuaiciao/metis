@@ -289,7 +289,7 @@ test("historical results preserve three questions, portfolio links and unavailab
   for (const text of ["2022-09-13", "Hypothesis C", "Portfolio implications", "IRS-R loses", "complete historical total is unknown", "IG/HY spread changes and credit-spread", "Unavailable", "Partial-factor position P&amp;L", "Distinguishing evidence", "0.1%", "3.7434"]) assert.ok(html.includes(text), text);
   assert.doesNotMatch(html, /IG spreads · bp|HY spreads · bp|Credit spreads<\/span><strong[^>]*>\$0|2025-03-10|Hypothetical stress investigation/);
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
-  assert.match(app, /ask\(historicalQuestion, "historical"\)/);
+  assert.match(app, /HISTORICAL CPI INVESTIGATION/);
 });
 
 
@@ -1046,7 +1046,7 @@ test("AI Reasoning keeps investigation actions without duplicating scenario navi
   const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
   const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
   assert.ok(page.startsWith("function ReasoningPage("), "ReasoningPage must exist");
-  assert.match(page, /Investigate a Historical Event/);
+  assert.doesNotMatch(page, /Investigate a Historical Event/);
   assert.match(page, /Explain Current Stress Scenario/);
   assert.match(page, /Synthetic P&L/);
   assert.doesNotMatch(page, /Explore What-If Scenarios|Explore or adjust a hypothetical stress|goScenario/);
@@ -1065,4 +1065,29 @@ test("AI Reasoning compares hypotheses without inventing contradictory evidence 
   assert.match(source, /hypothesis.additional_evidence/);
   assert.doesNotMatch(source, /Contradictory evidence:/);
   assert.match(css, /\.hypothesis-comparison \{ display: grid; grid-template-columns: repeat\(auto-fit/);
+});
+
+test("AI Reasoning demo controls are legible and daily date selector is aligned", async () => {
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
+  assert.match(app, /Which positions and risk factors contributed most to the selected daily P&L/);
+  assert.doesNotMatch(app, /Investigate a Historical Event/);
+  assert.match(css, /\.reasoning-layout \.prompt-list button \{ font-size: 15px/);
+  assert.match(css, /\.reasoning-layout \.context-stat \{ font-size: 13px/);
+  assert.match(css, /\.reasoning-layout \.daily-date-row \{ display: flex; align-items: center/);
+  const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
+  const html = renderToStaticMarkup(React.createElement(DefaultInvestigationDate, {
+    investigation: {
+      default_date: "2026-10-30",
+      disclosure: "Fictional portfolio values.",
+      snapshots: [{ market: { as_of: "2026-10-30" } }],
+    },
+    selectedDate: "2026-10-30",
+    onSelect() {},
+    disabled: false,
+  }));
+  assert.match(html, /class="daily-date-row"/);
+  assert.match(html, /<label for="daily-investigation-date">Synthetic daily scenario<\/label>/);
+  assert.match(html, /id="daily-investigation-date"/);
+  assert.match(html, /Fictional portfolio values/);
 });

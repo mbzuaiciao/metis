@@ -2439,3 +2439,42 @@ footer > span:last-child {
   .portfolio-summary { font-size: 14px; }
   .portfolio-summary tr:first-child td { font-size: 22px; }
 }
+
+
+/* Video-demo readability, scoped to Meta AI Reasoning only. */
+.reasoning-layout { grid-template-columns: minmax(0, 1fr) 320px; }
+.reasoning-layout .reasoning-intro p { font-size: 14px; color: #b2c7dc; line-height: 1.6; }
+.reasoning-layout .reasoning-intro .eyebrow { font-size: 11px; }
+.reasoning-layout .reasoning-actions button { font-size: 14px; line-height: 1.45; min-height: 44px; }
+.reasoning-layout .context-note { font-size: 12px; color: #9cb4cc; line-height: 1.55; }
+.reasoning-layout .prompt-list button { font-size: 15px; color: #d3e1f0; line-height: 1.5; }
+.reasoning-layout .context-sidebar h3 { font-size: 14px; }
+.reasoning-layout .context-stat { font-size: 13px; line-height: 1.6; }
+.reasoning-layout .context-history { font-size: 13px; }
+.reasoning-layout .context-history small { font-size: 11px; color: #9cb4cc; }
+.reasoning-layout .compact { font-size: 12px; }
+.reasoning-layout .investigation-step p,
+.reasoning-layout .economic-hypothesis p,
+.reasoning-layout .investigation-plan p { font-size: 14px; line-height: 1.6; }
+.reasoning-layout .reasoning-answer .answer-section p,
+.reasoning-layout .reasoning-answer .answer-section summary { font-size: 13px; }
+.reasoning-layout .composer small { font-size: 12px; }
+.reasoning-layout .composer textarea { font-size: 15px; }
+.reasoning-layout .captured-evidence { padding: 16px 18px 4px; }
+.reasoning-layout .captured-evidence > p { margin: 12px 0; font-size: 12px; line-height: 1.6; }
+.reasoning-layout .daily-date-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.reasoning-layout .daily-date-row label { flex: 0 0 auto; font-size: 14px; font-weight: 600; line-height: 1.4; color: #dce8f7; margin: 0; }
+.reasoning-layout .daily-date-row select {
+  flex: 1 1 300px; min-width: 0; width: auto;
+  font-size: 14px; line-height: 1.4; padding: 10px 12px; margin: 0;
+  background: #132435; color: #e2edf8; border: 1px solid #365165; border-radius: 6px;
+}
+@media (max-width: 1100px) {
+  .reasoning-layout { grid-template-columns: 1fr; }
+  .reasoning-layout .context-sidebar { order: 0; }
+  .reasoning-layout .context-sidebar .panel { display: none; }
+}
+@media (max-width: 700px) {
+  .reasoning-layout .daily-date-row { align-items: stretch; flex-direction: column; }
+  .reasoning-layout .daily-date-row select { flex: 0 1 auto; width: 100%; }
+}

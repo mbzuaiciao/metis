@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   dailySnapshot,
+  answerPresentation,
   executivePreview,
   followupTarget,
   scopeLabel,
@@ -29,6 +30,36 @@ const prior = [
     interpretation: { summary: "Earlier interpretation" },
   },
 ];
+
+test("preset intent starts a fresh daily request even with an older selected stress conversation", () => {
+  const previous = [{...captured("old-stress"), presentation: "full"}];
+  const request = investigationRequest("preset", " Same question ", daily, null, previous,
+    "old-stress", "2026-10-30", "candidate-b");
+  assert.deepEqual(request, {
+    question: "Same question", investigation_scope: "daily", history: [],
+    investigation_date: "2026-10-30", portfolio_id: "candidate-b", shocks: daily.shocks,
+  });
+  assert.equal(answerPresentation("preset", previous, "old-stress"), "focused");
+  // Wording never determines presentation or request routing.
+  for (const focus of ["daily", "scenario", "historical"])
+    assert.equal(answerPresentation(focus, previous), "full");
+});
+
+test("follow-ups inherit presentation from their selected captured investigation", () => {
+  const messages = [
+    {...captured("preset"), presentation: "focused"},
+    {...captured("daily", "daily"), presentation: "full"},
+    captured("historical", "historical"),
+  ];
+  for (const [id, presentation] of [["preset", "focused"], ["daily", "full"], ["historical", "full"]]) {
+    assert.equal(answerPresentation("question", messages, id), presentation);
+    const request = investigationRequest("question", "More?", daily, null, messages, id);
+    assert.equal(request.investigation_id, id);
+    assert.equal(request.history.length, 2);
+    assert.equal(request.presentation, undefined);
+  }
+  assert.equal(answerPresentation("question", []), "full");
+});
 
 test("daily investigation uses the daily snapshot, without changing selected stress or leaking earlier interpretation", () => {
   const selected = structuredClone(stress);

@@ -150,7 +150,7 @@ def assemble_context(shocks: Shocks, context_mode: ContextMode = "full", investi
             "alternative_scenarios": alternatives,
             "historical_context": data["history"], "evidence": evidence,
             "conventions": "USD. Positive DV01/CS01 gains on a 1bp fall. P&L = -DV01*yield_bp - CS01*spread_bp + equity_delta*equity_pct/100 + fx_delta*EURUSD_pct/100. Government rate shocks also apply to credit bonds. End NAV = opening NAV + daily P&L."}
-    if portfolio_id == "candidate-a":
+    if portfolio_id != "current":
         selection = next(item for item in portfolio_selections() if item['id'] == portfolio_id)
         context['portfolio']['selection'] = {key: selection[key] for key in ['id', 'label', 'reference_date', 'construction']}
     if context_mode not in {"full", "evidence_only"}:

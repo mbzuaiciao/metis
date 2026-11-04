@@ -1,0 +1,318 @@
+[
+  {
+    "tab": "Overview",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(15, 23, 42)",
+        "bg": "#ffffff",
+        "contrast": "17.85:1"
+      }
+    ]
+  },
+  {
+    "tab": "Portfolio",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(15, 23, 42)",
+        "bg": "#ffffff",
+        "contrast": "17.85:1"
+      }
+    ]
+  },
+  {
+    "tab": "Market Monitor",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#ffffff",
+        "contrast": "17.74:1"
+      }
+    ]
+  },
+  {
+    "tab": "Risk Analytics",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(15, 23, 42)",
+        "bg": "#ffffff",
+        "contrast": "17.85:1"
+      }
+    ]
+  },
+  {
+    "tab": "Risk Sensitivity",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#ffffff",
+        "contrast": "17.74:1"
+      }
+    ]
+  },
+  {
+    "tab": "Causal Exploration",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      }
+    ]
+  },
+  {
+    "tab": "Meta AI Reasoning",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      },
+      {
+        "element": "Panel / Metric heading",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#ffffff",
+        "contrast": "17.74:1"
+      }
+    ]
+  },
+  {
+    "tab": "Research & Limitations",
+    "samples": [
+      {
+        "element": "Page heading (H1)",
+        "fg": "rgb(17, 24, 39)",
+        "bg": "#f7f8fa",
+        "contrast": "16.69:1"
+      },
+      {
+        "element": "Selected navigation item",
+        "fg": "rgb(15, 118, 110)",
+        "bg": "rgb(230, 244, 241)",
+        "contrast": "4.84:1"
+      },
+      {
+        "element": "Positive gain (+)",
+        "fg": "rgb(4, 120, 87)",
+        "bg": "#ffffff",
+        "contrast": "5.48:1"
+      },
+      {
+        "element": "Negative loss (-)",
+        "fg": "rgb(220, 38, 38)",
+        "bg": "#ffffff",
+        "contrast": "4.83:1"
+      },
+      {
+        "element": "Muted text / eyebrow",
+        "fg": "rgb(100, 116, 139)",
+        "bg": "#ffffff",
+        "contrast": "4.76:1"
+      }
+    ]
+  }
+]

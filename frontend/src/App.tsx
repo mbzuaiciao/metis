@@ -224,7 +224,7 @@ function Chart({
     />
   );
 }
-function FactorChart({ calc }: { calc: Calculation }) {
+function FactorChart({ calc, readable = false }: { calc: Calculation; readable?: boolean }) {
   const entries = Object.entries(calc.by_factor);
   return (
     <Chart
@@ -240,6 +240,7 @@ function FactorChart({ calc }: { calc: Calculation }) {
         },
       ]}
       layout={{
+        ...(readable ? { font: { size: 14, color: "#a9bad0" }, margin: { l: 80, r: 24, t: 20, b: 65 } } : {}),
         yaxis: {
           gridcolor: "#232e3e",
           tickprefix: "$",
@@ -622,24 +623,30 @@ export function Portfolio({ data }: { data: Workstation }) {
       {octoberSnapshot ? (
         <section className="etf-portfolio portfolio-snapshot" aria-label="Portfolio snapshot">
           <h2>Portfolio snapshot · As of {octoberSnapshot.end}</h2>
-          <p>
-            <b>
-              Estimated portfolio P&amp;L:{" "}
-              {octoberSnapshot.estimated_pnl_usd === null ? (
-                "Unavailable"
-              ) : (
-                <span className={eventPnlTone(octoberSnapshot.estimated_pnl_usd)}>
+          <table className="portfolio-summary" aria-label="Portfolio summary">
+            <tbody>
+              <tr>
+                <th scope="row">Estimated portfolio P&amp;L</th>
+                <td className={octoberSnapshot.estimated_pnl_usd === null ? "muted" : eventPnlTone(octoberSnapshot.estimated_pnl_usd)}>
                   {eventMoney(octoberSnapshot.estimated_pnl_usd)}
-                </span>
-              )}
-            </b>
-            <br />
-            Starting illustrative value {eventMoney(octoberSnapshot.start_nav_usd)} → ending illustrative value{" "}
-            {eventMoney(octoberSnapshot.end_nav_usd)} · {octoberSnapshot.coverage_count}/12 rows.
-            <br />
-            <small className="context-note">
-              Illustrative modeled P&amp;L, not observed account returns · MTD: Not available
-            </small>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Starting value</th>
+                <td>{eventMoney(octoberSnapshot.start_nav_usd)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Ending value</th>
+                <td>{eventMoney(octoberSnapshot.end_nav_usd)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Holdings covered</th>
+                <td>{octoberSnapshot.coverage_count} / {octoberSnapshot.positions.length}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="portfolio-summary-disclosure">
+            Modeled estimate for demo purposes · Not live account returns
           </p>
           <EventTable snapshot={octoberSnapshot} />
         </section>
@@ -976,7 +983,7 @@ export function Scenarios({
     (s) => (Object.keys(s.shocks) as (keyof Shocks)[]).every((k) => s.shocks[k] === shocks[k]),
   );
   return (
-    <>
+    <div className="risk-sensitivity">
       <div className="notice">
         <FlaskConical size={17} />
         <span>
@@ -1106,7 +1113,7 @@ export function Scenarios({
           </div>
           {calc && !pending && !error && (
             <Panel title="Scenario attribution" note="USD">
-              <FactorChart calc={calc} />
+              <FactorChart calc={calc} readable />
               <FactorEvidence calculation={calc} />
             </Panel>
           )}
@@ -1134,7 +1141,7 @@ export function Scenarios({
           Follow-ups retain their captured assumptions.
         </span>
       </div>
-    </>
+    </div>
   );
 }
 const prompts = [

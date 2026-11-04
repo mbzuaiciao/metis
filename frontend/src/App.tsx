@@ -1207,17 +1207,17 @@ function ReasoningPage({
               disabled={busy}
               aria-describedby="daily-option-description"
             >
-              Explain {dailyData.market.as_of} Synthetic P&L <ArrowRight size={15} />
+              Explain Portfolio P&L <ArrowRight size={15} />
             </button>
             <p id="daily-option-description" className="context-note">
-              Investigate the {dailyData.market.as_of} fictional snapshot. Its holdings, market moves and calculated P&L are synthetic.
+              Explain the portfolio's P&L for {dailyData.market.as_of}, including its key positions and risk drivers.
             </p>
           </div>
           <div>
             <button className="secondary" disabled={busy || pending || !calc}
               aria-describedby="stress-option-description"
               onClick={() => void ask(scenarioQuestion, "scenario")}>
-              Explain Current Stress Scenario
+              Analyze Stress Scenario
             </button>
             <p id="stress-option-description" className="context-note">
               Understand how the portfolio responds to the currently selected stress assumptions.
@@ -1306,7 +1306,7 @@ function ReasoningPage({
               </option>)}
             </select>
             <InvestigationScope answer={target} label="Follow-up scope" />
-          </> : <p className="context-note">New daily investigation of the selected {dailyData.market.as_of} synthetic snapshot.</p>}
+          </> : <p className="context-note">New daily investigation for {dailyData.market.as_of}.</p>}
           <label className="sr-only" htmlFor="question">
             Ask Metis a portfolio question
           </label>
@@ -1315,7 +1315,7 @@ function ReasoningPage({
             maxLength={2000}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the selected synthetic daily scenario…"}
+            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the selected portfolio date…"}
             rows={3}
             disabled={busy}
           />
@@ -1336,7 +1336,7 @@ function ReasoningPage({
       </div>
       <aside className="context-sidebar">
         <Panel title="Current controls" note="For new investigations">
-          <span className="badge amber">SYNTHETIC DATA</span>
+          <span className="badge amber">DEMO DATA</span>
           <h3>{dailyData.portfolio_name}</h3>
           <div className="context-stat">
             <span>NAV</span>
@@ -1352,7 +1352,7 @@ function ReasoningPage({
           </div>
           <h3>Current hypothetical scenario</h3>
           <p className="context-note">
-            Uses the app-wide {data.market.as_of} synthetic holdings when starting a new stress investigation, independently of the daily selector. Existing answers and follow-ups use their captured evidence.
+            New stress investigations use the app-wide {data.market.as_of} portfolio, independently of the date selector. Existing answers retain their captured evidence.
           </p>
           {calc && !pending ? (
             <>

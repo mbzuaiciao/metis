@@ -1154,6 +1154,8 @@ function ReasoningPage({
   data,
   selectedDate,
   setSelectedDate,
+  shocks,
+  setShocks,
   calc,
   pending,
   messages,
@@ -1168,6 +1170,8 @@ function ReasoningPage({
   data: Workstation;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
+  shocks: Shocks;
+  setShocks: (shocks: Shocks) => void;
   calc: Calculation | null;
   pending: boolean;
   messages: Reasoning[];
@@ -1180,6 +1184,8 @@ function ReasoningPage({
   setActiveInvestigationId: (id: string) => void;
 }) {
   const dailyData = dailySnapshot(data, selectedDate);
+  const inflationPreset = data.historical_stress_presets.find((preset) => preset.id === "inflation-2022");
+  const inflationSelected = inflationPreset && (Object.keys(inflationPreset.shocks) as (keyof Shocks)[]).every((key) => inflationPreset.shocks[key] === shocks[key]);
   const target = followupTarget(messages, activeInvestigationId);
   const investigations = messages.filter((m, i) => messages.findIndex(other => other.investigation_id === m.investigation_id) === i);
   return (
@@ -1199,6 +1205,18 @@ function ReasoningPage({
         </div>
         <DefaultInvestigationDate investigation={data.investigation} selectedDate={selectedDate}
           onSelect={setSelectedDate} disabled={busy} />
+        {inflationPreset && <section className="captured-evidence" aria-label="Historical stress selection">
+          <div className="daily-date-row">
+            <label htmlFor="historical-stress-event">Historical Stress Scenario</label>
+            <select id="historical-stress-event" value={inflationSelected ? inflationPreset.id : ""}
+              disabled={busy || pending}
+              onChange={(event) => { if (event.target.value === inflationPreset.id) setShocks({ ...inflationPreset.shocks }); }}>
+              <option value="">Risk Sensitivity assumptions</option>
+              <option value={inflationPreset.id}>2022 U.S. Inflation Shock — {inflationPreset.window}</option>
+            </select>
+          </div>
+          <p className="context-note">Historical-style shocks on the portfolio, not a calibrated historical replay. Adjust shocks in Risk Sensitivity.</p>
+        </section>}
         <section className="reasoning-actions">
           <div>
             <button
@@ -1216,7 +1234,7 @@ function ReasoningPage({
           <div>
             <button className="secondary" disabled={busy || pending || !calc}
               aria-describedby="stress-option-description"
-              onClick={() => void ask(scenarioQuestion, "scenario")}>
+              onClick={() => void ask(inflationSelected ? `${scenarioQuestion} Historical stress preset: ${inflationPreset.name}, ${inflationPreset.window}. ${inflationPreset.basis} Illustrative shocks, not historical portfolio returns.` : scenarioQuestion, "scenario")}>
               Analyze Stress Scenario
             </button>
             <p id="stress-option-description" className="context-note">
@@ -1735,6 +1753,8 @@ export default function App() {
                   data={data}
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
+                  shocks={shocks}
+                  setShocks={changeShocks}
                   calc={scenarioError ? null : calc}
                   pending={pending}
                   messages={messages}

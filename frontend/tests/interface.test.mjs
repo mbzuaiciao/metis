@@ -1083,7 +1083,8 @@ test("AI Reasoning explains preset daily starts and captured follow-ups near the
   const text = helper[1].replace(/\s+/g, " ").trim();
   assert.match(text, /Preset questions start a new daily P&L investigation using the selected portfolio's daily snapshot\./);
   assert.match(text, /They do not apply the Historical Stress Scenario\./);
-  assert.match(text, /Once an investigation exists, preset questions continue the active investigation using its captured portfolio and assumptions, including stress assumptions for stress investigations, even if the selectors have changed\./);
+  assert.match(text, /After an investigation starts, use the follow-up question box to continue it\./);
+  assert.match(text, /Follow-ups retain the investigation's captured portfolio and assumptions, including stress assumptions for stress investigations, even if you change the selectors\./);
   assert.ok(page.indexOf(helper[0]) < page.indexOf('{messages.length === 0 && ('),
     "Keep the clarification visible when an investigation exists");
   assert.match(page.slice(page.indexOf(helper[0]) + helper[0].length), /^\s*\{messages.length === 0 && \(\s*<div className="prompt-list">/,

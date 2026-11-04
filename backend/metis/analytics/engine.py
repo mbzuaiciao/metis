@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 
-PortfolioId = Literal["current", "candidate-a"]
+PortfolioId = Literal["current", "candidate-a", "candidate-b", "candidate-c"]
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 
@@ -35,10 +35,10 @@ def snapshot_files(investigation_date: str | None = None) -> dict:
 
 
 def load_positions(investigation_date: str | None = None, portfolio_id: PortfolioId = "current") -> pd.DataFrame:
-    if portfolio_id not in {"current", "candidate-a"}:
+    if portfolio_id not in {"current", "candidate-a", "candidate-b", "candidate-c"}:
         raise ValueError("Unknown portfolio selection")
-    if portfolio_id == "candidate-a" and investigation_date not in {None, "2026-10-30"}:
-        raise ValueError("Candidate A is available only as of 2026-10-30; no data was substituted.")
+    if portfolio_id != "current" and investigation_date not in {None, "2026-10-30"}:
+        raise ValueError("Candidate portfolios are available only as of 2026-10-30; no data was substituted.")
     filename = snapshot_files(investigation_date)['positions']
     frame = pd.read_csv(DATA / filename, keep_default_na=False)
     numeric = ["market_value_usd", "notional_usd", "dv01_usd_per_bp", "cs01_usd_per_bp", "equity_delta_usd", "fx_delta_usd"]
@@ -51,6 +51,16 @@ def load_positions(investigation_date: str | None = None, portfolio_id: Portfoli
         hy = frame.id.isin(["HY-US", "HY-EU"])
         proceeds = float(frame.loc[hy, "market_value_usd"].sum()) * 0.25
         frame.loc[hy, numeric] *= 0.75
+        frame.loc[frame.id == "CASH", ["market_value_usd", "notional_usd"]] += proceeds
+    elif portfolio_id == "candidate-b":
+        # Reallocate $9m within the government cash-bond sleeve; leave swaps unchanged.
+        fields = ["market_value_usd", "notional_usd", "dv01_usd_per_bp"]
+        frame.loc[frame.id == "UST10", fields] *= 0.5
+        frame.loc[frame.id == "UST2", fields] *= 1.9
+    elif portfolio_id == "candidate-c":
+        equity = frame.id.isin(["EQ-US", "EQ-DM"])
+        proceeds = float(frame.loc[equity, "market_value_usd"].sum()) * 0.5
+        frame.loc[equity, ["market_value_usd", "notional_usd", "equity_delta_usd"]] *= 0.5
         frame.loc[frame.id == "CASH", ["market_value_usd", "notional_usd"]] += proceeds
     return frame
 
@@ -92,7 +102,11 @@ def workstation(investigation_date: str | None = None, portfolio_id: PortfolioId
     # End-of-day NAV consists of the displayed marks. Daily P&L reconciles to opening NAV.
     opening = nav - daily["total_pnl_usd"]
     allocation = frame.groupby("asset_class", sort=False).market_value_usd.sum().reset_index().to_dict(orient="records")
-    return {"portfolio_name": "Metis Global Opportunities" if portfolio_id == "current" else "Candidate A — Reduced HY Exposure", "data_kind": "synthetic", "nav_usd": nav,
+    return {"portfolio_name": "Metis Global Opportunities" if portfolio_id == "current" else {
+                "candidate-a": "Candidate A — Reduced HY Exposure",
+                "candidate-b": "Candidate B — Shorter Duration",
+                "candidate-c": "Candidate C — Defensive Equity",
+            }[portfolio_id], "data_kind": "synthetic", "nav_usd": nav,
             "opening_nav_usd": opening, "daily_return_pct": daily["total_pnl_usd"] / opening * 100,
             "positions": daily["positions"], "allocation": allocation, "exposures": exposures(frame),
             "daily": daily, "market": market, "scenarios": load_json("scenarios"), "historical_stress_presets": load_json("historical-stress-presets"), "history": load_json("history")}
@@ -105,4 +119,10 @@ def portfolio_selections() -> list[dict]:
         {"id": "candidate-a", "label": "Candidate A — Reduced HY Exposure", "reference_date": "2026-10-30",
          "construction": "Illustrative, not optimal: reduce each US/EU HY basket by 25% ($2m/$1.5m); transfer $3.5m to USD cash. Scale HY notionals, DV01 and CS01 proportionately. NAV stays $100m; no transaction costs or execution assumptions.",
          "snapshot": workstation("2026-10-30", "candidate-a")},
+        {"id": "candidate-b", "label": "Candidate B — Shorter Duration", "reference_date": "2026-10-30",
+         "construction": "Illustrative, first-order, not optimized: move $9m from UST10 ($18m to $9m) into UST2 ($10m to $19m), scaling each bond's notional and DV01 proportionately. Shorter government bond sleeve only; swaps and cash unchanged. NAV stays $100m. Constructed independently from Current, not historical realized returns or a trade recommendation.",
+         "snapshot": workstation("2026-10-30", "candidate-b")},
+        {"id": "candidate-c", "label": "Candidate C — Defensive Equity", "reference_date": "2026-10-30",
+         "construction": "Illustrative, first-order, not optimized: halve US/ex-US equity market values, notionals and deltas to $8.5m/$4.5m; transfer $13m to USD cash ($4m to $17m). All other exposures unchanged; NAV stays $100m. Constructed independently from Current, not a hedge, historical realized returns or a trade recommendation.",
+         "snapshot": workstation("2026-10-30", "candidate-c")},
     ]

@@ -320,11 +320,12 @@ test("historical credit correction shows all modeled factors while older capture
   assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
 });
 
-test("portfolio selection offers two constructions at the same reference date", async () => {
+test("portfolio selection offers four independent constructions at the same reference date", async () => {
   const { PortfolioSelection } = await import("../src/PortfolioSelection.tsx");
   const portfolios = JSON.parse(execFileSync(new URL("../../.venv/bin/python", import.meta.url).pathname,
     ["-c", "import json; from metis.analytics.engine import portfolio_selections; print(json.dumps(portfolio_selections()))"],
     { cwd: new URL("../../", import.meta.url), env: {...process.env, PYTHONPATH: "backend"} }).toString());
+  assert.deepEqual(portfolios.map(p => p.id), ['current', 'candidate-a', 'candidate-b', 'candidate-c']);
   for (const portfolio of portfolios) {
     const html = renderToStaticMarkup(React.createElement(PortfolioSelection, {
       portfolios, selectedPortfolio: portfolio.id, disabled: false, onSelect() {},
@@ -332,6 +333,9 @@ test("portfolio selection offers two constructions at the same reference date", 
     assert.ok(html.includes(`value="${portfolio.id}" selected=""`));
     assert.match(html, /Current Portfolio/);
     assert.match(html, /Candidate A — Reduced HY Exposure/);
+    assert.match(html, /Candidate B — Shorter Duration/);
+    assert.match(html, /Candidate C — Defensive Equity/);
+    assert.equal((html.match(/<option /g) ?? []).length, 4);
     assert.match(html, /Reference date: 2026-10-30/);
     assert.match(html, /Portfolio Selection/);
     assert.doesNotMatch(html, /2025-03-10|Previous Portfolio|Portfolio Snapshot/);
@@ -339,6 +343,19 @@ test("portfolio selection offers two constructions at the same reference date", 
       assert.match(html, /Illustrative, not optimal/);
       assert.match(html, /reduce each US\/EU HY basket by 25%/);
       assert.match(html, /transfer \$3.5m to USD cash/);
+    }
+    if (portfolio.id === "candidate-b" || portfolio.id === "candidate-c") {
+      assert.match(html, /Illustrative, first-order, not optimized/);
+      assert.match(html, /Constructed independently from Current/);
+      assert.match(html, /not.*historical realized returns.*trade recommendation/);
+    }
+    if (portfolio.id === "candidate-b") {
+      assert.match(html, /move \$9m from UST10/);
+      assert.match(html, /Shorter government bond sleeve only; swaps and cash unchanged/);
+    }
+    if (portfolio.id === "candidate-c") {
+      assert.match(html, /halve US\/ex-US equity market values, notionals and deltas/);
+      assert.match(html, /transfer \$13m to USD cash/);
     }
   }
 });

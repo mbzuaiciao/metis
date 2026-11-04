@@ -20,6 +20,14 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
   const factors = Object.entries(calculation.by_factor).filter(([, value]) => value !== 0)
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
   return <div className="investigation-results">
+    <section className="investigation-step question-answer" aria-label="Answer to your question">
+      <h2>{answer.question}</h2>
+      <p className="context-note">{answer.mode === "demo"
+        ? "Deterministic demo answer · template content, not a live model response."
+        : "Model answer · original prose Not checked. Structured assertion checks are in supporting evidence."}</p>
+      <p className="answer-summary">{interpretation.summary}</p>
+      <ul>{interpretation.principal_risk_observations.map((text, i) => <li key={i}>{text}</li>)}</ul>
+    </section>
     <p className="context-note"><b>{historical ? `Historical investigation · ${answer.context.market.as_of} · US inflation surprise` : daily
       ? `Daily investigation · fictional synthetic snapshot · ${answer.context.market.as_of}`
       : "Hypothetical stress investigation · simulated assumptions, not historical observations or a forecast"}</b></p>
@@ -81,7 +89,6 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
       <details className="answer-section">
         <summary>Detailed numerical claims and factor attribution</summary>
         <FactorEvidence hypothetical={!!historical} calculation={calculation} omittedCredit={!!historical && !creditIncluded} />
-        <ul>{interpretation.principal_risk_observations.map((text, i) => <li key={i}>{text}</li>)}</ul>
       </details>
       <PositionEvidence omittedCredit={!!historical && !creditIncluded} calculation={calculation} exposures={answer.context.portfolio.exposures} />
       <details className="answer-section">
@@ -89,8 +96,8 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
         <ClaimVerification results={answer.verification} />
       </details>
       <details className="answer-section">
-        <summary>Original model summary and economic interpretation</summary>
-        <p>{interpretation.summary}</p><p>{interpretation.economic_interpretation}</p>
+        <summary>Model economic interpretation</summary>
+        <p>{interpretation.economic_interpretation}</p>
       </details>
       {([
         ["Historical analogies · qualitative context", interpretation.historical_analogies],

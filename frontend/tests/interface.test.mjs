@@ -329,10 +329,10 @@ test("portfolio date selector retains archived dates and a concise demo disclosu
       investigation, selectedDate, disabled: false, onSelect() {},
     }));
     assert.ok(html.includes(`value="${selectedDate}" selected=""`));
-    assert.match(html, /2026-10-30.*default/);
-    assert.match(html, /2025-03-10.*archived comparison/);
+    assert.match(html, /Current Portfolio.*2026-10-30/);
+    assert.match(html, /Previous Portfolio.*2025-03-10/);
     assert.match(html, /Demo environment — simulated portfolio and market data/);
-    assert.match(html, /Portfolio Date/);
+    assert.match(html, /Portfolio Snapshot/);
     assert.doesNotMatch(html, /fictional synthetic snapshot/);
     assert.doesNotMatch(html, /Data unavailable/);
   }
@@ -1087,7 +1087,17 @@ test("AI Reasoning demo controls are legible and daily date selector is aligned"
     disabled: false,
   }));
   assert.match(html, /class="daily-date-row"/);
-  assert.match(html, /<label for="daily-investigation-date">Portfolio Date<\/label>/);
+  assert.match(html, /<label for="daily-investigation-date">Portfolio Snapshot<\/label>/);
   assert.match(html, /id="daily-investigation-date"/);
   assert.match(html, /Demo environment — simulated portfolio and market data/);
+});
+
+
+test("AI Reasoning offers an inflation stress preset separate from portfolio snapshot", () => {
+ const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+ const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
+ assert.match(page, /Historical Stress Scenario/);
+ assert.match(page, /inflation-2022/);
+ assert.match(page, /2022 U\.S\. Inflation Shock/);
+ assert.match(page, /setShocks\(\{ \.\.\.inflationPreset\.shocks \}\)/);
 });

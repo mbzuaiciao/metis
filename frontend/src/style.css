@@ -2521,7 +2521,7 @@ footer > span:last-child {
   color: #111827;
 }
 .theme-reasoning-light .ticker em {
-  color: #059669;
+  color: #047857;
 }
 .theme-reasoning-light .ticker em.negative {
   color: #dc2626;
@@ -2990,6 +2990,45 @@ footer > span:last-child {
   font-size: 11.5px;
   line-height: 1.6;
 }
+
+/* Financial evidence surfaces and text in the conditional light theme. */
+.theme-reasoning-light .factor-evidence > div {
+  color: var(--muse-text-secondary);
+  border-bottom-color: var(--muse-border);
+}
+.theme-reasoning-light .factor-evidence .evidence-net {
+  color: var(--muse-text-primary);
+  border-top-color: var(--muse-border);
+}
+.theme-reasoning-light .factor-evidence p,
+.theme-reasoning-light .shock-evidence span,
+.theme-reasoning-light .position-evidence p,
+.theme-reasoning-light .position-evidence th small {
+  color: var(--muse-text-secondary);
+}
+.theme-reasoning-light .shock-evidence span {
+  border-color: var(--muse-border);
+}
+.theme-reasoning-light .shock-evidence b {
+  color: var(--muse-text-primary);
+}
+.theme-reasoning-light .position-evidence {
+  background: var(--muse-bg-card);
+  border-color: var(--muse-border);
+  color: var(--muse-text-primary);
+}
+.theme-reasoning-light .position-evidence th,
+.theme-reasoning-light .position-evidence td {
+  color: var(--muse-text-primary);
+  border-bottom-color: var(--muse-border);
+}
+.theme-reasoning-light .position-evidence .muted {
+  color: var(--muse-text-muted);
+}
+.theme-reasoning-light .position-evidence thead,
+.theme-reasoning-light .position-evidence tfoot {
+  background: var(--muse-bg-subcard);
+}
 .reasoning-layout button.text-button,
 .reasoning-layout .text-button {
   background: none;
@@ -3198,7 +3237,7 @@ footer > span:last-child {
 /* Financial Gain/Loss & Semantic Tones in Light Theme */
 .reasoning-layout .positive,
 .theme-reasoning-light .positive {
-  color: #059669 !important;
+  color: #047857 !important;
 }
 .reasoning-layout .negative,
 .theme-reasoning-light .negative {
@@ -3266,6 +3305,9 @@ footer > span:last-child {
   }
   .reasoning-layout .reasoning-actions {
     flex-direction: column;
+  }
+  .theme-reasoning-light .reasoning-actions > div {
+    flex: 0 1 auto;
   }
   .reasoning-layout .reasoning-answer {
     padding: 18px 16px;

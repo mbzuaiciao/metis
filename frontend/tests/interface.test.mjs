@@ -1041,3 +1041,13 @@ test("Causal Exploration optional historical context is collapsed by default, ke
   }));
   assert.match(htmlWithEvent, /option value="cpi-2022" selected/);
 });
+
+test("AI Reasoning keeps investigation actions without duplicating scenario navigation", () => {
+  const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
+  assert.ok(page.startsWith("function ReasoningPage("), "ReasoningPage must exist");
+  assert.match(page, /Investigate a Historical Event/);
+  assert.match(page, /Explain Current Stress Scenario/);
+  assert.match(page, /Synthetic P&L/);
+  assert.doesNotMatch(page, /Explore What-If Scenarios|Explore or adjust a hypothetical stress|goScenario/);
+});

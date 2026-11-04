@@ -159,19 +159,6 @@ export function CausalExploration({
         </div>
         <p className="context-note">Supplied facts: {data.positions.length} synthetic positions · dated market snapshot {data.market.as_of}. No live market-data feed.</p>
 
-        {data.event_snapshots && <label>Event snapshot reference (optional)
-          <select value={state.eventSnapshotId ?? ''} disabled={locked}
-            onChange={e => {
-              const val = e.target.value || undefined;
-              setState(s => ({ ...s, eventSnapshotId: val }));
-              if (val) onSelectEvent?.(val);
-            }}>
-            <option value="">Archived scenario only</option>
-            {data.event_snapshots.map(s => <option key={s.id} value={s.id}>{s.start} → {s.end} · {s.title}</option>)}
-          </select>
-          <p className="context-note">Reference only: reconstructed values and assumed shocks do not establish historical causes. Accepted scenario calculations below still use archived synthetic basket holdings; they do not revalue the event snapshot.</p>
-        </label>}
-
         <div className="causal-inputs">
           {(["hypothesis", "alternative"] as const).map((key, index) => <label key={key}>
             {index === 0 ? "Economic hypothesis A" : "Competing hypothesis B"}
@@ -189,6 +176,25 @@ export function CausalExploration({
           </label>
         </div>
         <p className="context-note">{demo ? "Demo supports only the three named hypotheses. Custom hypotheses require live Meta mode." : "Choose a suggested hypothesis or type your own."} The shared move is an assumption, not a real-time observation. Editing these inputs changes only the next request; existing results retain their captured hypotheses.</p>
+
+        {data.event_snapshots && (
+          <details className="causal-historical-context" aria-label="Optional historical context">
+            <summary>Optional historical context</summary>
+            <p className="context-note">Historical events provide contextual evidence, not a calibration of shock magnitudes or causal proof. Reference only: reconstructed values and assumed shocks do not establish historical causes. Accepted scenario calculations below still use archived synthetic basket holdings; they do not revalue the event snapshot.</p>
+            <label>Event snapshot reference (optional)
+              <select value={state.eventSnapshotId ?? ''} disabled={locked}
+                onChange={e => {
+                  const val = e.target.value || undefined;
+                  setState(s => ({ ...s, eventSnapshotId: val }));
+                  if (val) onSelectEvent?.(val);
+                }}>
+                <option value="">Archived scenario only</option>
+                {data.event_snapshots.map(s => <option key={s.id} value={s.id}>{s.start} → {s.end} · {s.title}</option>)}
+              </select>
+            </label>
+          </details>
+        )}
+
         <button className="primary" disabled={locked} onClick={() => void explore()}>{state.busy ? "Exploring hypotheses…" : "Generate competing mechanisms"}</button>
         {state.error && <p role="alert" className="negative">{state.error}</p>}
 
@@ -232,7 +238,7 @@ export function CausalExploration({
                   </div>)}
                 </dl>
                 <button className="text-button" onClick={() => useShocks({ ...calc.shocks })}>
-                  Use accepted {i === 0 ? "A" : "B"} shocks in Risk Sensitivity Analysis
+                  Use accepted {i === 0 ? "A" : "B"} shocks in Risk Sensitivity
                 </button>
               </article>)}
             </div>
@@ -283,7 +289,7 @@ export function CausalExploration({
                   <PositionEvidence calculation={state.calculations[i]} exposures={result.context.portfolio.exposures} />
                 </details>
                 <button className="text-button" onClick={() => useShocks({ ...state.calculations[i].shocks })}>
-                  Use accepted {i === 0 ? "A" : "B"} shocks in Risk Sensitivity Analysis
+                  Use accepted {i === 0 ? "A" : "B"} shocks in Risk Sensitivity
                 </button>
               </div>}
             </article>)}

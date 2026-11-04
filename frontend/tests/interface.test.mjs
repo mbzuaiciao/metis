@@ -184,8 +184,8 @@ test("accepted causal hypotheses show backend P&L side by side, never before cal
   assert.match(after, /class="causal-mechanism-summary"/);
   assert.match(after, /Full economic mechanism/);
   assert.match(after, /Review scenario assumptions/);
-  assert.match(after, /Use accepted A shocks in Risk Sensitivity Analysis/);
-  assert.match(after, /Use accepted B shocks in Risk Sensitivity Analysis/);
+  assert.match(after, /Use accepted A shocks in Risk Sensitivity/);
+  assert.match(after, /Use accepted B shocks in Risk Sensitivity/);
 
   // Position/factor breakdown is expandable but collapsed by default, while 4 comparison factor rows stay visible
   assert.match(after, /<details class="answer-section"><summary>Position &amp; factor breakdown/);
@@ -607,7 +607,7 @@ test("Portfolio opens on dated portfolio snapshot with no event selector and no 
   assert.doesNotMatch(html, /Observed ETF comparison:/);
 });
 
-test("Historical event replay in Causal Scenario Exploration retains 3 event windows and causal reference", async () => {
+test("Historical event replay in Causal Exploration retains 3 event windows and causal reference", async () => {
   const { CausalExploration } = await import("../src/CausalExploration.tsx");
   const snapshots = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
     'import json; from metis.analytics.events import event_snapshots; print(json.dumps(event_snapshots()))'],
@@ -807,7 +807,7 @@ test("Historical reference library follows causal exploration, collapsed with un
   for (const episode of data.history) assert.ok(html.includes(episode.source_url));
 });
 
-test("Market Monitor and Causal Scenario Exploration share historical event selection consistently", async () => {
+test("Market Monitor and Causal Exploration share historical event selection consistently", async () => {
   const { Market } = await import("../src/App.tsx");
   const { CausalExploration } = await import("../src/CausalExploration.tsx");
   const output = execFileSync('../.venv/bin/python', ['-c',
@@ -970,4 +970,74 @@ test("historical stress cards render dates, input basis, all results and custom 
   const pending = render(calculations[0].shocks, calculations[1], {pending: true});
   assert.match(pending, /Recalculating/);
   assert.doesNotMatch(pending, /Scenario P&amp;L by position/);
+});
+
+test("navigation and page headings use Causal Exploration and Risk Sensitivity consistently", () => {
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  // Check pages array definition
+  assert.match(app, /{\s*name:\s*"Risk Sensitivity",\s*icon:\s*SlidersHorizontal\s*}/);
+  assert.match(app, /{\s*name:\s*"Causal Exploration",\s*icon:\s*FlaskConical\s*}/);
+  // Ensure old names are not present in pages array or navigation labels
+  assert.doesNotMatch(app, /"Risk Sensitivity Analysis"/);
+  assert.doesNotMatch(app, /"Causal Scenario Exploration"/);
+  // Market Monitor synchronized note uses new Causal Exploration label
+  assert.match(app, /Synchronized with Causal Exploration/);
+});
+
+test("Causal Exploration optional historical context is collapsed by default, keyboard accessible, and correctly ordered", async () => {
+  const { CausalExploration } = await import("../src/CausalExploration.tsx");
+  const snapshots = JSON.parse(execFileSync('../.venv/bin/python', ['-c',
+    'import json; from metis.analytics.events import event_snapshots; print(json.dumps(event_snapshots()))'],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' }));
+  const data = {
+    causal_mode: 'demo',
+    positions: [],
+    market: { as_of: '2026-10-30' },
+    event_snapshots: snapshots,
+  };
+
+  // Render with default state
+  const html = renderToStaticMarkup(React.createElement(CausalExploration, {
+    state: initialCausalState,
+    setState() {},
+    data,
+    generate() {},
+    calculate() {},
+    useShocks() {},
+  }));
+
+  // 1. Collapsed by default: details element exists and does NOT have open attribute
+  assert.match(html, /<details class="causal-historical-context"[^>]*aria-label="Optional historical context"/);
+  assert.doesNotMatch(html, /<details class="causal-historical-context"[^>]*open/);
+
+  // 2. Summary label and explanation
+  assert.match(html, /<summary>Optional historical context<\/summary>/);
+  assert.match(html, /contextual evidence, not a calibration of shock magnitudes or causal proof/);
+  assert.match(html, /they do not revalue the event snapshot/);
+
+  // 3. Contains existing selector including "Archived scenario only" default
+  assert.match(html, /<option[^>]*value=""[^>]*>Archived scenario only<\/option>/);
+  assert.match(html, /option value="" selected/);
+  for (const s of snapshots) {
+    assert.ok(html.includes(`${s.start} → ${s.end} · ${s.title}`));
+  }
+
+  // 4. Element order: causal-inputs < optional historical context < generate button
+  const inputsIndex = html.indexOf('class="causal-inputs"');
+  const contextIndex = html.indexOf('class="causal-historical-context"');
+  const buttonIndex = html.indexOf('Generate competing mechanisms');
+  assert.ok(inputsIndex > 0, "causal-inputs must exist");
+  assert.ok(contextIndex > inputsIndex, "Optional historical context must be below hypothesis input controls");
+  assert.ok(buttonIndex > contextIndex, "Optional historical context must be before generate button");
+
+  // 5. When eventSnapshotId is set, that option is selected in the dropdown
+  const htmlWithEvent = renderToStaticMarkup(React.createElement(CausalExploration, {
+    state: { ...initialCausalState, eventSnapshotId: 'cpi-2022' },
+    setState() {},
+    data,
+    generate() {},
+    calculate() {},
+    useShocks() {},
+  }));
+  assert.match(htmlWithEvent, /option value="cpi-2022" selected/);
 });

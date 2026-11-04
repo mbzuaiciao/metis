@@ -2166,7 +2166,7 @@ footer > span:last-child {
   }
 }
 
-/* Historical replay expandable details in Causal Scenario Exploration */
+/* Historical replay expandable details in Causal Exploration */
 .historical-replay-details {
   margin: 28px 0 20px;
   padding: 16px 20px;
@@ -2193,7 +2193,38 @@ footer > span:last-child {
   padding-bottom: 10px;
 }
 
-/* Hypothetical scenarios section in Causal Scenario Exploration */
+/* Optional historical context expandable details in Causal Exploration */
+.causal-historical-context {
+  margin: 14px 0 18px;
+  padding: 12px 16px;
+  background: #0d1724;
+  border: 1px solid #233348;
+  border-radius: 6px;
+}
+.causal-historical-context > summary {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.causal-historical-context > summary:focus-visible {
+  outline: 2px solid #52d6bb;
+  outline-offset: 2px;
+}
+.causal-historical-context[open] > summary {
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+.causal-historical-context label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: #b6c8de;
+  margin-top: 10px;
+}
+
+/* Hypothetical scenarios section in Causal Exploration */
 .hypothetical-scenarios-section {
   padding-top: 8px;
 }
@@ -2363,7 +2394,7 @@ footer > span:last-child {
 .portfolio-summary tr:first-child td { font-size: 26px; font-weight: 600; }
 .portfolio-summary-disclosure { color: #94a3b8; font-size: 13px; margin: 0 0 20px; }
 
-/* Readability changes are confined to Risk Sensitivity Analysis. */
+/* Readability changes are confined to Risk Sensitivity. */
 .risk-sensitivity { font-size: 16px; line-height: 1.6; }
 .risk-sensitivity > h2 { font-size: 22px; }
 .risk-sensitivity > .muted { color: #a9bad0; margin-bottom: 20px; }

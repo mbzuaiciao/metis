@@ -1586,7 +1586,7 @@ export default function App() {
     setShocks(s);
   };
   return (
-    <div className="workstation">
+    <div className={page === 6 ? "workstation theme-reasoning-light" : "workstation"}>
       <aside className="sidebar">
         <a
           className="brand"

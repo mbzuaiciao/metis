@@ -786,9 +786,20 @@ test("Portfolio presents compact 12-position snapshot leading with dated P&L and
 
   // Title and compact lead summary with modeled full-snapshot P&L (-$333,000 on $100m)
   assert.match(snapshotHtml, /<h2>Portfolio snapshot · As of 2026-10-30<\/h2>/);
-  assert.match(snapshotHtml, /Estimated portfolio P&amp;L: <span class="negative">-\$333,000<\/span>/);
-  assert.match(snapshotHtml, /Starting illustrative value \$100,000,000 → ending illustrative value \$99,667,000 · 12\/12 rows/);
-  assert.match(snapshotHtml, /Illustrative modeled P&amp;L, not observed account returns · MTD: Not available/);
+  const summary = snapshotHtml.match(/<table class="portfolio-summary"[^>]*>([\s\S]*?)<\/table>/)[1];
+  const summaryRows = [...summary.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(r => r[1]);
+  assert.equal(summaryRows.length, 4);
+  for (const [i, label] of ["Estimated portfolio P&amp;L", "Starting value", "Ending value", "Holdings covered"].entries()) {
+    assert.match(summaryRows[i], new RegExp(`<th scope="row">${label}</th>`));
+    assert.equal((summaryRows[i].match(/<td/g) || []).length, 1);
+  }
+  assert.match(summaryRows[0], /<td class="negative">-\$333,000<\/td>/);
+  assert.match(summaryRows[1], /\$100,000,000/);
+  assert.match(summaryRows[2], /\$99,667,000/);
+  assert.match(summaryRows[3], /12 \/ 12/);
+  assert.doesNotMatch(summary, /MTD|illustrative/i);
+  assert.doesNotMatch(snapshotHtml, /MTD/);
+  assert.equal((snapshotHtml.match(/Modeled estimate for demo purposes · Not live account returns/g) || []).length, 1);
 
   // Directly followed by the 4-column compact table
   const tableMatch = snapshotHtml.match(/<table class="etf-table event-table">([\s\S]*?)<\/table>/);

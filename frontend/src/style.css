@@ -2162,3 +2162,53 @@ footer > span:last-child {
 .market-drivers h3 { margin: 0 0 6px; font-size: 12px; color: #94a3b8; }
 .market-drivers p { margin: 0; font-size: 16px; line-height: 1.6; font-variant-numeric: tabular-nums; }
 .market-drivers small { display: block; margin-top: 10px; color: #94a3b8; line-height: 1.5; }
+
+/* Compact summary of the selected snapshot, using existing rounding. */
+.portfolio-summary { width: 100%; max-width: 620px; border-collapse: collapse; margin: 18px 0 10px; font-size: 16px; }
+.portfolio-summary th, .portfolio-summary td { padding: 10px 12px; border-bottom: 1px solid #29364a; }
+.portfolio-summary th { text-align: left; font-weight: 500; color: #b3c2d5; }
+.portfolio-summary td { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.portfolio-summary tr:first-child td { font-size: 26px; font-weight: 600; }
+.portfolio-summary-disclosure { color: #94a3b8; font-size: 13px; margin: 0 0 20px; }
+
+/* Readability changes are confined to Risk Sensitivity Analysis. */
+.risk-sensitivity { font-size: 16px; line-height: 1.6; }
+.risk-sensitivity > h2 { font-size: 22px; }
+.risk-sensitivity > .muted { color: #a9bad0; margin-bottom: 20px; }
+.risk-sensitivity .notice { font-size: 14px; line-height: 1.6; color: #a9bad0; }
+.risk-sensitivity .notice svg { flex-shrink: 0; }
+.risk-sensitivity .preset { padding: 18px; gap: 10px; }
+.risk-sensitivity .preset b { font-size: 17px; line-height: 1.4; }
+.risk-sensitivity .preset small { font-size: 14px; line-height: 1.6; color: #a9bad0; }
+.risk-sensitivity .scenario-layout { grid-template-columns: 360px minmax(0, 1fr); }
+.risk-sensitivity .scenario-layout > * { min-width: 0; }
+.risk-sensitivity .panel-heading h2 { font-size: 18px; }
+.risk-sensitivity .panel-heading span { font-size: 13px; }
+.risk-sensitivity .shock-controls label { font-size: 16px; gap: 12px; }
+.risk-sensitivity .shock-controls strong { font-size: 18px; white-space: nowrap; }
+.risk-sensitivity .range-label { font-size: 13px; color: #94a3b8; }
+.risk-sensitivity .secondary, .risk-sensitivity .text-button { font-size: 15px; line-height: 1.5; }
+.risk-sensitivity .eyebrow { font-size: 13px; line-height: 1.6; }
+.risk-sensitivity .stress-result > strong { font-size: 46px; }
+.risk-sensitivity .stress-result p { font-size: 16px; color: #a9bad0; }
+.risk-sensitivity .factor-evidence > div, .risk-sensitivity .scenario-positions > div { font-size: 16px; }
+.risk-sensitivity .factor-evidence strong { white-space: nowrap; }
+.risk-sensitivity .factor-evidence .evidence-net { font-size: 17px; }
+.risk-sensitivity .factor-evidence p, .risk-sensitivity .position-evidence p { font-size: 14px; color: #a9bad0; }
+.risk-sensitivity .position-evidence summary { font-size: 15px; }
+.risk-sensitivity .evidence-scroll th, .risk-sensitivity .evidence-scroll td { font-size: 14px; }
+.risk-sensitivity .evidence-scroll th small { font-size: 13px; color: #94a3b8; }
+@media (max-width: 1100px) {
+  .risk-sensitivity .scenario-presets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .risk-sensitivity .scenario-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .risk-sensitivity .scenario-presets { grid-template-columns: 1fr; }
+  .risk-sensitivity .stress-result { padding: 18px; }
+  .risk-sensitivity .stress-result > strong { font-size: 34px; }
+  .risk-sensitivity .scenario-positions { padding: 8px 16px; }
+  .risk-sensitivity .scenario-positions > div, .risk-sensitivity .factor-evidence > div { flex-wrap: wrap; }
+  .portfolio-summary th, .portfolio-summary td { padding: 10px 6px; }
+  .portfolio-summary { font-size: 14px; }
+  .portfolio-summary tr:first-child td { font-size: 22px; }
+}

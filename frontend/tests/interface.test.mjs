@@ -1051,3 +1051,18 @@ test("AI Reasoning keeps investigation actions without duplicating scenario navi
   assert.match(page, /Synthetic P&L/);
   assert.doesNotMatch(page, /Explore What-If Scenarios|Explore or adjust a hypothetical stress|goScenario/);
 });
+
+test("AI Reasoning compares hypotheses without inventing contradictory evidence or probabilities", () => {
+  const source = readFileSync(new URL("../src/InvestigationResults.tsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
+  assert.match(source, /className="hypothesis-comparison"/);
+  for (const field of ["hypothesis.mechanism", "hypothesis.consistent_evidence", "hypothesis.uncertainty"]) {
+    assert.ok(source.includes(field), `Comparison must retain ${field}`);
+  }
+  assert.match(source, /Unknown or not established/);
+  assert.match(source, /Proposed checks, not completed analyses/);
+  assert.match(source, /hypothesis.available_checks/);
+  assert.match(source, /hypothesis.additional_evidence/);
+  assert.doesNotMatch(source, /Contradictory evidence:/);
+  assert.match(css, /\.hypothesis-comparison \{ display: grid; grid-template-columns: repeat\(auto-fit/);
+});

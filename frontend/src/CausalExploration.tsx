@@ -24,15 +24,41 @@ function mechanismSummary(text: string): string {
   return match ? match[0].trim() : text;
 }
 
-function comparisonSummary(c0: Calculation, c1: Calculation, title0: string, title1: string): string {
-  const sameRates = c0.shocks.rates_bp === c1.shocks.rates_bp;
+function formatFactorList(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+export function comparisonSummary(c0: Calculation, c1: Calculation, title0: string, title1: string): string {
+  const s0 = c0.shocks;
+  const s1 = c1.shocks;
+  const sameRates = s0.rates_bp === s1.rates_bp;
+
+  const creditDiffers = s0.ig_bp !== s1.ig_bp || s0.hy_bp !== s1.hy_bp;
+  const equityDiffers = s0.equity_pct !== s1.equity_pct;
+  const fxDiffers = s0.fx_pct !== s1.fx_pct;
+
+  const otherDiffs: string[] = [];
+  if (creditDiffers) otherDiffs.push("credit");
+  if (equityDiffers) otherDiffs.push("equity");
+  if (fxDiffers) otherDiffs.push("FX");
+
   if (sameRates) {
-    const yieldSign = c0.shocks.rates_bp > 0 ? "+" : "";
-    return `Shared rates move (${yieldSign}${c0.shocks.rates_bp}bp) produces an identical ${usd(c0.by_factor.rates_pnl)} rates contribution in both scenarios, but diverging credit, equity, and FX assumptions result in ${usd(c0.total_pnl_usd)} under ${title0} versus ${usd(c1.total_pnl_usd)} under ${title1}.`;
+    const yieldSign = s0.rates_bp > 0 ? "+" : "";
+    if (otherDiffs.length > 0) {
+      return `Shared rates move (${yieldSign}${s0.rates_bp}bp) produces an identical ${usd(c0.by_factor.rates_pnl)} rates contribution in both scenarios, but diverging ${formatFactorList(otherDiffs)} assumptions result in ${usd(c0.total_pnl_usd)} under ${title0} versus ${usd(c1.total_pnl_usd)} under ${title1}.`;
+    }
+    return `Both scenarios share identical factor assumptions (${yieldSign}${s0.rates_bp}bp yield move), producing ${usd(c0.total_pnl_usd)} under both ${title0} and ${title1}.`;
   }
-  const y0Sign = c0.shocks.rates_bp > 0 ? "+" : "";
-  const y1Sign = c1.shocks.rates_bp > 0 ? "+" : "";
-  return `Accepted yield assumptions differ (${y0Sign}${c0.shocks.rates_bp}bp versus ${y1Sign}${c1.shocks.rates_bp}bp) alongside differing credit, equity, and FX assumptions, producing ${usd(c0.total_pnl_usd)} under ${title0} versus ${usd(c1.total_pnl_usd)} under ${title1}.`;
+
+  const y0Sign = s0.rates_bp > 0 ? "+" : "";
+  const y1Sign = s1.rates_bp > 0 ? "+" : "";
+  if (otherDiffs.length > 0) {
+    return `Accepted yield assumptions differ (${y0Sign}${s0.rates_bp}bp versus ${y1Sign}${s1.rates_bp}bp) alongside differing ${formatFactorList(otherDiffs)} assumptions, producing ${usd(c0.total_pnl_usd)} under ${title0} versus ${usd(c1.total_pnl_usd)} under ${title1}.`;
+  }
+  return `Accepted yield assumptions differ (${y0Sign}${s0.rates_bp}bp versus ${y1Sign}${s1.rates_bp}bp) with identical non-rate assumptions, producing ${usd(c0.total_pnl_usd)} under ${title0} versus ${usd(c1.total_pnl_usd)} under ${title1}.`;
 }
 
 export function CausalExploration({
@@ -251,7 +277,7 @@ export function CausalExploration({
 
               {state.calculations[i] && <div className="causal-calculation">
                 <h3>{i === 0 ? "A" : "B"} · Calculated consequences · accepted assumptions</h3>
-                <details className="answer-section" open>
+                <details className="answer-section">
                   <summary>Position &amp; factor breakdown ({i === 0 ? "A" : "B"})</summary>
                   <FactorEvidence calculation={state.calculations[i]} />
                   <PositionEvidence calculation={state.calculations[i]} exposures={result.context.portfolio.exposures} />

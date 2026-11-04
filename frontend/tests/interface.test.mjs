@@ -41,7 +41,7 @@ registerHooks({
   },
 });
 const etfComponents = await import("../src/EtfPortfolio.tsx");
-const { CausalExploration } = await import("../src/CausalExploration.tsx");
+const { CausalExploration, comparisonSummary } = await import("../src/CausalExploration.tsx");
 const { ClaimVerification } = await import("../src/ClaimVerification.tsx");
 
 function causalMarkup(mode, state = initialCausalState) {
@@ -186,6 +186,47 @@ test("accepted causal hypotheses show backend P&L side by side, never before cal
   assert.match(after, /Review scenario assumptions/);
   assert.match(after, /Use accepted A shocks in Risk Sensitivity Analysis/);
   assert.match(after, /Use accepted B shocks in Risk Sensitivity Analysis/);
+
+  // Position/factor breakdown is expandable but collapsed by default, while 4 comparison factor rows stay visible
+  assert.match(after, /<details class="answer-section"><summary>Position &amp; factor breakdown/);
+  assert.doesNotMatch(after, /<details class="answer-section"[^>]*open[^>]*><summary>Position &amp; factor breakdown/);
+  assert.match(after, /Rates contribution/);
+  assert.match(after, /Credit spreads contribution/);
+  assert.match(after, /Equities contribution/);
+  assert.match(after, /FX contribution/);
+});
+
+test("comparison summary dynamically names differing factors and avoids false claims", () => {
+  const baseCalc = (shocks, pnl, rates_pnl) => ({ shocks, total_pnl_usd: pnl, by_factor: { rates_pnl, credit_pnl: 0, equity_pnl: 0, fx_pnl: 0 }, positions: [] });
+
+  // 1. Equal rates, only equity differs
+  const eqOnlyA = { rates_bp: -50, ig_bp: 20, hy_bp: 50, equity_pct: -15, fx_pct: 0 };
+  const eqOnlyB = { rates_bp: -50, ig_bp: 20, hy_bp: 50, equity_pct: 5, fx_pct: 0 };
+  const sEq = comparisonSummary(baseCalc(eqOnlyA, -3000000, 2500000), baseCalc(eqOnlyB, 1000000, 2500000), "Hypothesis A", "Hypothesis B");
+  assert.match(sEq, /diverging equity assumptions/);
+  assert.doesNotMatch(sEq, /credit/);
+  assert.doesNotMatch(sEq, /FX/);
+
+  // 2. Equal rates, credit and equity differ (FX identical)
+  const credEqA = { rates_bp: -50, ig_bp: 50, hy_bp: 150, equity_pct: -10, fx_pct: -2 };
+  const credEqB = { rates_bp: -50, ig_bp: 10, hy_bp: 30, equity_pct: 4, fx_pct: -2 };
+  const sCredEq = comparisonSummary(baseCalc(credEqA, -2000000, 2500000), baseCalc(credEqB, 2000000, 2500000), "Hypothesis A", "Hypothesis B");
+  assert.match(sCredEq, /diverging credit and equity assumptions/);
+  assert.doesNotMatch(sCredEq, /FX/);
+
+  // 3. Different rates, all non-rate factors identical (e.g. guided liquidity experiment)
+  const ratesOnlyA = { rates_bp: -50, ig_bp: 60, hy_bp: 150, equity_pct: -6, fx_pct: -1.5 };
+  const ratesOnlyB = { rates_bp: 50, ig_bp: 60, hy_bp: 150, equity_pct: -6, fx_pct: -1.5 };
+  const sRatesOnly = comparisonSummary(baseCalc(ratesOnlyA, -309500, 2578000), baseCalc(ratesOnlyB, -5465500, -2578000), "Flight to Safety", "Forced Liquidation");
+  assert.match(sRatesOnly, /Accepted yield assumptions differ \(-50bp versus \+50bp\) with identical non-rate assumptions/);
+  assert.doesNotMatch(sRatesOnly, /credit|equity|FX/);
+
+  // 4. Equal rates and all non-rate factors identical
+  const identicalA = { rates_bp: -50, ig_bp: 20, hy_bp: 50, equity_pct: -5, fx_pct: 0 };
+  const identicalB = { rates_bp: -50, ig_bp: 20, hy_bp: 50, equity_pct: -5, fx_pct: 0 };
+  const sIdentical = comparisonSummary(baseCalc(identicalA, 500000, 2500000), baseCalc(identicalB, 500000, 2500000), "Hypothesis A", "Hypothesis B");
+  assert.match(sIdentical, /Both scenarios share identical factor assumptions/);
+  assert.doesNotMatch(sIdentical, /diverging|differing/);
 });
 
 const { InvestigationResults } = await import("../src/InvestigationResults.tsx");

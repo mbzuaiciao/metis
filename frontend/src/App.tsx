@@ -100,8 +100,8 @@ const pages = [
   { name: "Portfolio", icon: Layers3 },
   { name: "Market Monitor", icon: Globe2 },
   { name: "Risk Analytics", icon: BarChart3 },
-  { name: "Risk Sensitivity Analysis", icon: SlidersHorizontal },
-  { name: "Causal Scenario Exploration", icon: FlaskConical },
+  { name: "Risk Sensitivity", icon: SlidersHorizontal },
+  { name: "Causal Exploration", icon: FlaskConical },
   { name: "Meta AI Reasoning", icon: BrainCircuit },
   { name: "Research & Limitations", icon: BookOpen },
 ];
@@ -780,7 +780,7 @@ export function Market({
                 </select>
               </label>
               <span className="context-note">
-                Synchronized with Causal Scenario Exploration
+                Synchronized with Causal Exploration
               </span>
             </div>
           )}

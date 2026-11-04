@@ -1070,8 +1070,24 @@ test("AI Reasoning keeps investigation actions without duplicating scenario navi
   assert.ok(page.startsWith("function ReasoningPage("), "ReasoningPage must exist");
   assert.doesNotMatch(page, /Investigate a Historical Event/);
   assert.match(page, /Analyze Stress Scenario/);
-  assert.match(page, /Explain Portfolio P&L/);
+  assert.match(page, /Explain Daily Portfolio P&L/);
+  assert.doesNotMatch(page, /Explain Portfolio P&L/);
   assert.doesNotMatch(page, /Explore What-If Scenarios|Explore or adjust a hypothetical stress|goScenario/);
+});
+
+test("AI Reasoning explains preset daily starts and captured follow-ups near the questions", () => {
+  const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
+  const helper = page.match(/<p id="preset-question-context" className="context-note">([\s\S]*?)<\/p>/);
+  assert.ok(helper, "Preset context must be visible helper text");
+  const text = helper[1].replace(/\s+/g, " ").trim();
+  assert.match(text, /Preset questions start a new daily P&L investigation using the selected portfolio's daily snapshot\./);
+  assert.match(text, /They do not apply the Historical Stress Scenario\./);
+  assert.match(text, /Once an investigation exists, preset questions continue the active investigation using its captured portfolio and assumptions, including stress assumptions for stress investigations, even if the selectors have changed\./);
+  assert.ok(page.indexOf(helper[0]) < page.indexOf('{messages.length === 0 && ('),
+    "Keep the clarification visible when an investigation exists");
+  assert.match(page.slice(page.indexOf(helper[0]) + helper[0].length), /^\s*\{messages.length === 0 && \(\s*<div className="prompt-list">/,
+    "Place the clarification immediately before the existing preset questions");
 });
 
 test("AI Reasoning compares hypotheses without inventing contradictory evidence or probabilities", () => {

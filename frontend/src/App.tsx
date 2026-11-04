@@ -197,23 +197,23 @@ function Chart({
         paper_bgcolor: "transparent",
         plot_bgcolor: "transparent",
         font: {
-          family: "Inter, ui-sans-serif, system-ui",
-          color: "#94a3b8",
+          family: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif",
+          color: "#475569",
           size: 11,
         },
         margin: { l: 65, r: 24, t: 16, b: 45 },
         xaxis: {
-          gridcolor: "#232e3e",
-          zerolinecolor: "#3b485b",
+          gridcolor: "#f1f5f9",
+          zerolinecolor: "#cbd5e1",
           automargin: true,
         },
         yaxis: {
-          gridcolor: "#232e3e",
-          zerolinecolor: "#3b485b",
+          gridcolor: "#f1f5f9",
+          zerolinecolor: "#cbd5e1",
           automargin: true,
         },
         showlegend: false,
-        hoverlabel: { bgcolor: "#182334", font: { color: "#edf4fc" } },
+        hoverlabel: { bgcolor: "#ffffff", font: { color: "#0f172a" }, bordercolor: "#cbd5e1" },
         ...layout,
       }}
       config={{
@@ -236,18 +236,18 @@ function FactorChart({ calc, readable = false }: { calc: Calculation; readable?:
           x: entries.map(([k]) => factorName[k]),
           y: entries.map(([, v]) => v),
           marker: {
-            color: entries.map(([, v]) => (v < 0 ? "#e78d9a" : "#52d6bb")),
+            color: entries.map(([, v]) => (v < 0 ? "#dc2626" : "#047857")),
           },
           hovertemplate: "%{x}<br>$%{y:,.0f}<extra></extra>",
         },
       ]}
       layout={{
-        ...(readable ? { font: { size: 14, color: "#a9bad0" }, margin: { l: 80, r: 24, t: 20, b: 65 } } : {}),
+        ...(readable ? { font: { size: 14, color: "#334155" }, margin: { l: 80, r: 24, t: 20, b: 65 } } : {}),
         yaxis: {
-          gridcolor: "#232e3e",
+          gridcolor: "#f1f5f9",
           tickprefix: "$",
           tickformat: ".2s",
-          zerolinecolor: "#556277",
+          zerolinecolor: "#cbd5e1",
         },
       }}
     />
@@ -398,7 +398,7 @@ export function Overview({
                   sort: false,
                   marker: {
                     colors: palette,
-                    line: { color: "#101722", width: 3 },
+                    line: { color: "#ffffff", width: 3 },
                   },
                   textinfo: "none",
                   hovertemplate:
@@ -413,14 +413,14 @@ export function Overview({
                     x: 0.5,
                     y: 0.54,
                     showarrow: false,
-                    font: { size: 25, color: "#e7eef8" },
+                    font: { size: 25, color: "#0f172a" },
                   },
                   {
                     text: "NET ASSET VALUE",
                     x: 0.5,
                     y: 0.4,
                     showarrow: false,
-                    font: { size: 9, color: "#8191a7" },
+                    font: { size: 9, color: "#64748b" },
                   },
                 ],
               }}
@@ -510,14 +510,14 @@ export function Overview({
   );
 }
 const gridTheme = themeQuartz.withParams({
-  backgroundColor: "#101722",
-  foregroundColor: "#cbd5e1",
-  headerBackgroundColor: "#151f2e",
-  headerTextColor: "#91a1b7",
-  borderColor: "#253044",
-  rowHoverColor: "#1b293b",
-  accentColor: "#52d6bb",
-  fontFamily: "Inter, system-ui, sans-serif",
+  backgroundColor: "#ffffff",
+  foregroundColor: "#0f172a",
+  headerBackgroundColor: "#f8fafc",
+  headerTextColor: "#475569",
+  borderColor: "#e2e8f0",
+  rowHoverColor: "#f1f5f9",
+  accentColor: "#0f766e",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif",
   fontSize: 12,
   spacing: 6,
 });
@@ -581,7 +581,7 @@ function PositionGrid({
       headerName: "Daily P&L · USD",
       valueFormatter: currency,
       width: 160,
-      cellStyle: (p) => ({ color: p.value < 0 ? "#e78d9a" : "#52d6bb" }),
+      cellStyle: (p) => ({ color: p.value < 0 ? "#dc2626" : "#047857" }),
     },
   ];
   return (
@@ -815,14 +815,14 @@ export function Market({
           <Chart data={[
             { type: "scatter", mode: "lines+markers", name: activeSnapshot.start,
               x: curve.map(p => p.tenor), y: curve.map(p => p.start), connectgaps: false,
-              line: { color: "#94a3b8", dash: "dot", width: 2 },
+              line: { color: "#64748b", dash: "dot", width: 2 },
               hovertemplate: "%{x}: %{y:.2f}%<extra></extra>" },
             { type: "scatter", mode: "lines+markers", name: activeSnapshot.end,
               x: curve.map(p => p.tenor), y: curve.map(p => p.end), connectgaps: false,
-              line: { color: "#52d6bb", width: 3 },
+              line: { color: "#0f766e", width: 3 },
               hovertemplate: "%{x}: %{y:.2f}%<extra></extra>" },
           ]} layout={{ showlegend: true, legend: { orientation: "h", x: 0, y: 1.18 },
-            yaxis: { gridcolor: "#232e3e", ticksuffix: "%", title: { text: "Yield (%)" } },
+            yaxis: { gridcolor: "#f1f5f9", ticksuffix: "%", title: { text: "Yield (%)" } },
           }} />
           <p className="context-note market-measures-note">DGS2 / DGS5 / DGS10 · Yield benchmarks, not bond prices. DGS5 proxies IRS-P; DGS10 also proxies IRS-R.</p>
         </Panel>
@@ -869,7 +869,7 @@ function Risk({ data }: { data: Workstation }) {
                 x: data.positions.map((p) => p.pnl_usd).reverse(),
                 marker: {
                   color: data.positions
-                    .map((p) => (p.pnl_usd < 0 ? "#e78d9a" : "#52d6bb"))
+                    .map((p) => (p.pnl_usd < 0 ? "#dc2626" : "#047857"))
                     .reverse(),
                 },
                 hovertemplate: "%{y}<br>$%{x:,.0f}<extra></extra>",
@@ -877,7 +877,7 @@ function Risk({ data }: { data: Workstation }) {
             ]}
             layout={{
               xaxis: {
-                gridcolor: "#232e3e",
+                gridcolor: "#f1f5f9",
                 tickprefix: "$",
                 tickformat: ".2s",
               },
@@ -1586,7 +1586,7 @@ export default function App() {
     setShocks(s);
   };
   return (
-    <div className={page === 6 ? "workstation theme-reasoning-light" : "workstation"}>
+    <div className="workstation">
       <aside className="sidebar">
         <a
           className="brand"

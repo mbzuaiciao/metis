@@ -170,6 +170,22 @@ test("accepted causal hypotheses show backend P&L side by side, never before cal
     calculations: [completed.calculations[0], {...completed.calculations[1], shocks: {...second, rates_bp: -45}}],
   });
   assert.match(unequal, /Different yield assumptions\. Compare the outcomes/);
+
+  // 3-stage user journey
+  assert.match(after, /Compare hypotheses/);
+  assert.match(after, /Review assumptions/);
+  assert.match(after, /Compare P&amp;L/);
+
+  // Plain-English grounded comparison line reflecting equal vs different yield assumptions
+  assert.match(after, /Shared rates move \(-50bp\) produces an identical \$2,578,000 rates contribution in both scenarios, but diverging credit, equity, and FX assumptions result in -\$3,347,000 under Recession fears versus \$5,070,500 under Inflation relief\./);
+  assert.match(unequal, /Accepted yield assumptions differ \(-50bp versus -45bp\) alongside differing credit, equity, and FX assumptions, producing -\$3,347,000 under Recession fears versus \$5,070,500 under Inflation relief\./);
+
+  // Mechanism summary and expandable detail sections
+  assert.match(after, /class="causal-mechanism-summary"/);
+  assert.match(after, /Full economic mechanism/);
+  assert.match(after, /Review scenario assumptions/);
+  assert.match(after, /Use accepted A shocks in Risk Sensitivity Analysis/);
+  assert.match(after, /Use accepted B shocks in Risk Sensitivity Analysis/);
 });
 
 const { InvestigationResults } = await import("../src/InvestigationResults.tsx");
@@ -575,6 +591,13 @@ test("Historical event replay in Causal Scenario Exploration retains 3 event win
   assert.match(html, /Historical event replay/);
   assert.match(html, /HISTORICAL REPLAY · RECONSTRUCTED/);
   assert.match(html, /aria-label="Hypothetical stress scenarios"/);
+
+  // Workflow appears first, historical replay is collapsed below
+  assert.ok(
+    html.indexOf('id="hypothetical-causal-scenarios"') < html.indexOf('aria-label="Historical event replay"'),
+    "Hypothetical stress scenarios workflow must appear above historical event replay"
+  );
+  assert.match(html, /<details class="answer-section historical-replay-details" aria-label="Historical event replay">/);
 
   // All 3 event windows present
   for (const id of ['cpi-2022', 'march-2025', 'october-2026']) {

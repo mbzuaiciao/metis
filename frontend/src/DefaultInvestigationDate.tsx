@@ -6,16 +6,16 @@ export function DefaultInvestigationDate({ investigation, selectedDate, onSelect
   onSelect: (date: string) => void;
   disabled: boolean;
 }) {
-  return <section className="captured-evidence" aria-label="Synthetic daily investigation">
+  return <section className="captured-evidence" aria-label="Portfolio date selection">
     <div className="daily-date-row">
-      <label htmlFor="daily-investigation-date">Synthetic daily scenario</label>
+      <label htmlFor="daily-investigation-date">Portfolio Date</label>
       <select id="daily-investigation-date" value={selectedDate} disabled={disabled}
         onChange={event => onSelect(event.target.value)}>
         {investigation.snapshots.map(snapshot => <option key={snapshot.market.as_of} value={snapshot.market.as_of}>
-          {snapshot.market.as_of} · fictional synthetic snapshot{snapshot.market.as_of === investigation.default_date ? " (default)" : ""}
+          {snapshot.market.as_of}{snapshot.market.as_of === investigation.default_date ? " (default)" : " (archived comparison)"}
         </option>)}
       </select>
     </div>
-    <p className="context-note">{investigation.disclosure}</p>
+    <p className="context-note">Demo environment — simulated portfolio and market data.</p>
   </section>;
 }

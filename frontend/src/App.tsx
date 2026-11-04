@@ -63,6 +63,8 @@ import {
   followupTarget,
   scopeLabel,
   principalDrivers,
+  answerPresentation,
+  type DisplayedReasoning,
   type InvestigationFocus,
 } from "./investigation";
 
@@ -1167,6 +1169,7 @@ function ReasoningPage({
   ask,
   activeInvestigationId,
   setActiveInvestigationId,
+  askAnotherQuestion,
 }: {
   data: Workstation;
   selectedPortfolio: string;
@@ -1175,7 +1178,7 @@ function ReasoningPage({
   setShocks: (shocks: Shocks) => void;
   calc: Calculation | null;
   pending: boolean;
-  messages: Reasoning[];
+  messages: DisplayedReasoning[];
   question: string;
   setQuestion: (q: string) => void;
   busy: boolean;
@@ -1183,6 +1186,7 @@ function ReasoningPage({
   ask: (q: string, focus?: InvestigationFocus) => Promise<void>;
   activeInvestigationId: string | null;
   setActiveInvestigationId: (id: string) => void;
+  askAnotherQuestion: () => void;
 }) {
   const dailyData = portfolioSnapshot(data, selectedPortfolio);
   const inflationPreset = data.historical_stress_presets.find((preset) => preset.id === "inflation-2022");
@@ -1261,12 +1265,12 @@ function ReasoningPage({
           After an investigation starts, use the follow-up question box to continue it. Follow-ups retain the investigation's captured portfolio and assumptions, including stress assumptions for stress investigations, even if you change the selectors.
         </p>
         {messages.length === 0 && (
-          <div className="prompt-list">
+          <div className="prompt-list" id="preset-questions" tabIndex={-1}>
             {prompts.map((q) => (
               <button
                 key={q}
-                disabled={busy || pending || !calc}
-                onClick={() => void ask(q)}
+                disabled={busy}
+                onClick={() => void ask(q, "preset")}
               >
                 {q}
                 <ChevronRight size={16} />
@@ -1296,7 +1300,7 @@ function ReasoningPage({
                     : `LIVE ${m.mode.toUpperCase()} · ${m.model}`}
                 </span>
               </div>
-              <InvestigationResults answer={m} investigationId={i === messages.length - 1 ? "investigation-findings" : undefined} />
+              <InvestigationResults answer={m} presentation={m.presentation} investigationId={i === messages.length - 1 ? "investigation-findings" : undefined} />
               <button className="text-button" disabled={busy} onClick={() => {
                 setActiveInvestigationId(m.investigation_id);
                 document.getElementById("followup-composer")?.scrollIntoView({ behavior: "smooth" });
@@ -1304,6 +1308,12 @@ function ReasoningPage({
             </article>
           );
         })}
+        {(messages.length > 0 || error) && <section className="reasoning-actions" aria-label="New question">
+          <div>
+            <button className="secondary" disabled={busy} onClick={askAnotherQuestion}>Ask another question</button>
+            <p className="context-note">Clears this conversation and restores the presets. Your portfolio and scenario selections stay selected.</p>
+          </div>
+        </section>}
         <section className="verification-examples" aria-label="Demonstration examples">
           <VerificationDemo />
         </section>
@@ -1464,12 +1474,24 @@ export default function App() {
   const [portfolioCalc, setPortfolioCalc] = useState<Calculation | null>(null);
   const [pending, setPending] = useState(true);
   const [scenarioError, setScenarioError] = useState("");
-  const [messages, setMessages] = useState<Reasoning[]>([]);
+  const [messages, setMessages] = useState<DisplayedReasoning[]>([]);
   const [activeInvestigationId, setActiveInvestigationId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [reasoningBusy, setReasoningBusy] = useState(false);
   const [reasoningError, setReasoningError] = useState("");
   const requestInFlight = useRef(false);
+  function askAnotherQuestion() {
+    if (requestInFlight.current) return;
+    setMessages([]);
+    setActiveInvestigationId(null);
+    setQuestion("");
+    setReasoningError("");
+    requestAnimationFrame(() => {
+      const presets = document.getElementById("preset-questions");
+      presets?.focus();
+      presets?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
   function navigate(next: number, anchor?: string) {
     setPage(next);
     requestAnimationFrame(() => {
@@ -1493,13 +1515,14 @@ export default function App() {
     setReasoningError("");
     const isFollowup = focus === "question" && messages.length > 0;
     if (focus === "question" && !isFollowup) focus = "daily";
-    if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !selectedCalc)) {
+    if (!isFollowup && focus !== "daily" && focus !== "preset" && focus !== "historical" && (pending || scenarioError || !selectedCalc)) {
       setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
     }
     requestInFlight.current = true;
     setReasoningBusy(true);
     try {
+      const presentation = answerPresentation(focus, messages, activeInvestigationId);
       const result = await api<Reasoning>(
         "reasoning",
         investigationRequest(focus, q,
@@ -1508,7 +1531,7 @@ export default function App() {
       );
       setMessages((previous) => [
         ...previous,
-        { ...result, investigation_focus: result.investigation_scope },
+        { ...result, investigation_focus: result.investigation_scope, presentation },
       ]);
       setActiveInvestigationId(result.investigation_id);
       setQuestion("");
@@ -1775,6 +1798,7 @@ export default function App() {
                   activeInvestigationId={activeInvestigationId}
                   setActiveInvestigationId={setActiveInvestigationId}
                   ask={ask}
+                  askAnotherQuestion={askAnotherQuestion}
                 />
               )}
             </>

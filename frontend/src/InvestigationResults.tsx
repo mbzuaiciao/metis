@@ -10,7 +10,7 @@ const factorNames: Record<string, string> = {
   rates_pnl: "government rates", credit_pnl: "credit spreads", equity_pnl: "equities", fx_pnl: "FX",
 };
 
-export function InvestigationResults({ answer, investigationId }: { answer: Reasoning; investigationId?: string }) {
+export function InvestigationResults({ answer, investigationId, presentation = "full" }: { answer: Reasoning; investigationId?: string; presentation?: "focused" | "full" }) {
   const historical = answer.context.historical;
   const creditIncluded = historical?.credit_spreads_included === true;
   const daily = answer.investigation_scope === "daily";
@@ -31,6 +31,7 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
     <p className="context-note"><b>{historical ? `Historical investigation · ${answer.context.market.as_of} · US inflation surprise` : daily
       ? `Daily investigation · fictional synthetic snapshot · ${answer.context.market.as_of}`
       : "Hypothetical stress investigation · simulated assumptions, not historical observations or a forecast"}</b></p>
+    {presentation === "full" && <>
     <section className="investigation-step">
       <h2>1 · What happened?</h2>
       <p className="answer-summary">{historical ? "Under historical proxy mappings, the synthetic portfolio" : daily ? "The synthetic daily portfolio" : "Under the captured hypothetical assumptions, the portfolio"}{" "}
@@ -83,6 +84,7 @@ export function InvestigationResults({ answer, investigationId }: { answer: Reas
         <p><b>Requires additional data:</b> {hypothesis.additional_evidence}</p>
       </article>)}
     </section>
+    </>}
     <details className="answer-section investigation-support">
       <summary>Supporting evidence and details · calculations, verification and model limitations</summary>
       <InvestigationScope answer={answer} label="Answer scope" />

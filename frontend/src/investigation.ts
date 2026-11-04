@@ -6,7 +6,16 @@ export function dailySnapshot(data: Workstation, date = data.investigation.defau
   return snapshot;
 }
 
-export type InvestigationFocus = "daily" | "scenario" | "historical" | "question";
+export type InvestigationFocus = "daily" | "scenario" | "historical" | "question" | "preset";
+// Local presentation metadata only; never sent to the reasoning API.
+export type DisplayedReasoning = Reasoning & { presentation?: "focused" | "full" };
+
+export function answerPresentation(focus: InvestigationFocus, messages: DisplayedReasoning[], investigationId?: string | null) {
+  if (focus === "preset") return "focused";
+  if (focus === "question" && messages.length)
+    return (followupTarget(messages, investigationId) as DisplayedReasoning)?.presentation ?? "full";
+  return "full";
+}
 export const dailyQuestion =
   "Explain the illustrative daily portfolio loss. Why did positive government-rate P&L fail to offset credit-spread, equity and FX losses? Identify the important positions and exposures. Separate calculated facts from economic interpretations, and identify vulnerabilities and missing evidence worth investigating. The scenario supplied with this question uses the daily snapshot shocks, not the separately selected stress scenario.";
 export const historicalQuestion =
@@ -49,12 +58,13 @@ export function investigationRequest(
   if (focus === "historical") return {
     question: question.trim(), investigation_scope: "historical", history: [],
   };
-  const calculation = focus === "daily" ? daily : scenario;
+  const isDaily = focus === "daily" || focus === "preset";
+  const calculation = isDaily ? daily : scenario;
   if (!calculation) throw new Error("Wait for the selected scenario to finish calculating.");
   return {
     question: question.trim(),
-    investigation_scope: focus === "daily" ? "daily" : "scenario",
-    ...(focus === "daily" && investigationDate ? { investigation_date: investigationDate } : {}),
+    investigation_scope: isDaily ? "daily" : "scenario",
+    ...(isDaily && investigationDate ? { investigation_date: investigationDate } : {}),
     ...(portfolioId ? { portfolio_id: portfolioId } : {}),
     shocks: { ...calculation.shocks },
     history: [],

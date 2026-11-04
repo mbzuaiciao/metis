@@ -275,6 +275,21 @@ test("three-question results retain scoped backend values and collapse supportin
     for (const text of ["Full original summary", "Original economic text", "Original numerical claim", "Historical analogy", "Funding concern", "Linear model"]) assert.ok(html.includes(text));
     assert.doesNotMatch(html, /<details[^>]*\bopen(?:=|>)/);
     assert.deepEqual(answer, original);
+
+    for (const mode of ["demo", "meta"]) {
+      const focused = renderToStaticMarkup(React.createElement(InvestigationResults, {
+        answer: {...answer, mode}, presentation: "focused",
+      }));
+      for (const text of [answer.question, answer.interpretation.summary, ...answer.interpretation.principal_risk_observations])
+        assert.ok(focused.slice(0, focused.indexOf("<details")).includes(text));
+      assert.doesNotMatch(focused, /What happened\?|What might explain it\?|How can we investigate\?|Hypothesis A/);
+      assert.match(focused, mode === "demo" ? /Deterministic demo answer/ : /original prose Not checked/);
+      for (const text of ["Answer scope", "Captured", "2025-03-10", "Structured assertion verification", "Model assumptions and limitations", "Original economic text", "Inspect context and backend operations"])
+        assert.ok(focused.includes(text));
+      assert.match(focused, /<details class="answer-section investigation-support">/);
+      assert.doesNotMatch(focused, /<details[^>]*\bopen(?:=|>)/);
+      assert.deepEqual(answer, original);
+    }
   }
 });
 test("verification demonstrations follow active answers and are labeled separately", () => {
@@ -1100,8 +1115,25 @@ test("AI Reasoning explains preset daily starts and captured follow-ups near the
   assert.match(text, /Follow-ups retain the investigation's captured portfolio and assumptions, including stress assumptions for stress investigations, even if you change the selectors\./);
   assert.ok(page.indexOf(helper[0]) < page.indexOf('{messages.length === 0 && ('),
     "Keep the clarification visible when an investigation exists");
-  assert.match(page.slice(page.indexOf(helper[0]) + helper[0].length), /^\s*\{messages.length === 0 && \(\s*<div className="prompt-list">/,
+  assert.match(page.slice(page.indexOf(helper[0]) + helper[0].length), /^\s*\{messages.length === 0 && \(\s*<div className="prompt-list"/,
     "Place the clarification immediately before the existing preset questions");
+});
+
+test("new-question navigation clears conversation and follow-up identity while retaining controls", () => {
+  const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const reset = app.slice(app.indexOf("function askAnotherQuestion()"), app.indexOf("function navigate("));
+  assert.match(reset, /if \(requestInFlight.current\) return;/);
+  for (const call of ['setMessages([])', 'setActiveInvestigationId(null)', 'setQuestion("")', 'setReasoningError("")'])
+    assert.ok(reset.includes(call));
+  assert.doesNotMatch(reset, /setSelectedPortfolio|setShocks|api\(/);
+  assert.match(reset, /getElementById\("preset-questions"\)/);
+  assert.match(reset, /presets\?\.focus\(\)/);
+  assert.match(app, /\(messages.length > 0 \|\| error\) && <section[^>]*aria-label="New question"/);
+  assert.match(app, /disabled=\{busy\} onClick=\{askAnotherQuestion\}>Ask another question/);
+  assert.match(app, /askAnotherQuestion=\{askAnotherQuestion\}/);
+  assert.match(app, /onClick=\{\(\) => void ask\(q, "preset"\)\}/);
+  assert.match(app, /<InvestigationResults answer=\{m\} presentation=\{m.presentation\}/);
+  assert.match(app, /const presentation = answerPresentation\(focus, messages, activeInvestigationId\)/);
 });
 
 test("AI Reasoning compares hypotheses without inventing contradictory evidence or probabilities", () => {

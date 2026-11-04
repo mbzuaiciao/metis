@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from metis.analytics.engine import Shocks, calculate, load_positions, workstation
+from metis.analytics.engine import PortfolioId, Shocks, calculate, portfolio_selections, load_positions, workstation
 
 from metis.verification.claims import FinancialClaim, claim, verify_claims
 
@@ -126,9 +126,9 @@ def evidence_only_context(context: dict) -> dict:
     return evidence
 
 
-def assemble_context(shocks: Shocks, context_mode: ContextMode = "full", investigation_date: str | None = None) -> dict:
-    data = workstation(investigation_date)
-    positions = load_positions(investigation_date)
+def assemble_context(shocks: Shocks, context_mode: ContextMode = "full", investigation_date: str | None = None, portfolio_id: PortfolioId = "current") -> dict:
+    data = workstation(investigation_date, portfolio_id)
+    positions = load_positions(investigation_date, portfolio_id)
     scenario = calculate(positions, shocks)
     alternatives = []
     for preset in data["scenarios"]:
@@ -150,6 +150,9 @@ def assemble_context(shocks: Shocks, context_mode: ContextMode = "full", investi
             "alternative_scenarios": alternatives,
             "historical_context": data["history"], "evidence": evidence,
             "conventions": "USD. Positive DV01/CS01 gains on a 1bp fall. P&L = -DV01*yield_bp - CS01*spread_bp + equity_delta*equity_pct/100 + fx_delta*EURUSD_pct/100. Government rate shocks also apply to credit bonds. End NAV = opening NAV + daily P&L."}
+    if portfolio_id == "candidate-a":
+        selection = next(item for item in portfolio_selections() if item['id'] == portfolio_id)
+        context['portfolio']['selection'] = {key: selection[key] for key in ['id', 'label', 'reference_date', 'construction']}
     if context_mode not in {"full", "evidence_only"}:
         raise ValueError("Unknown context mode")
     return evidence_only_context(context) if context_mode == "evidence_only" else context
@@ -360,7 +363,8 @@ def reason(request: ReasoningRequest) -> dict:
     else:
         investigation_date = getattr(request, 'investigation_date', None)
         context = assemble_context(request.shocks, request.context_mode,
-                                   investigation_date.isoformat() if investigation_date else None)
+                                   investigation_date.isoformat() if investigation_date else None,
+                                   getattr(request, "portfolio_id", "current"))
     if hasattr(request, "investigation_scope"):
         context["investigation_scope"] = request.investigation_scope
     mode = os.getenv("METIS_PROVIDER", "demo").strip().lower()

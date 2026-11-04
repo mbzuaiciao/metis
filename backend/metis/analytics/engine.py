@@ -1,10 +1,13 @@
 """USD linear exposures. Positive DV01/CS01 = gain when yields/spreads FALL 1bp."""
 import json
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
+
+PortfolioId = Literal["current", "candidate-a"]
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 
@@ -31,7 +34,11 @@ def snapshot_files(investigation_date: str | None = None) -> dict:
     return snapshots[investigation_date]
 
 
-def load_positions(investigation_date: str | None = None) -> pd.DataFrame:
+def load_positions(investigation_date: str | None = None, portfolio_id: PortfolioId = "current") -> pd.DataFrame:
+    if portfolio_id not in {"current", "candidate-a"}:
+        raise ValueError("Unknown portfolio selection")
+    if portfolio_id == "candidate-a" and investigation_date not in {None, "2026-10-30"}:
+        raise ValueError("Candidate A is available only as of 2026-10-30; no data was substituted.")
     filename = snapshot_files(investigation_date)['positions']
     frame = pd.read_csv(DATA / filename, keep_default_na=False)
     numeric = ["market_value_usd", "notional_usd", "dv01_usd_per_bp", "cs01_usd_per_bp", "equity_delta_usd", "fx_delta_usd"]
@@ -39,6 +46,12 @@ def load_positions(investigation_date: str | None = None) -> pd.DataFrame:
         raise ValueError("Invalid portfolio data")
     if not set(frame.spread_bucket).issubset({"ig", "hy", "none"}):
         raise ValueError("Unknown spread bucket")
+    if portfolio_id == "candidate-a":
+        # Illustrative construction, not an optimized allocation. Keep the original fixtures immutable.
+        hy = frame.id.isin(["HY-US", "HY-EU"])
+        proceeds = float(frame.loc[hy, "market_value_usd"].sum()) * 0.25
+        frame.loc[hy, numeric] *= 0.75
+        frame.loc[frame.id == "CASH", ["market_value_usd", "notional_usd"]] += proceeds
     return frame
 
 
@@ -71,15 +84,25 @@ def calculate(frame: pd.DataFrame, shocks: Shocks) -> dict:
             "positions": result.to_dict(orient="records"), "method": "First-order linear approximation; no carry, convexity, defaults, liquidity or funding costs."}
 
 
-def workstation(investigation_date: str | None = None) -> dict:
-    frame = load_positions(investigation_date)
+def workstation(investigation_date: str | None = None, portfolio_id: PortfolioId = "current") -> dict:
+    frame = load_positions(investigation_date, portfolio_id)
     market = load_json(snapshot_files(investigation_date)['market'])
     daily = calculate(frame, Shocks(**market["daily_shocks"]))
     nav = float(frame.market_value_usd.sum())
     # End-of-day NAV consists of the displayed marks. Daily P&L reconciles to opening NAV.
     opening = nav - daily["total_pnl_usd"]
     allocation = frame.groupby("asset_class", sort=False).market_value_usd.sum().reset_index().to_dict(orient="records")
-    return {"portfolio_name": "Metis Global Opportunities", "data_kind": "synthetic", "nav_usd": nav,
+    return {"portfolio_name": "Metis Global Opportunities" if portfolio_id == "current" else "Candidate A — Reduced HY Exposure", "data_kind": "synthetic", "nav_usd": nav,
             "opening_nav_usd": opening, "daily_return_pct": daily["total_pnl_usd"] / opening * 100,
             "positions": daily["positions"], "allocation": allocation, "exposures": exposures(frame),
             "daily": daily, "market": market, "scenarios": load_json("scenarios"), "historical_stress_presets": load_json("historical-stress-presets"), "history": load_json("history")}
+
+
+def portfolio_selections() -> list[dict]:
+    return [
+        {"id": "current", "label": "Current Portfolio", "reference_date": "2026-10-30",
+         "construction": "Existing illustrative October 30, 2026 holdings.", "snapshot": workstation("2026-10-30")},
+        {"id": "candidate-a", "label": "Candidate A — Reduced HY Exposure", "reference_date": "2026-10-30",
+         "construction": "Illustrative, not optimal: reduce each US/EU HY basket by 25% ($2m/$1.5m); transfer $3.5m to USD cash. Scale HY notionals, DV01 and CS01 proportionately. NAV stays $100m; no transaction costs or execution assumptions.",
+         "snapshot": workstation("2026-10-30", "candidate-a")},
+    ]

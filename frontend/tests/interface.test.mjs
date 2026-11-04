@@ -320,21 +320,26 @@ test("historical credit correction shows all modeled factors while older capture
   assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
 });
 
-test("portfolio date selector retains archived dates and a concise demo disclosure", async () => {
-  const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
-  const config = JSON.parse(readFileSync(new URL("../../backend/metis/data/investigation.json", import.meta.url), "utf8"));
-  const investigation = {...config, snapshots: Object.keys(config.snapshots).map(date => ({market: {as_of: date}}))};
-  for (const selectedDate of Object.keys(config.snapshots)) {
-    const html = renderToStaticMarkup(React.createElement(DefaultInvestigationDate, {
-      investigation, selectedDate, disabled: false, onSelect() {},
+test("portfolio selection offers two constructions at the same reference date", async () => {
+  const { PortfolioSelection } = await import("../src/PortfolioSelection.tsx");
+  const portfolios = JSON.parse(execFileSync(new URL("../../.venv/bin/python", import.meta.url).pathname,
+    ["-c", "import json; from metis.analytics.engine import portfolio_selections; print(json.dumps(portfolio_selections()))"],
+    { cwd: new URL("../../", import.meta.url), env: {...process.env, PYTHONPATH: "backend"} }).toString());
+  for (const portfolio of portfolios) {
+    const html = renderToStaticMarkup(React.createElement(PortfolioSelection, {
+      portfolios, selectedPortfolio: portfolio.id, disabled: false, onSelect() {},
     }));
-    assert.ok(html.includes(`value="${selectedDate}" selected=""`));
-    assert.match(html, /Current Portfolio.*2026-10-30/);
-    assert.match(html, /Previous Portfolio.*2025-03-10/);
-    assert.match(html, /Demo environment — simulated portfolio and market data/);
-    assert.match(html, /Portfolio Snapshot/);
-    assert.doesNotMatch(html, /fictional synthetic snapshot/);
-    assert.doesNotMatch(html, /Data unavailable/);
+    assert.ok(html.includes(`value="${portfolio.id}" selected=""`));
+    assert.match(html, /Current Portfolio/);
+    assert.match(html, /Candidate A — Reduced HY Exposure/);
+    assert.match(html, /Reference date: 2026-10-30/);
+    assert.match(html, /Portfolio Selection/);
+    assert.doesNotMatch(html, /2025-03-10|Previous Portfolio|Portfolio Snapshot/);
+    if (portfolio.id === "candidate-a") {
+      assert.match(html, /Illustrative, not optimal/);
+      assert.match(html, /reduce each US\/EU HY basket by 25%/);
+      assert.match(html, /transfer \$3.5m to USD cash/);
+    }
   }
 });
 
@@ -1067,7 +1072,7 @@ test("AI Reasoning compares hypotheses without inventing contradictory evidence 
   assert.match(css, /\.hypothesis-comparison \{ display: grid; grid-template-columns: repeat\(auto-fit/);
 });
 
-test("AI Reasoning demo controls are legible and daily date selector is aligned", async () => {
+test("AI Reasoning demo controls are legible and portfolio selector is aligned", async () => {
   const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
   assert.match(app, /Which positions and risk factors contributed most to the selected daily P&L/);
@@ -1075,25 +1080,21 @@ test("AI Reasoning demo controls are legible and daily date selector is aligned"
   assert.match(css, /\.reasoning-layout \.prompt-list button \{ font-size: 15px/);
   assert.match(css, /\.reasoning-layout \.context-stat \{ font-size: 13px/);
   assert.match(css, /\.reasoning-layout \.daily-date-row \{ display: flex; align-items: center/);
-  const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
-  const html = renderToStaticMarkup(React.createElement(DefaultInvestigationDate, {
-    investigation: {
-      default_date: "2026-10-30",
-      disclosure: "Fictional portfolio values.",
-      snapshots: [{ market: { as_of: "2026-10-30" } }],
-    },
-    selectedDate: "2026-10-30",
+  const { PortfolioSelection } = await import("../src/PortfolioSelection.tsx");
+  const html = renderToStaticMarkup(React.createElement(PortfolioSelection, {
+    portfolios: [{ id: "current", label: "Current Portfolio", reference_date: "2026-10-30", construction: "Illustrative" }],
+    selectedPortfolio: "current",
     onSelect() {},
     disabled: false,
   }));
   assert.match(html, /class="daily-date-row"/);
-  assert.match(html, /<label for="daily-investigation-date">Portfolio Snapshot<\/label>/);
-  assert.match(html, /id="daily-investigation-date"/);
+  assert.match(html, /<label for="portfolio-selection">Portfolio Selection<\/label>/);
+  assert.match(html, /id="portfolio-selection"/);
   assert.match(html, /Demo environment — simulated portfolio and market data/);
 });
 
 
-test("AI Reasoning offers an inflation stress preset separate from portfolio snapshot", () => {
+test("AI Reasoning offers an inflation stress preset separate from portfolio selection", () => {
  const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
  const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
  assert.match(page, /Historical Stress Scenario/);

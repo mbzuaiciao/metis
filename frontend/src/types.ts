@@ -55,6 +55,7 @@ export type HistoricalStressPreset = Scenario & {
   source_url: string;
 };
 export type Workstation = {
+  portfolio_selections: { id: string; label: string; reference_date: string; construction: string; snapshot: DailySnapshot }[];
   historical_stress_presets: HistoricalStressPreset[];
   event_snapshots: EventSnapshot[];
   etf_portfolio: EtfPortfolio;
@@ -94,7 +95,7 @@ export type Workstation = {
   scenarios: Scenario[];
   history: Episode[];
 };
-export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode" | "etf_portfolio" | "etf_history" | "event_snapshots">;
+export type DailySnapshot = Omit<Workstation, "investigation" | "causal_mode" | "etf_portfolio" | "etf_history" | "event_snapshots" | "portfolio_selections">;
 export type Reasoning = {
   investigation_id: string;
   investigation_scope: "daily" | "scenario" | "historical";

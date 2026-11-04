@@ -241,3 +241,23 @@ test("default and selected daily dates select corresponding calculations without
   }
   assert.throws(() => dailySnapshot(data, "2026-10-29"), /no data was substituted/);
 });
+
+test("portfolio-specific starts send selection while follow-ups send only captured identity", async () => {
+  const { portfolioSnapshot } = await import('../src/investigation.ts');
+  const current = { daily: {shocks: {...daily.shocks}}, portfolio_name: 'Current Portfolio' };
+  const candidate = { daily: {shocks: {...daily.shocks}}, portfolio_name: 'Candidate A' };
+  const data = {portfolio_selections: [{id: 'current', snapshot: current}, {id: 'candidate-a', snapshot: candidate}]};
+  assert.equal(portfolioSnapshot(data), current);
+  assert.equal(portfolioSnapshot(data, 'candidate-a'), candidate);
+  assert.throws(() => portfolioSnapshot(data, '2025-03-10'), /no data was substituted/);
+  const selectedStress = structuredClone(stress);
+  const request = investigationRequest('scenario', 'Explain candidate', candidate.daily, selectedStress, [], null, undefined, 'candidate-a');
+  assert.equal(request.portfolio_id, 'candidate-a');
+  assert.deepEqual(request.shocks, selectedStress.shocks);
+  const saved = captured('candidate-id', 'scenario');
+  const followup = investigationRequest('question', 'Continue', current.daily, stress, [saved], saved.investigation_id, undefined, 'current');
+  assert.equal(followup.investigation_id, saved.investigation_id);
+  assert.equal(followup.portfolio_id, undefined);
+  assert.equal(followup.shocks, undefined);
+  assert.equal(investigationRequest('historical', 'CPI', current.daily, stress, [], null, undefined, 'candidate-a').portfolio_id, undefined);
+});

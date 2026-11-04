@@ -20,7 +20,7 @@ import {
 import { VerificationDemo } from "./ClaimVerification";
 import { InvestigationResults } from "./InvestigationResults";
 import { InvestigationScope } from "./InvestigationScope";
-import { DefaultInvestigationDate } from "./DefaultInvestigationDate";
+import { PortfolioSelection } from "./PortfolioSelection";
 import { CausalExploration } from "./CausalExploration";
 import { ResearchLimitations } from "./ResearchLimitations";
 import { EtfPortfolio } from "./EtfPortfolio";
@@ -57,6 +57,7 @@ import {
 import {
   dailyQuestion,
   dailySnapshot,
+  portfolioSnapshot,
   scenarioQuestion,
   investigationRequest,
   followupTarget,
@@ -1152,8 +1153,8 @@ const prompts = [
 ];
 function ReasoningPage({
   data,
-  selectedDate,
-  setSelectedDate,
+  selectedPortfolio,
+  setSelectedPortfolio,
   shocks,
   setShocks,
   calc,
@@ -1168,8 +1169,8 @@ function ReasoningPage({
   setActiveInvestigationId,
 }: {
   data: Workstation;
-  selectedDate: string;
-  setSelectedDate: (date: string) => void;
+  selectedPortfolio: string;
+  setSelectedPortfolio: (id: string) => void;
   shocks: Shocks;
   setShocks: (shocks: Shocks) => void;
   calc: Calculation | null;
@@ -1183,7 +1184,7 @@ function ReasoningPage({
   activeInvestigationId: string | null;
   setActiveInvestigationId: (id: string) => void;
 }) {
-  const dailyData = dailySnapshot(data, selectedDate);
+  const dailyData = portfolioSnapshot(data, selectedPortfolio);
   const inflationPreset = data.historical_stress_presets.find((preset) => preset.id === "inflation-2022");
   const inflationSelected = inflationPreset && (Object.keys(inflationPreset.shocks) as (keyof Shocks)[]).every((key) => inflationPreset.shocks[key] === shocks[key]);
   const target = followupTarget(messages, activeInvestigationId);
@@ -1203,8 +1204,8 @@ function ReasoningPage({
             </p>
           </div>
         </div>
-        <DefaultInvestigationDate investigation={data.investigation} selectedDate={selectedDate}
-          onSelect={setSelectedDate} disabled={busy} />
+        <PortfolioSelection portfolios={data.portfolio_selections} selectedPortfolio={selectedPortfolio}
+          onSelect={setSelectedPortfolio} disabled={busy} />
         {inflationPreset && <section className="captured-evidence" aria-label="Historical stress selection">
           <div className="daily-date-row">
             <label htmlFor="historical-stress-event">Historical Stress Scenario</label>
@@ -1333,7 +1334,7 @@ function ReasoningPage({
             maxLength={2000}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the selected portfolio date…"}
+            placeholder={target ? "Ask a follow-up within the captured scope…" : "Ask Metis about the selected portfolio…"}
             rows={3}
             disabled={busy}
           />
@@ -1370,7 +1371,7 @@ function ReasoningPage({
           </div>
           <h3>Current hypothetical scenario</h3>
           <p className="context-note">
-            New stress investigations use the app-wide {data.market.as_of} portfolio, independently of the date selector. Existing answers retain their captured evidence.
+            New stress investigations use {dailyData.portfolio_name} as of {dailyData.market.as_of}. Existing answers retain their captured evidence.
           </p>
           {calc && !pending ? (
             <>
@@ -1455,12 +1456,13 @@ export default function App() {
   const [causalState, setCausalState] = useState(initialCausalState);
   const [historicalEventId, setHistoricalEventId] = useState<string>("october-2026");
   const [data, setData] = useState<Workstation | null>(null);
-  const [selectedDate, setSelectedDate] = useState("");
-  const selectedDaily = data ? dailySnapshot(data, selectedDate || data.investigation.default_date) : null;
+  const [selectedPortfolio, setSelectedPortfolio] = useState("current");
+  const selectedDaily = data ? portfolioSnapshot(data, selectedPortfolio) : null;
   const displayData = data && page === 6 && selectedDaily ? { ...data, ...selectedDaily } : data;
   const [error, setError] = useState("");
   const [shocks, setShocks] = useState<Shocks | null>(null);
   const [calc, setCalc] = useState<Calculation | null>(null);
+  const [portfolioCalc, setPortfolioCalc] = useState<Calculation | null>(null);
   const [pending, setPending] = useState(true);
   const [scenarioError, setScenarioError] = useState("");
   const [messages, setMessages] = useState<Reasoning[]>([]);
@@ -1479,14 +1481,20 @@ export default function App() {
       else window.scrollTo({ top: 0 });
     });
   }
-  async function ask(q: string, focus: InvestigationFocus = "question", dailyDate = selectedDate) {
+  async function ask(q: string, focus: InvestigationFocus = "question", dailyDate?: string) {
     if (!data || requestInFlight.current || !q.trim()) return;
+    const portfolioId = page === 6 && !dailyDate ? selectedPortfolio : "current";
+    const selectedCalc = portfolioId === selectedPortfolio ? portfolioCalc : calc;
     navigate(6);
+    if ((page !== 6 || dailyDate) && selectedPortfolio !== "current") {
+      setPending(true);
+      setSelectedPortfolio("current");
+    }
     setQuestion(q);
     setReasoningError("");
     const isFollowup = focus === "question" && messages.length > 0;
     if (focus === "question" && !isFollowup) focus = "daily";
-    if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !calc)) {
+    if (!isFollowup && focus !== "daily" && focus !== "historical" && (pending || scenarioError || !selectedCalc)) {
       setReasoningError(scenarioError || "Wait for the selected hypothetical scenario to finish calculating.");
       return;
     }
@@ -1496,8 +1504,8 @@ export default function App() {
       const result = await api<Reasoning>(
         "reasoning",
         investigationRequest(focus, q,
-          dailySnapshot(data, dailyDate).daily,
-          calc, messages, activeInvestigationId, dailyDate),
+          (dailyDate ? dailySnapshot(data, dailyDate) : portfolioSnapshot(data, portfolioId)).daily,
+          selectedCalc, messages, activeInvestigationId, dailyDate, portfolioId),
       );
       setMessages((previous) => [
         ...previous,
@@ -1517,7 +1525,7 @@ export default function App() {
     api<Workstation>("workstation", undefined, c.signal)
       .then((d) => {
         setData(d);
-        setSelectedDate(d.investigation.default_date);
+        setSelectedPortfolio("current");
         setShocks(d.historical_stress_presets[0].shocks);
       })
       .catch((e) => {
@@ -1531,9 +1539,12 @@ export default function App() {
     setPending(true);
     setScenarioError("");
     const timer = setTimeout(() => {
-      api<Calculation>("scenario", shocks, c.signal)
-        .then((r) => {
-          setCalc(r);
+      Promise.all([
+        api<Calculation>("scenario", shocks, c.signal),
+        api<Calculation>(`scenario?portfolio_id=${encodeURIComponent(selectedPortfolio)}`, shocks, c.signal),
+      ]).then(([current, selected]) => {
+          setCalc(current);
+          setPortfolioCalc(selected);
           setPending(false);
         })
         .catch((e) => {
@@ -1547,7 +1558,7 @@ export default function App() {
       clearTimeout(timer);
       c.abort();
     };
-  }, [shocks]);
+  }, [shocks, selectedPortfolio]);
   const changeShocks = (s: Shocks) => {
     setPending(true);
     setShocks(s);
@@ -1751,11 +1762,11 @@ export default function App() {
               {page === 6 && (
                 <ReasoningPage
                   data={data}
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
+                  selectedPortfolio={selectedPortfolio}
+                  setSelectedPortfolio={(id) => { setPending(true); setSelectedPortfolio(id); }}
                   shocks={shocks}
                   setShocks={changeShocks}
-                  calc={scenarioError ? null : calc}
+                  calc={scenarioError ? null : portfolioCalc}
                   pending={pending}
                   messages={messages}
                   question={question}

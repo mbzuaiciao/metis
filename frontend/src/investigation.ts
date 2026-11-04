@@ -31,6 +31,7 @@ export function investigationRequest(
   messages: Reasoning[],
   investigationId?: string | null,
   investigationDate?: string,
+  portfolioId?: string,
 ) {
   if (focus === "question" && messages.length) {
     const target = followupTarget(messages, investigationId);
@@ -54,17 +55,24 @@ export function investigationRequest(
     question: question.trim(),
     investigation_scope: focus === "daily" ? "daily" : "scenario",
     ...(focus === "daily" && investigationDate ? { investigation_date: investigationDate } : {}),
+    ...(portfolioId ? { portfolio_id: portfolioId } : {}),
     shocks: { ...calculation.shocks },
     history: [],
   };
 }
 
+export function portfolioSnapshot(data: Workstation, id = "current") {
+  const selection = data.portfolio_selections.find(item => item.id === id);
+  if (!selection) throw new Error(`Unknown portfolio ${id}; no data was substituted.`);
+  return selection.snapshot;
+}
+
 export function scopeLabel(answer: Reasoning) {
   const date = answer.context.market.as_of;
   if (answer.investigation_scope === "historical") return `Historical CPI investigation · ${date} · synthetic holdings · ${answer.context.historical?.credit_spreads_included ? "estimated hypothetical P&L" : "partial-factor P&L"}`;
-  if (answer.investigation_scope === "daily") return `Daily snapshot · ${date}`;
+  if (answer.investigation_scope === "daily") return `Daily snapshot · ${date} · ${answer.context.portfolio.portfolio_name}`;
   const s = answer.context.scenario.shocks;
-  return `Captured stress · ${date} · rates ${s.rates_bp}bp, IG ${s.ig_bp}bp, HY ${s.hy_bp}bp, equities ${s.equity_pct}%, EUR/USD ${s.fx_pct}%`;
+  return `Captured stress · ${answer.context.portfolio.portfolio_name} · ${date} · rates ${s.rates_bp}bp, IG ${s.ig_bp}bp, HY ${s.hy_bp}bp, equities ${s.equity_pct}%, EUR/USD ${s.fx_pct}%`;
 }
 
 export function principalDrivers(calculation: Calculation) {

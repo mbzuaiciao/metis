@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
-from metis.analytics.engine import Shocks, calculate, load_json, load_positions, workstation
+from metis.analytics.engine import PortfolioId, Shocks, calculate, portfolio_selections, load_json, load_positions, workstation
 from metis.analytics.etf import portfolio as etf_portfolio, historical_prices
 from metis.analytics.events import event_snapshots
 from metis.reasoning.causal import CausalRequest, explore
@@ -31,12 +31,13 @@ def get_workstation():
                             historical_prices('2022-09-12', '2022-09-13')],
             "investigation": {**config,
             'snapshots': [workstation(date) for date in config['snapshots']]},
+            "portfolio_selections": portfolio_selections(),
             "causal_mode": os.getenv("METIS_PROVIDER", "demo").strip().lower()}
 
 
 @app.post("/api/scenario")
-def scenario(shocks: Shocks):
-    return calculate(load_positions(), shocks)
+def scenario(shocks: Shocks, portfolio_id: PortfolioId = "current"):
+    return calculate(load_positions(portfolio_id=portfolio_id), shocks)
 
 
 @app.post("/api/reasoning")
@@ -47,13 +48,15 @@ def reasoning(request: InvestigationRequest | FollowupRequest):
         if request.investigation_scope == 'daily':
             date = request.investigation_date.isoformat() if request.investigation_date else load_json('investigation')['default_date']
             try:
-                data = workstation(date)
+                data = workstation(date, request.portfolio_id)
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
             request = request.model_copy(update={'shocks': Shocks(**data['daily']['shocks']),
                                                  'investigation_date': Date.fromisoformat(date)})
         elif request.investigation_date is not None:
             raise HTTPException(status_code=422, detail='investigation_date applies only to daily investigations; historical events and stress scenarios retain their own scope.')
+        if request.investigation_scope == 'historical' and request.portfolio_id != 'current':
+            raise HTTPException(status_code=422, detail='Historical investigations retain their fixed legacy holdings; portfolio selection applies to daily/scenario scope.')
         return evidence_snapshots.capture(reason(request), request.investigation_scope)
     except SnapshotUnavailable as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc

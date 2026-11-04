@@ -13,6 +13,7 @@ import os
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from metis.analytics.engine import PortfolioId
 from metis.reasoning.harness import DemoProvider, HTTPProvider, ReasoningRequest, Turn
 from metis.verification.claims import verify_claims
 
@@ -20,6 +21,7 @@ from metis.verification.claims import verify_claims
 class InvestigationRequest(ReasoningRequest):
     investigation_scope: Literal['daily', 'scenario', 'historical'] = 'scenario'
     investigation_date: date | None = None
+    portfolio_id: PortfolioId = 'current'
 
 
 class FollowupRequest(BaseModel):

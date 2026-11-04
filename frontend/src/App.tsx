@@ -57,7 +57,6 @@ import {
 import {
   dailyQuestion,
   dailySnapshot,
-  historicalQuestion,
   scenarioQuestion,
   investigationRequest,
   followupTarget,
@@ -1147,7 +1146,7 @@ export function Scenarios({
 const prompts = [
   "Given the portfolio's exposures, current market conditions, and relevant historical patterns, what are its principal risks, and why?",
   "Why is my portfolio losing money despite falling Treasury yields?",
-  "Which historical market episodes are relevant to these exposures?",
+  "Which positions and risk factors contributed most to the selected daily P&L?",
   "How could a recession-driven rally differ from an inflation-driven rally?",
   "What vulnerabilities might conventional exposure measures overlook?",
 ];
@@ -1201,16 +1200,6 @@ function ReasoningPage({
         <DefaultInvestigationDate investigation={data.investigation} selectedDate={selectedDate}
           onSelect={setSelectedDate} disabled={busy} />
         <section className="reasoning-actions">
-          <div>
-            <button className="primary" disabled={busy}
-              aria-describedby="historical-option-description"
-              onClick={() => void ask(historicalQuestion, "historical")}>
-              Investigate a Historical Event
-            </button>
-            <p id="historical-option-description" className="context-note">
-              September 13, 2022 · US CPI surprise. Examine how historical market movements would affect the synthetic portfolio and explore competing macroeconomic explanations.
-            </p>
-          </div>
           <div>
             <button
               className="primary"

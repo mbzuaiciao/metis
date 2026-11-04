@@ -320,7 +320,7 @@ test("historical credit correction shows all modeled factors while older capture
   assert.match(scope, /IG OAS 0bp; HY OAS \+18bp/);
 });
 
-test("daily selector offers distinct synthetic dates and discloses fictional data", async () => {
+test("portfolio date selector retains archived dates and a concise demo disclosure", async () => {
   const { DefaultInvestigationDate } = await import("../src/DefaultInvestigationDate.tsx");
   const config = JSON.parse(readFileSync(new URL("../../backend/metis/data/investigation.json", import.meta.url), "utf8"));
   const investigation = {...config, snapshots: Object.keys(config.snapshots).map(date => ({market: {as_of: date}}))};
@@ -329,11 +329,11 @@ test("daily selector offers distinct synthetic dates and discloses fictional dat
       investigation, selectedDate, disabled: false, onSelect() {},
     }));
     assert.ok(html.includes(`value="${selectedDate}" selected=""`));
-    assert.match(html, /2026-10-30.*fictional synthetic snapshot.*default/);
-    assert.match(html, /2025-03-10.*fictional synthetic snapshot/);
-    assert.match(html, /all dated levels, moves, position marks, notionals, sensitivities and calculated P&amp;L are synthetic/);
-    assert.match(html, /not sourced market observations or real portfolio valuations/);
-    assert.match(html, /do not establish hackathon development provenance/);
+    assert.match(html, /2026-10-30.*default/);
+    assert.match(html, /2025-03-10.*archived comparison/);
+    assert.match(html, /Demo environment — simulated portfolio and market data/);
+    assert.match(html, /Portfolio Date/);
+    assert.doesNotMatch(html, /fictional synthetic snapshot/);
     assert.doesNotMatch(html, /Data unavailable/);
   }
 });
@@ -1047,8 +1047,8 @@ test("AI Reasoning keeps investigation actions without duplicating scenario navi
   const page = source.slice(source.indexOf("function ReasoningPage("), source.indexOf("export function MarketTicker("));
   assert.ok(page.startsWith("function ReasoningPage("), "ReasoningPage must exist");
   assert.doesNotMatch(page, /Investigate a Historical Event/);
-  assert.match(page, /Explain Current Stress Scenario/);
-  assert.match(page, /Synthetic P&L/);
+  assert.match(page, /Analyze Stress Scenario/);
+  assert.match(page, /Explain Portfolio P&L/);
   assert.doesNotMatch(page, /Explore What-If Scenarios|Explore or adjust a hypothetical stress|goScenario/);
 });
 
@@ -1087,7 +1087,7 @@ test("AI Reasoning demo controls are legible and daily date selector is aligned"
     disabled: false,
   }));
   assert.match(html, /class="daily-date-row"/);
-  assert.match(html, /<label for="daily-investigation-date">Synthetic daily scenario<\/label>/);
+  assert.match(html, /<label for="daily-investigation-date">Portfolio Date<\/label>/);
   assert.match(html, /id="daily-investigation-date"/);
-  assert.match(html, /Fictional portfolio values/);
+  assert.match(html, /Demo environment — simulated portfolio and market data/);
 });

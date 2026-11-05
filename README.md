@@ -4,6 +4,8 @@ An institutional portfolio risk workstation with deterministic analytics and an 
 
 ## Hackathon showcase: competing explanations
 
+See the [project retrospective](docs/PROJECT_RETROSPECTIVE.md) for the hackathon's findings, architectural decisions, limitations and open research questions.
+
 Metis's [three-minute causal-exploration showcase](research/meta-hackathon-causal-showcase-3min.md) starts on **Overview → Explore competing explanations**. It compares alternative economic explanations for the same hypothetical yield movement. The analyst accepts illustrative assumptions before the deterministic engine calculates both scenarios side by side; live model output is labeled **LIVE META** and fixed templates are labeled **DETERMINISTIC DEMO**. These are not calibrated forecasts or identified causes. The historical [longer demonstration plan](research/meta-hackathon-demo-plan.md) remains available.
 
 **Live inference status (v0.2.1):** a live interpretation was verified with `muse-spark-1.3` at `https://api.meta.ai/v1/chat/completions` using locally configured credentials. This is Meta's Muse Spark model, not a Llama model. The returned interpretation passed all seven field definitions and the allowed evidence-ID check. No API key, sensitive context or full upstream response body was logged or saved. This verifies the harness; the browser workflow was not rerun for this correction. Demo mode still runs without credentials.
